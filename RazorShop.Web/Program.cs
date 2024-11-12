@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
+using RazorShop.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +38,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseStatusCodePagesWithRedirects("/Redirects?statusCode={0}");
 app.UseExceptionHandler("/Error");
+app.UseStatusCodePagesWithRedirects("/Redirects?statusCode={0}");
 
 app.Use(async (context, next) => {
     if (!context.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
@@ -59,11 +60,12 @@ app.Use(async (context, next) => {
     await next();
 });
 
-app.MapGet("/", () => "Hello World!");
+//app.UseRouting();
 
 app.UseSession();
-app.UseStatusCodePages();
+//app.UseStatusCodePages();
 app.UseStaticFiles();
+app.MinimalApi();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 
