@@ -21,6 +21,17 @@ public static class MinimalApis
             return Results.Extensions.RazorSlice<Pages.Home, List<ProductVm>>(products);
         });
 
+        //app.MapGet("/Products", async (RazorShopDbContext dbCtx, HttpRequest request) =>
+        //{
+        //    var products = await dbCtx.Products
+        //        .AsNoTracking()
+        //        //.Where(x => x.SomeCondition)
+        //        .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = p.Price.ToString() })
+        //        .ToListAsync();
+
+        //    return Results.Extensions.RazorSlice<Slices.Products, List<ProductVm>>(products);
+        //});
+
         app.MapGet("/Product/{id}", async (HttpRequest request, HttpResponse response, RazorShopDbContext dbCtx, int id) =>
         {
             var product = await dbCtx.Products
@@ -50,23 +61,59 @@ public static class MinimalApis
 
             var sessionId = ctx.Request.Cookies["CartSessionId"];
             var cart = dbCtx.Carts.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
-            var cartItemsCount = await dbCtx.CartItems.CountAsync(c => c.CartId == cart.Id);
+            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
-            return Results.Extensions.RazorSlice<Slices.CartButton, int>(cartItemsCount);
+            var cartVm = new CartVm();
+            cartVm.CartItemsCount = cartItems.Count;
+
+            foreach (var item in cartItems)
+            {
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product.Name, Price = item.Product.Price.ToString() });
+            }
+
+            return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
 
-        app.MapGet("/add-to-cart/{id}", async (HttpContext context, RazorShopDbContext dbCtx, int id, int checkedSize) =>
+        app.MapGet("/cart/add/{id}", async (HttpContext context, RazorShopDbContext dbCtx, int id, int checkedSize) =>
         {
             var sessionId = context.Request.Cookies["CartSessionId"];
-
             var cart = dbCtx.Carts.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
 
             await dbCtx.CartItems.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = checkedSize == 0 ? null : checkedSize });
             await dbCtx.SaveChangesAsync();
 
-            var cartItemsCount = dbCtx.CartItems.Count(c => c.CartId == cart.Id);
+            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
-            return Results.Extensions.RazorSlice<Slices.CartButton, int>(cartItemsCount);
+            var cartVm = new CartVm();
+            cartVm.CartItemsCount = cartItems.Count;
+
+            foreach (var item in cartItems)
+            {
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product.Name, Price = item.Product.Price.ToString() });
+            }
+
+            return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
+        });
+
+        app.MapDelete("/cart/delete/{id}", async (HttpContext context, RazorShopDbContext dbCtx, int id) =>
+        {
+            var sessionId = context.Request.Cookies["CartSessionId"];
+            var cart = dbCtx.Carts.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
+
+            dbCtx.CartItems.Remove(new CartItem { Id = id });
+            await dbCtx.SaveChangesAsync();
+
+            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+
+            var cartVm = new CartVm();
+            cartVm.CartItemsCount = cartItems.Count;
+
+            foreach (var item in cartItems)
+            {
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product.Name, Price = item.Product.Price.ToString() });
+            }
+
+            return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
 
         app.MapGet("/Redirects", (int statusCode) => {
@@ -76,7 +123,7 @@ public static class MinimalApis
 
             }
 
-            return Results.Extensions.RazorSlice<Slices.NotFound>();
+            return Results.Extensions.RazorSlice<Pages.NotFound>();
         });
 
         app.MapGet("/Error", (HttpContext context) =>
@@ -93,7 +140,7 @@ public static class MinimalApis
             //    statusCode: 500
             //);
 
-            return Results.Extensions.RazorSlice<Slices.Error>();
+            return Results.Extensions.RazorSlice<Pages.Error>();
         });
     }
 

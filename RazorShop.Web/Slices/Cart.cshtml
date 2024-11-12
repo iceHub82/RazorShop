@@ -1,0 +1,39 @@
+﻿@using RazorShop.Web.ViewModels
+@inherits RazorSliceHttpResult<CartVm>
+
+<div id="cart-div" class="d-flex">
+    <div class="dropdown-center">
+        <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi-cart-fill me-1"></i>
+            Cart
+            <span class="badge bg-dark text-white ms-1 rounded-pill">@Model.CartItemsCount</span>
+        </button>
+        <div class="dropdown-menu">
+            <div class="container">
+
+                @if (Model.CartItems!.Any())
+                {
+                    @foreach (var item in Model.CartItems!)
+                    {
+                        <div class="row">
+                            <div class="col">
+                                @item.Name
+                            </div>
+                            <div class="col">
+                                @item.Price
+                            </div>
+                            <div hx-delete="/cart/delete/@item.Id" hx-target="#cart-div" class="col">
+                                Delete
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <h4>Your shopping cart is empty</h4>
+                }
+
+            </div>
+        </div>
+    </div>
+</div> 
