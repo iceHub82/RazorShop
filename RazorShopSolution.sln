@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorShop.Web", "RazorShop.Web\RazorShop.Web.csproj", "{E1B6B8E9-8496-4D7B-9403-9E3A32B26BD6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorShop.Data", "RazorShop.Data\RazorShop.Data.csproj", "{8953AD55-0A3D-4DC7-91B3-50320CC7447E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{E1B6B8E9-8496-4D7B-9403-9E3A32B26BD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1B6B8E9-8496-4D7B-9403-9E3A32B26BD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1B6B8E9-8496-4D7B-9403-9E3A32B26BD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8953AD55-0A3D-4DC7-91B3-50320CC7447E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8953AD55-0A3D-4DC7-91B3-50320CC7447E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8953AD55-0A3D-4DC7-91B3-50320CC7447E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8953AD55-0A3D-4DC7-91B3-50320CC7447E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
