@@ -4,25 +4,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RazorShop</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
-    <script src="/lib/htmx/htmx.min.js"></script>
-    <script defer src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @(await RenderPartialAsync<Head>())
 </head>
 <body>
     @(await RenderPartialAsync<Navigation>())
     @(await RenderPartialAsync<Header>())
     @(await RenderPartialAsync<Products, List<ProductVm>>(Model))
-
-    <!-- Footer-->
-    <footer class="py-5 bg-dark">
-        <div class="container">
-            <p class="m-0 text-center text-white">Copyright &copy; Your Website 2024</p>
-        </div>
-    </footer>
+    @(await RenderPartialAsync<Footer>())
 
     <script src="/lib/jquery/dist/jquery.min.js"></script>
     <script src="/js/site.js"></script>
