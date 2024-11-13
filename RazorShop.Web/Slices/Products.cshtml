@@ -1,29 +1,33 @@
 ﻿@using RazorShop.Web.ViewModels
 @inherits RazorSliceHttpResult<List<ProductVm>>
 
-<div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-    @foreach (var product in Model)
-    {
-        <div class="col mb-5">
-            <div class="card h-100">
-                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                <!-- Product details-->
-                <div class="card-body p-4">
-                    <div class="text-center">
-                        <h5 class="fw-bolder">@product.Name</h5>
-                        @product.Price
+<section id="section" class="py-5">
+    <div class="container px-4 px-lg-5 mt-5">
+        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+            @foreach (var product in Model)
+            {
+                <div class="col mb-5">
+                    <div class="card h-100">
+                        <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                        <!-- Product details-->
+                        <div class="card-body p-4">
+                            <div class="text-center">
+                                <h5 class="fw-bolder">@product.Name</h5>
+                                @product.Price
+                            </div>
+                        </div>
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                            <div class="text-center">
+                                <a hx-get="/Product/@product.Id"
+                                   hx-trigger="click"
+                                   hx-target="#section"
+                                   hx-push-url="true"
+                                   class="btn btn-outline-dark mt-auto">View options</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                    <div class="text-center">
-                        <a hx-get="/Product/@product.Id"
-                           hx-trigger="click"
-                           hx-target="#section"
-                           hx-push-url="true"
-                           class="btn btn-outline-dark mt-auto">View options</a>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
-    }
-</div>
+    </div>
+</section>
