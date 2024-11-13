@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using RazorShop.Web;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
-using RazorShop.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<RazorShopDbContext>(options => {
     options.UseSqlite(connStr!);
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options => {
@@ -29,7 +31,22 @@ builder.Services.AddSession(options => {
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope()) {
-    scope.ServiceProvider.GetRequiredService<RazorShopDbContext>().Database.EnsureCreated();
+    var db = scope.ServiceProvider.GetRequiredService<RazorShopDbContext>();
+    db.Database.EnsureCreated();
+
+    var sizes = await db.Sizes.ToListAsync();
+    var sizeTypes = await db.SizeTypes.ToListAsync();
+    var categories = await db.Categories.ToListAsync();
+
+    var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+    var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+    cache.Set("sizes", sizes, options);
+    cache.Set("sizeTyeps", sizeTypes, options);
+    cache.Set("categories", categories, options);
+}
+
+using (var scope = app.Services.CreateScope()) {
+    
 }
 
 if (!app.Environment.IsDevelopment())

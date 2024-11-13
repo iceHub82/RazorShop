@@ -1,5 +1,4 @@
-﻿@using RazorShop.Web.ViewModels
-@inherits RazorSliceHttpResult<CartVm>
+﻿@inherits RazorSliceHttpResult<CartVm>
 
 <div id="cart-div" class="d-flex">
     <div class="dropdown">
@@ -24,6 +23,9 @@
                         <div class="row">
                             <div class="col">
                                 @item.Name
+                            </div>
+                            <div class="col">
+                                @item.Size
                             </div>
                             <div class="col">
                                 @item.Price

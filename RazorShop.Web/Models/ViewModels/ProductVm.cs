@@ -1,4 +1,4 @@
-﻿namespace RazorShop.Web.ViewModels;
+﻿namespace RazorShop.Web.Models.ViewModels;
 
 public class ProductVm
 {
