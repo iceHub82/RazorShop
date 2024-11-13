@@ -67,9 +67,10 @@ public static class MinimalApis
             cartVm.CartItemsCount = cartItems.Count;
 
             foreach (var item in cartItems)
-            {
-                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product.Name, Price = item.Product.Price.ToString() });
-            }
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr" });
+
+            var total = cartItems.Sum(c => c.Product!.Price);
+            cartVm.Total = $"{total:#.00} kr";
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
@@ -88,9 +89,10 @@ public static class MinimalApis
             cartVm.CartItemsCount = cartItems.Count;
 
             foreach (var item in cartItems)
-            {
-                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product.Name, Price = item.Product.Price.ToString() });
-            }
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr" });
+
+            var total = cartItems.Sum(c => c.Product!.Price);
+            cartVm.Total = $"{total:#.00} kr";
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
@@ -109,9 +111,10 @@ public static class MinimalApis
             cartVm.CartItemsCount = cartItems.Count;
 
             foreach (var item in cartItems)
-            {
-                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product.Name, Price = item.Product.Price.ToString() });
-            }
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr" });
+
+            var total = cartItems.Sum(c => c.Product!.Price);
+            cartVm.Total = $"{total:#.00} kr";
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
