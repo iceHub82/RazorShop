@@ -3,7 +3,7 @@
 
 <div id="cart-div" class="d-flex">
     <div class="dropdown">
-        <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+        <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
             <i class="bi-cart-fill me-1"></i>
             Cart
             <span class="badge bg-dark text-white ms-1 rounded-pill">@Model.CartItemsCount</span>
@@ -13,6 +13,12 @@
 
                 @if (Model.CartItems!.Any())
                 {
+                    <div class="row">
+                        <div class="col">
+                            <strong>Your shopping cart</strong>
+                        </div>
+                    </div>
+
                     @foreach (var item in Model.CartItems!)
                     {
                         <div class="row">
@@ -32,9 +38,12 @@
 
                     <div class="row">
                         <div class="col">
+                            Total:
+                        </div>
+                        <div class="col">
                             @Model.Total
                         </div>
-                        
+
                     </div>
                 }
                 else
@@ -45,4 +54,4 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
