@@ -8,13 +8,13 @@ public class RazorShopDbContext : DbContext
     public RazorShopDbContext(DbContextOptions<RazorShopDbContext> options) : base(options)
     { }
 
-    public DbSet<Product> Products { get; set; }
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Cart> Carts { get; set; }
-    public DbSet<CartItem> CartItems { get; set; }
-    public DbSet<Size> Sizes { get; set; }
-    public DbSet<SizeType> SizeTypes { get; set; }
-    public DbSet<ProductSize> ProductSizes { get; set; }
+    public DbSet<Product>? Products { get; set; }
+    public DbSet<Category>? Categories { get; set; }
+    public DbSet<Cart>? Carts { get; set; }
+    public DbSet<CartItem>? CartItems { get; set; }
+    public DbSet<Size>? Sizes { get; set; }
+    public DbSet<SizeType>? SizeTypes { get; set; }
+    public DbSet<ProductSize>? ProductSizes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
