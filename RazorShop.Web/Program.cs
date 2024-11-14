@@ -34,9 +34,9 @@ using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<RazorShopDbContext>();
     db.Database.EnsureCreated();
 
-    var sizes = await db.Sizes.ToListAsync();
-    var sizeTypes = await db.SizeTypes.ToListAsync();
-    var categories = await db.Categories.ToListAsync();
+    var sizes = await db.Sizes!.ToListAsync();
+    var sizeTypes = await db.SizeTypes!.ToListAsync();
+    var categories = await db.Categories!.ToListAsync();
 
     var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
     var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
@@ -68,7 +68,7 @@ app.Use(async (context, next) => {
         var scopeFactory = context.RequestServices.GetRequiredService<IServiceScopeFactory>();
         using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<RazorShopDbContext>();
-        dbContext.Carts.Add(new Cart { CartGuid = guid, Created = DateTime.UtcNow });
+        dbContext.Carts!.Add(new Cart { CartGuid = guid, Created = DateTime.UtcNow });
         await dbContext.SaveChangesAsync();
     }
 

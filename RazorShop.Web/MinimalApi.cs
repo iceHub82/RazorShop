@@ -13,7 +13,7 @@ public static class MinimalApis
     {
         app.MapGet("/", async (RazorShopDbContext dbCtx) => {
 
-            var products = await dbCtx.Products
+            var products = await dbCtx.Products!
                 .AsNoTracking()
                 //.Where(x => x.SomeCondition)
                 .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = p.Price.ToString() })
@@ -35,7 +35,7 @@ public static class MinimalApis
 
         app.MapGet("/Product/{id}", async (HttpRequest request, HttpResponse response, RazorShopDbContext dbCtx, int id) =>
         {
-            var product = await dbCtx.Products
+            var product = await dbCtx.Products!
                 .Include(x => x.ProductSizes!)
                 .ThenInclude(x => x.Size).AsNoTracking().FirstAsync(p => p.Id == id);
 
@@ -61,8 +61,8 @@ public static class MinimalApis
         app.MapGet("/cart", async (HttpContext ctx, RazorShopDbContext dbCtx, IMemoryCache cache) => {
 
             var sessionId = ctx.Request.Cookies["CartSessionId"];
-            var cart = dbCtx.Carts.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
-            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+            var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
+            var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
             var cartVm = new CartVm();
             cartVm.CartItemsCount = cartItems.Count;
@@ -82,9 +82,9 @@ public static class MinimalApis
         app.MapGet("/cart/add/{id}", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache, int id, int checkedSize) =>
         {
             var sessionId = context.Request.Cookies["CartSessionId"];
-            var cart = dbCtx.Carts.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
+            var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
 
-            await dbCtx.CartItems.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = checkedSize == 0 ? null : checkedSize });
+            await dbCtx.CartItems!.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = checkedSize == 0 ? null : checkedSize });
             await dbCtx.SaveChangesAsync();
 
             var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
@@ -107,9 +107,9 @@ public static class MinimalApis
         app.MapDelete("/cart/delete/{id}", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache, int id) =>
         {
             var sessionId = context.Request.Cookies["CartSessionId"];
-            var cart = dbCtx.Carts.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
+            var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
 
-            dbCtx.CartItems.Remove(new CartItem { Id = id });
+            dbCtx.CartItems!.Remove(new CartItem { Id = id });
             await dbCtx.SaveChangesAsync();
 
             var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
