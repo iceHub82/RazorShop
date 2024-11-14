@@ -13,7 +13,7 @@
                 @if (Model.CartItems!.Any())
                 {
                     <div class="row">
-                        <div class="col">
+                        <div class="col text-center">
                             <strong>Your shopping cart</strong>
                         </div>
                     </div>
@@ -38,14 +38,19 @@
                         </div>
                     }
 
-                    <div class="row">
+                    <div class="row border-top">
                         <div class="col">
                             Total:
                         </div>
                         <div class="col">
                             @Model.Total
                         </div>
+                    </div>
 
+                    <div class="row">
+                        <div class="col">
+                            <button hx-get="/cart/list" hx-target="#section">Shopping Cart</button>
+                        </div>
                     </div>
                 }
                 else

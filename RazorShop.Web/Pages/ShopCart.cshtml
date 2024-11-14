@@ -1,0 +1,17 @@
+﻿@inherits RazorSliceHttpResult<ShopCartVm>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @(await RenderPartialAsync<Head>())
+</head>
+<body>
+    @(await RenderPartialAsync<Navigation>())
+    @(await RenderPartialAsync<Header>())
+    @(await RenderPartialAsync<ShopCart, ShopCartVm>(Model))
+    @(await RenderPartialAsync<Footer>())
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/js/site.js"></script>
+</body>
+</html>

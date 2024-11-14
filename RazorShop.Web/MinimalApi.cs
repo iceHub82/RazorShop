@@ -129,6 +129,27 @@ public static class MinimalApis
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
 
+        app.MapDelete("/cart/list", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache, int id) =>
+        {
+            var sessionId = context.Request.Cookies["CartSessionId"];
+            var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
+            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+
+            var cartVm = new ShopCartVm();
+            cartVm.CartItemsCount = cartItems.Count;
+
+            foreach (var item in cartItems)
+            {
+                var size = ((IEnumerable<Size>)cache.Get("sizes")!).Where(s => s.Id == item.SizeId).FirstOrDefault();
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
+            }
+
+            var total = cartItems.Sum(c => c.Product!.Price);
+            cartVm.Total = $"{total:#.00} kr";
+
+            return Results.Extensions.RazorSlice<Slices.ShopCart, ShopCartVm>(cartVm);
+        });
+
         app.MapGet("/Redirects", (int statusCode) => {
 
             if (statusCode == 404)
