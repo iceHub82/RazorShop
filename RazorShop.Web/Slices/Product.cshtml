@@ -12,7 +12,8 @@
             </div>
             <p class="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
             <div class="d-flex">
-                @* <input class="form-control text-center me-3" id="inputQuantity" type="num" value="1" style="max-width: 3rem" /> *@
+                <label for="quantityInput" class="form-label">Enter Quantity (Max: 3):</label>
+                <input type="number" id="quantityInput" class="form-control" min="1" max="3" placeholder="1 to 3">
                 <button hx-get="/cart/add/@Model.Id"
                         hx-include="[name='checkedSize']"
                         hx-target="#cart-div"

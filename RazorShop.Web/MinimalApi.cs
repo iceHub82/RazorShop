@@ -129,7 +129,7 @@ public static class MinimalApis
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
 
-        app.MapDelete("/cart/list", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache, int id) =>
+        app.MapGet("/cart/list", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache) =>
         {
             var sessionId = context.Request.Cookies["CartSessionId"];
             var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
