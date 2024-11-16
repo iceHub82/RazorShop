@@ -61,30 +61,35 @@ public static class MinimalApis
         app.MapGet("/cart", async (HttpContext ctx, RazorShopDbContext dbCtx, IMemoryCache cache) => {
 
             var sessionId = ctx.Request.Cookies["CartSessionId"];
-            var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
-            var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+            var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).FirstOrDefault();
 
             var cartVm = new CartVm();
-            cartVm.CartItemsCount = cartItems.Count;
 
-            foreach (var item in cartItems)
+            if (cart != null)
             {
-                var size = ((IEnumerable<Size>)cache.Get("sizes")!).Where(s => s.Id == item.SizeId).FirstOrDefault();
-                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
-            }
+                var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
-            var total = cartItems.Sum(c => c.Product!.Price);
-            cartVm.Total = $"{total:#.00} kr";
+                cartVm.CartItemsCount = cartItems.Count;
+
+                foreach (var item in cartItems)
+                {
+                    var size = ((IEnumerable<Size>)cache.Get("sizes")!).Where(s => s.Id == item.SizeId).FirstOrDefault();
+                    cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
+                }
+
+                var total = cartItems.Sum(c => c.Product!.Price);
+                cartVm.Total = $"{total:#.00} kr";
+            }
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
         });
 
-        app.MapGet("/cart/add/{id}", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache, int id, int checkedSize) =>
+        app.MapGet("/cart/add/{id}", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache, int id, int checkedSize, int quantity) =>
         {
             var sessionId = context.Request.Cookies["CartSessionId"];
             var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
 
-            await dbCtx.CartItems!.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = checkedSize == 0 ? null : checkedSize });
+            await dbCtx.CartItems!.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = checkedSize == 0 ? null : checkedSize, Quantity = quantity });
             await dbCtx.SaveChangesAsync();
 
             var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
@@ -98,7 +103,7 @@ public static class MinimalApis
                 cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
             }
 
-            var total = cartItems.Sum(c => c.Product!.Price);
+            var total = cartItems.Sum(c => c.Product!.Price * c.Quantity);
             cartVm.Total = $"{total:#.00} kr";
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
@@ -123,7 +128,7 @@ public static class MinimalApis
                 cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
             }
 
-            var total = cartItems.Sum(c => c.Product!.Price);
+            var total = cartItems.Sum(c => c.Product!.Price * c.Quantity);
             cartVm.Total = $"{total:#.00} kr";
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(cartVm);
