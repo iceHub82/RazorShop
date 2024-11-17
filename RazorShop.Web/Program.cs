@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using RazorShop.Web;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
+using RazorShop.Web.Apis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,12 +73,11 @@ app.Use(async (context, next) => {
     await next();
 });
 
-//app.UseRouting();
-
 app.UseSession();
 app.UseStatusCodePages();
 app.UseStaticFiles();
 app.MinimalApi();
+app.CartApi();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 
