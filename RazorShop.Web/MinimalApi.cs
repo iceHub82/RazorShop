@@ -69,15 +69,15 @@ public static class MinimalApis
             {
                 var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
-                cartVm.CartItemsCount = cartItems.Count;
+                cartVm.CartQuantity = cartItems.Sum(c => c.Quantity);
 
                 foreach (var item in cartItems)
                 {
                     var size = ((IEnumerable<Size>)cache.Get("sizes")!).Where(s => s.Id == item.SizeId).FirstOrDefault();
-                    cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
+                    cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name, Quantity = item.Quantity });
                 }
 
-                var total = cartItems.Sum(c => c.Product!.Price);
+                var total = cartItems.Sum(c => c.Product!.Price * c.Quantity);
                 cartVm.Total = $"{total:#.00} kr";
             }
 
@@ -95,12 +95,12 @@ public static class MinimalApis
             var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
             var cartVm = new CartVm();
-            cartVm.CartItemsCount = cartItems.Count;
+            cartVm.CartQuantity = cartItems.Sum(c => c.Quantity);
 
             foreach (var item in cartItems)
             {
                 var size = ((IEnumerable<Size>)cache.Get("sizes")!).Where(s => s.Id == item.SizeId).FirstOrDefault();
-                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name, Quantity = item.Quantity });
             }
 
             var total = cartItems.Sum(c => c.Product!.Price * c.Quantity);
@@ -120,12 +120,12 @@ public static class MinimalApis
             var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
 
             var cartVm = new CartVm();
-            cartVm.CartItemsCount = cartItems.Count;
+            cartVm.CartQuantity = cartItems.Sum(c => c.Quantity);
 
             foreach (var item in cartItems)
             {
                 var size = ((IEnumerable<Size>)cache.Get("sizes")!).Where(s => s.Id == item.SizeId).FirstOrDefault();
-                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name });
+                cartVm.CartItems!.Add(new CartItemVm { Id = item.Id, Name = item.Product!.Name, Price = $"{item.Product.Price:#.00} kr", Size = size?.Name, Quantity = item.Quantity });
             }
 
             var total = cartItems.Sum(c => c.Product!.Price * c.Quantity);
