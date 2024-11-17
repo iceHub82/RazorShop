@@ -45,10 +45,6 @@ using (var scope = app.Services.CreateScope()) {
     cache.Set("categories", categories, options);
 }
 
-using (var scope = app.Services.CreateScope()) {
-    
-}
-
 if (!app.Environment.IsDevelopment())
 {
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -80,7 +76,7 @@ app.Use(async (context, next) => {
 //app.UseRouting();
 
 app.UseSession();
-//app.UseStatusCodePages();
+app.UseStatusCodePages();
 app.UseStaticFiles();
 app.MinimalApi();
 

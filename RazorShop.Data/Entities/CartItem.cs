@@ -12,6 +12,9 @@ public class CartItem
     public Cart? Cart { get; set; }
     public int Quantity { get; set; }
     public int? SizeId { get; set; }
+    public bool Deleted { get; set; }
+    public DateTime Created { get; set; }
+    public DateTime? Updated { get; set; }
     public int ProductId { get; set; }
     public Product? Product { get; set; }
 }

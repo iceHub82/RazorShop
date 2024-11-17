@@ -67,7 +67,7 @@ public static class MinimalApis
 
             if (cart != null)
             {
-                var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+                var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id && !c.Deleted).Include(c => c.Product).ToListAsync();
 
                 cartVm.CartQuantity = cartItems.Sum(c => c.Quantity);
 
@@ -89,10 +89,21 @@ public static class MinimalApis
             var sessionId = context.Request.Cookies["CartSessionId"];
             var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
 
-            await dbCtx.CartItems!.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = checkedSize == 0 ? null : checkedSize, Quantity = quantity });
+            int? sizeId = checkedSize == 0 ? null : checkedSize;
+
+            var existingCartItem = dbCtx.CartItems!.FirstOrDefault(c => c.CartId == cart.Id && c.ProductId == id && c.SizeId == sizeId);
+
+            if (existingCartItem == null)
+                await dbCtx.CartItems!.AddAsync(new CartItem { CartId = cart.Id, ProductId = id, SizeId = sizeId, Quantity = quantity, Created = DateTime.UtcNow });
+            else
+            {
+                existingCartItem.Quantity += quantity;
+                existingCartItem.Updated = DateTime.UtcNow;
+            }
+
             await dbCtx.SaveChangesAsync();
 
-            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+            var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id && !c.Deleted).Include(c => c.Product).ToListAsync();
 
             var cartVm = new CartVm();
             cartVm.CartQuantity = cartItems.Sum(c => c.Quantity);
@@ -114,10 +125,12 @@ public static class MinimalApis
             var sessionId = context.Request.Cookies["CartSessionId"];
             var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
 
-            dbCtx.CartItems!.Remove(new CartItem { Id = id });
+            var cartItem = dbCtx.CartItems!.Find(id);
+            cartItem!.Deleted = true;
+            cartItem!.Updated = DateTime.UtcNow;
             await dbCtx.SaveChangesAsync();
 
-            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id && !c.Deleted).Include(c => c.Product).ToListAsync();
 
             var cartVm = new CartVm();
             cartVm.CartQuantity = cartItems.Sum(c => c.Quantity);
@@ -138,7 +151,7 @@ public static class MinimalApis
         {
             var sessionId = context.Request.Cookies["CartSessionId"];
             var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
-            var cartItems = await dbCtx.CartItems.Where(c => c.CartId == cart.Id).Include(c => c.Product).ToListAsync();
+            var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id && c.Deleted!).Include(c => c.Product).ToListAsync();
 
             var cartVm = new ShopCartVm();
             cartVm.CartItemsCount = cartItems.Count;
