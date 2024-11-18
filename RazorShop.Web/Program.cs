@@ -76,8 +76,9 @@ app.Use(async (context, next) => {
 app.UseSession();
 app.UseStatusCodePages();
 app.UseStaticFiles();
-app.MinimalApi();
+app.SiteApi();
 app.CartApi();
+app.ShopCartApi();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 

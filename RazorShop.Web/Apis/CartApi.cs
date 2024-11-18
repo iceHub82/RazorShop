@@ -57,17 +57,6 @@ public static class CartApis
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
         });
-
-        //app.MapGet("/cart/list", async (HttpContext context, RazorShopDbContext dbCtx, IMemoryCache cache) =>
-        //{
-        //    var sessionId = context.Request.Cookies["CartSessionId"];
-        //    var cart = dbCtx.Carts!.Where(c => c.CartGuid == Guid.Parse(sessionId!)).First();
-        //    var cartItems = await dbCtx.CartItems!.Where(c => c.CartId == cart.Id && c.Deleted!).Include(c => c.Product).ToListAsync();
-
-        //    var cartVm = PopulateCartView(cartItems, cache);
-
-        //    return Results.Extensions.RazorSlice<Slices.ShopCart, ShopCartVm>(cartVm);
-        //});
     }
 
     private static async Task<Cart> GetCart(HttpContext http, RazorShopDbContext db)
@@ -85,7 +74,7 @@ public static class CartApis
             await db.SaveChangesAsync();
         }
         else
-            cart = await db.Carts!.Where(c => c.CartGuid == Guid.Parse(cartSessionGuid!)).FirstAsync();
+            cart = await db.Carts!.Where(c => c.CartGuid == Guid.Parse(cartSessionGuid!)).FirstOrDefaultAsync();
 
         return cart;
     }

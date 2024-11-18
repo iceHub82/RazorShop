@@ -1,17 +1,16 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using RazorShop.Web.Models.ViewModels;
 using RazorShop.Data;
+using RazorShop.Web.Models.ViewModels;
 
 namespace RazorShop.Web.Apis;
 
-public static class MinimalApis
+public static class SiteApis
 {
-    public static void MinimalApi(this WebApplication app)
+    public static void SiteApi(this WebApplication app)
     {
         app.MapGet("/", async (RazorShopDbContext dbCtx) =>
         {
-
             var products = await dbCtx.Products!
                 .AsNoTracking()
                 //.Where(x => x.SomeCondition)
@@ -48,7 +47,7 @@ public static class MinimalApis
                     productVm.ProductSizes!.Add(new ProductSizeVm { Id = size.SizeId, Name = size.Size!.Name });
             }
 
-            if (IsHtmx(request))
+            if (ApiUtil.IsHtmx(request))
             {
                 response.Headers.Append("Vary", "HX-Request");
                 return Results.Extensions.RazorSlice<Slices.Product, ProductVm>(productVm);
@@ -70,7 +69,7 @@ public static class MinimalApis
 
         app.MapGet("/Error", (HttpContext context) =>
         {
-            if (IsHtmx(context.Request))
+            if (ApiUtil.IsHtmx(context.Request))
             {
                 context.Response.Headers["HX-Target"] = "body";
 
@@ -91,10 +90,5 @@ public static class MinimalApis
 
             return Results.Extensions.RazorSlice<Pages.Error>();
         });
-    }
-
-    static bool IsHtmx(HttpRequest request)
-    {
-        return request.Headers["hx-request"] == "true";
     }
 }
