@@ -76,7 +76,7 @@ public static class CartApis
         else
             cart = await db.Carts!.Where(c => c.CartGuid == Guid.Parse(cartSessionGuid!)).FirstOrDefaultAsync();
 
-        return cart;
+        return cart!;
     }
 
     private static async Task<List<CartItem>>? GetCartItems(int cartId, RazorShopDbContext db)
