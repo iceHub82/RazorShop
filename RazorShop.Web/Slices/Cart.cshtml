@@ -2,7 +2,7 @@
 
 <div id="cart-div" class="d-flex">
     <div class="dropdown">
-        <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        <button id="ddBtn" class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
             <i class="bi-cart-fill me-1"></i>
             Cart
             <span class="badge bg-dark text-white ms-1 rounded-pill">@Model.CartQuantity</span>
@@ -56,12 +56,13 @@
                             @Model.Total
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col">
-                            <button hx-get="/shoppingcart"
+                            <button hx-get="/ShoppingCart"
                                     hx-target="#section"
-                                    hx-push-url="true">
+                                    hx-push-url="true" 
+                                    hx-swap="outerHTML"
+                                    hx-on:htmx:before-request="$('#ddBtn').dropdown('hide');">
                                 Shopping Cart</button>
                         </div>
                     </div>

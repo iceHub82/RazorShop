@@ -1,60 +1,75 @@
 ﻿@inherits RazorSliceHttpResult<ShopCartVm>
 
-<div class="container my-5">
-    <h1 class="text-center mb-4">Shopping Cart</h1>
-    <div class="row">
-        <!-- Cart Items -->
-        <div class="col-md-8">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Product</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Subtotal</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Product 1</td>
-                        <td>$10.00</td>
-                        <td>
-                            <input type="number" class="form-control" value="1" min="1">
-                        </td>
-                        <td>$10.00</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm">Remove</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Product 2</td>
-                        <td>$15.00</td>
-                        <td>
-                            <input type="number" class="form-control" value="2" min="1">
-                        </td>
-                        <td>$30.00</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm">Remove</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Cart Summary -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Cart Summary</h5>
-                    <p class="card-text">
-                        <strong>Subtotal:</strong> $40.00 <br>
-                        <strong>Tax (5%):</strong> $2.00 <br>
-                        <strong>Total:</strong> $42.00
-                    </p>
-                    <button class="btn btn-primary btn-block">Checkout</button>
+<section id="section" class="py-5">
+    <div class="container px-4 px-lg-5 mt-5">
+        <div class="row">
+            <div class="col-6">
+                <div class="row">
+                    <div class="col">
+                        <h1 class="mb-2">Your shopping basket (@Model.CartQuantity) items</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        Will be sent Today!
+                    </div>
+                </div>
+                @foreach (var item in Model.ShopCartItems!)
+                {
+                    <div class="row">
+                        <div class="col">
+                           Image
+                        </div>
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    Brand
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    @item.Name
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    @item.Description
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    @item.Price
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    @item.Size
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            Will be sent Today!
+                        </div>
+                        <div class="col">
+                            Will be sent Today!
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Cart Summary</h5>
+                        <p class="card-text">
+                            <strong>Subtotal:</strong> $40.00 <br>
+                            <strong>Tax (5%):</strong> $2.00 <br>
+                            <strong>Total:</strong> $42.00
+                        </p>
+                        <button class="btn btn-primary btn-block">Checkout</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <div id="header" hx-swap-oob="delete"></div>
+</section>

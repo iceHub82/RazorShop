@@ -7,7 +7,7 @@
 </head>
 <body>
     @(await RenderPartialAsync<Navigation>())
-    @(await RenderPartialAsync<Header>())
+@*     @(await RenderPartialAsync<Header>()) *@
     @(await RenderPartialAsync<ShopCart, ShopCartVm>(Model))
     @(await RenderPartialAsync<Footer>())
 

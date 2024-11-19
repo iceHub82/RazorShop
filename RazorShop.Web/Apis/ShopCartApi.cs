@@ -10,7 +10,7 @@ public static class ShopCartApis
 {
     public static void ShopCartApi(this WebApplication app)
     {
-        app.MapGet("/shoppingcart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
+        app.MapGet("/ShoppingCart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
         {
             var cart = await GetCart(http, db);
 
@@ -61,9 +61,8 @@ public static class ShopCartApis
         var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
 
         return new ShopCartVm {
-            //CartQuantity = cartItems.Sum(c => c.Quantity),
-            ShopCartItems = items.Select(item => new ShopCartItemVm
-            {
+            CartQuantity = items.Sum(c => c.Quantity),
+            ShopCartItems = items.Select(item => new ShopCartItemVm{
                 Id = item.Id,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,

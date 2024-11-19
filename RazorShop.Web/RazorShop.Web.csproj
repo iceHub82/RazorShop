@@ -14,4 +14,8 @@
     <ProjectReference Include="..\RazorShop.Data\RazorShop.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\img\products\" />
+  </ItemGroup>
+
 </Project>

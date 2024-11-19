@@ -2,9 +2,9 @@
 
 public class ShopCartVm
 {
-    public int ShopCartItemsCount { get; set; }
     public List<ShopCartItemVm>? ShopCartItems { get; set; } = new();
     public string? Total { get; set; }
+    public int CartQuantity { get; set; }
 }
 
 public class ShopCartItemVm
