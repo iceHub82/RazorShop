@@ -77,8 +77,8 @@ app.UseSession();
 app.UseStatusCodePages();
 app.UseStaticFiles();
 app.SiteApi();
+app.ShoppingCartApi();
 app.CartApi();
-app.ShopCartApi();
 app.ProductApi();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");

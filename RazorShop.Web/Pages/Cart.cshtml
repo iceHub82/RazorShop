@@ -1,4 +1,4 @@
-﻿@inherits RazorSliceHttpResult<ShopCartVm>
+﻿@inherits RazorSliceHttpResult<CartVm>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,8 +7,7 @@
 </head>
 <body>
     @(await RenderPartialAsync<Navigation>())
-@*     @(await RenderPartialAsync<Header>()) *@
-    @(await RenderPartialAsync<ShopCart, ShopCartVm>(Model))
+    @(await RenderPartialAsync<Cart, CartVm>(Model))
     @(await RenderPartialAsync<Footer>())
 
     <script src="/lib/jquery/dist/jquery.min.js"></script>

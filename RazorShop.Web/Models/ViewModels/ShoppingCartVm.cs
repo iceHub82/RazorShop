@@ -1,13 +1,13 @@
 ﻿namespace RazorShop.Web.Models.ViewModels;
 
-public class ShopCartVm
+public class ShoppingCartVm
 {
-    public List<ShopCartItemVm>? ShopCartItems { get; set; } = new();
-    public string? Total { get; set; }
-    public int CartQuantity { get; set; }
+    public int ShoppingCartQuantity { get; set; }
+    public List<ShoppingCartItemVm>? ShoppingCartItems { get; set; } = new();
+    public string? ShoppingCartTotal { get; set; }
 }
 
-public class ShopCartItemVm
+public class ShoppingCartItemVm
 {
     public int Id { get; set; }
     public string? Name { get; set; }

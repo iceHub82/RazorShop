@@ -1,11 +1,10 @@
-﻿
-namespace RazorShop.Web.Models.ViewModels;
+﻿namespace RazorShop.Web.Models.ViewModels;
 
 public class CartVm
 {
-    public int CartQuantity { get; set; }
     public List<CartItemVm>? CartItems { get; set; } = new();
     public string? Total { get; set; }
+    public int CartQuantity { get; set; }
 }
 
 public class CartItemVm
