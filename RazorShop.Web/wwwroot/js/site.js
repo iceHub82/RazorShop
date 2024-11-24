@@ -1,3 +1,3 @@
-﻿$(document).on('change', '#productSize', function() {
+﻿$(document).on('change', '#productSize', function () {
     $('#checkedSize').val($(this).val());
 });

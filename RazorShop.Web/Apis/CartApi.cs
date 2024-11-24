@@ -53,9 +53,46 @@ public static class CartApis
             await db.SaveChangesAsync();
 
             var items = await GetCartItems(cart.Id, db)!;
-            var vm = GetShoppingCartViewModel(items, cache);
+            var shoppingCartVm = GetShoppingCartViewModel(items, cache);
 
-            return Results.Extensions.RazorSlice<Slices.ShoppingCart, ShoppingCartVm>(vm!);
+            // We need to check if we are on the checkoutcart page to update both shopping cart
+            // and checkout cart. Otherwise only update shopping cart
+            if (http.Request.Headers.TryGetValue("Referer", out var referer)) {
+                if (Uri.TryCreate(referer, UriKind.Absolute, out var refererUri)) {
+                    if (refererUri.PathAndQuery == "/Cart")
+                    {
+                        var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
+
+                        var vm = new UpdateCheckoutCartVm();
+                        vm.CheckoutCartVm = checkoutCartVm;
+                        vm.ShoppingCartVm = shoppingCartVm;
+
+                        return Results.Extensions.RazorSlice<Slices.CheckoutCartUpdate, UpdateCheckoutCartVm>(vm!);
+                    }
+                }
+            }
+
+            return Results.Extensions.RazorSlice<Slices.ShoppingCart, ShoppingCartVm>(shoppingCartVm!);
+        });
+
+        app.MapDelete("/checkoutcart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
+        {
+            var cart = await GetCart(http, db);
+
+            var item = db.CartItems!.Find(id);
+            item!.Deleted = true;
+            item!.Updated = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            var items = await GetCartItems(cart.Id, db)!;
+            var shoppingCartVm = GetShoppingCartViewModel(items, cache);
+            var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
+
+            var vm = new UpdateCheckoutCartVm();
+            vm.CheckoutCartVm = checkoutCartVm;
+            vm.ShoppingCartVm = shoppingCartVm;
+
+            return Results.Extensions.RazorSlice<Slices.CheckoutCartUpdate, UpdateCheckoutCartVm>(vm!);
         });
 
         app.MapGet("/Cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
