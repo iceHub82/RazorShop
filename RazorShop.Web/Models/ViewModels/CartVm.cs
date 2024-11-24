@@ -33,3 +33,9 @@ public class CheckoutCartVm
     public string? CheckoutCartTotal { get; set; }
     public int CheckoutCartQuantity { get; set; }
 }
+
+public class UpdateCheckoutCartVm
+{
+    public ShoppingCartVm? ShoppingCartVm { get; set; }
+    public CheckoutCartVm? CheckoutCartVm { get; set; }
+}
