@@ -1,4 +1,5 @@
 ﻿@inherits RazorSliceHttpResult<UpdateCheckoutCartVm>
+
 <div id="cart-div" hx-swap-oob="true">
     @(await RenderPartialAsync<ShoppingCart, ShoppingCartVm>(Model.ShoppingCartVm!))
 </div>

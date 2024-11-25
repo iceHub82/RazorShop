@@ -72,7 +72,7 @@ public static class CartApis
                 }
             }
 
-            return Results.Extensions.RazorSlice<Slices.ShoppingCart, ShoppingCartVm>(shoppingCartVm!);
+            return Results.Extensions.RazorSlice<Slices.ShoppingCartDelete, ShoppingCartVm>(shoppingCartVm!);
         });
 
         app.MapDelete("/checkoutcart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
@@ -88,11 +88,11 @@ public static class CartApis
             var shoppingCartVm = GetShoppingCartViewModel(items, cache);
             var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
 
-            var vm = new UpdateCheckoutCartVm();
+            var vm = new DeleteCheckoutCartVm();
             vm.CheckoutCartVm = checkoutCartVm;
             vm.ShoppingCartVm = shoppingCartVm;
 
-            return Results.Extensions.RazorSlice<Slices.CheckoutCartUpdate, UpdateCheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Slices.CheckoutCartDelete, DeleteCheckoutCartVm>(vm!);
         });
 
         app.MapGet("/Cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>

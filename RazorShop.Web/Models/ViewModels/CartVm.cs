@@ -39,3 +39,9 @@ public class UpdateCheckoutCartVm
     public ShoppingCartVm? ShoppingCartVm { get; set; }
     public CheckoutCartVm? CheckoutCartVm { get; set; }
 }
+
+public class DeleteCheckoutCartVm
+{
+    public ShoppingCartVm? ShoppingCartVm { get; set; }
+    public CheckoutCartVm? CheckoutCartVm { get; set; }
+}

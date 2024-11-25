@@ -53,6 +53,7 @@
                         <button hx-get="/shoppingcart/add/@Model.Id"
                                 hx-include="[name='size'], [name='quantity']"
                                 hx-target="#cart-div"
+                                hx-swap="outerHTML"
                                 class="btn btn-outline-dark flex-shrink-0">
                             <i class="bi-cart-fill me-1"></i>
                             Add to cart

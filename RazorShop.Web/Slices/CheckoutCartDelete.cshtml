@@ -1,0 +1,73 @@
+﻿@inherits RazorSliceHttpResult<DeleteCheckoutCartVm>
+
+<span id="cart-quantity" class="badge bg-dark text-white ms-1 rounded-pill" hx-swap-oob="true">
+    @Model.ShoppingCartVm!.ShoppingCartQuantity
+</span>
+
+<div id="shopping-cart-dropdown" class="container" hx-swap-oob="true">
+    @if (Model.ShoppingCartVm.ShoppingCartItems!.Any())
+    {
+        <div class="row">
+            <div class="col text-center">
+                <strong>Your shopping cart</strong>
+            </div>
+        </div>
+
+        @foreach (var item in Model.ShoppingCartVm.ShoppingCartItems!)
+        {
+            <div class="row">
+                <div class="col">
+                    @item.Name
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    @item.Description
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    @item.Size
+                </div>
+                <div class="col">
+                    @item.Price
+                </div>
+                <div hx-delete="/shoppingcart/delete/@item.Id"
+                     hx-target="#shopping-cart-dropdown"
+                     role="button" class="col">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                    </svg>
+                </div>
+                <div class="col">
+                    Quantity: @item.Quantity
+                </div>
+            </div>
+        }
+
+        <div class="row border-top">
+            <div class="col">
+                Total:
+            </div>
+            <div class="col">
+                @Model.ShoppingCartVm.ShoppingCartTotal
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <button hx-get="/Cart"
+                        hx-target="#section"
+                        hx-push-url="true"
+                        hx-swap="outerHTML">
+                    Shopping Cart
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h4>Your shopping cart is empty</h4>
+    }
+</div>
+
+@(await RenderPartialAsync<CheckoutCart, CheckoutCartVm>(Model.CheckoutCartVm!))
