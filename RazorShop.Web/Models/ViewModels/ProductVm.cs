@@ -1,5 +1,11 @@
 ﻿namespace RazorShop.Web.Models.ViewModels;
 
+public class ProductsVm
+{
+    public string? Category { get; set; }
+    public List<ProductVm>? Products { get; set; } = new();
+}
+
 public class ProductVm
 {
     public int Id { get; set; }

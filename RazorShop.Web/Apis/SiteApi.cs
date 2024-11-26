@@ -9,14 +9,15 @@ public static class SiteApis
 {
     public static void SiteApi(this WebApplication app)
     {
-        app.MapGet("/", async (RazorShopDbContext dbCtx) =>
+        app.MapGet("/", async (RazorShopDbContext db) =>
         {
-            var products = await dbCtx.Products!
+            ProductsVm vm = new();
+            vm.Products = await db.Products!
                 .AsNoTracking()
                 .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = p.Price.ToString() })
                 .ToListAsync();
 
-            return Results.Extensions.RazorSlice<Pages.Home, List<ProductVm>>(products);
+            return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
         });
 
         app.MapGet("/Redirects", (int statusCode) =>

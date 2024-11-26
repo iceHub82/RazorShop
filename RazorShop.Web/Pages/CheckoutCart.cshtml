@@ -1,16 +1,10 @@
 ﻿@inherits RazorSliceHttpResult<CheckoutCartVm>
+@implements IUsesLayout<_Layout, LayoutModel>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @(await RenderPartialAsync<Head>())
-</head>
-<body>
-    @(await RenderPartialAsync<Navigation>())
-    @(await RenderPartialAsync<CheckoutCart, CheckoutCartVm>(Model))
-    @(await RenderPartialAsync<Footer>())
+@(await RenderPartialAsync<CheckoutCart, CheckoutCartVm>(Model))
 
-    <script src="/lib/jquery/dist/jquery.min.js"></script>
-    <script src="/js/site.js"></script>
-</body>
-</html>
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Cart Checkout",
+        };
+}

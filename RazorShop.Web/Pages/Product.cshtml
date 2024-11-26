@@ -1,17 +1,11 @@
 ﻿@inherits RazorSliceHttpResult<ProductVm>
+@implements IUsesLayout<_Layout, LayoutModel>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @(await RenderPartialAsync<Head>())
-</head>
-<body>
-    @(await RenderPartialAsync<Navigation>())
-    @(await RenderPartialAsync<Header>())
-    @(await RenderPartialAsync<Product, ProductVm>(Model))
-    @(await RenderPartialAsync<Footer>())
+@(await RenderPartialAsync<Product, ProductVm>(Model))
 
-    <script src="/lib/jquery/dist/jquery.min.js"></script>
-    <script src="/js/site.js"></script>
-</body>
-</html>
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Product",
+            HasHeader = true
+        };
+}

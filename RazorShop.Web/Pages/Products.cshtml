@@ -1,17 +1,11 @@
-﻿@inherits RazorSliceHttpResult<List<ProductVm>>
+﻿@inherits RazorSliceHttpResult<ProductsVm>
+@implements IUsesLayout<_Layout, LayoutModel>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @(await RenderPartialAsync<Head>())
-</head>
-<body>
-    @(await RenderPartialAsync<Navigation>())
-    @(await RenderPartialAsync<Header>())
-    @(await RenderPartialAsync<Products, List<ProductVm>>(Model))
-    @(await RenderPartialAsync<Footer>())
+@(await RenderPartialAsync<Products, ProductsVm>(Model))
 
-    <script src="/lib/jquery/dist/jquery.min.js"></script>
-    <script src="/js/site.js"></script>
-</body>
-</html>
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = Model.Category == null ? "All Products" : $"Products | {Model.Category}",
+            HasHeader = true
+        };
+}

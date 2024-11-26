@@ -50,7 +50,7 @@
                         </div>
                     }
 
-                    <div class="row border-top">
+                    <div class="row pt-2 border-top">
                         <div class="col">
                             Total:
                         </div>
@@ -58,14 +58,13 @@
                             @Model.ShoppingCartTotal
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row pt-2">
                         <div class="col">
                             <button hx-get="/Cart"
                                     hx-target="#section"
                                     hx-push-url="true" 
                                     hx-swap="outerHTML"
-                                    >
-                                Shopping Cart</button>
+                                    class="btn btn-primary w-100">Shopping Cart</button>
                         </div>
                     </div>
                 }

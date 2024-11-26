@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
 using RazorShop.Web.Models.ViewModels;
 
@@ -8,24 +9,33 @@ public static class ProductApis
 {
     public static void ProductApi(this WebApplication app)
     {
-        app.MapGet("/Products", async (RazorShopDbContext db) =>
+        app.MapGet("/Products", async (RazorShopDbContext db, HttpRequest request, HttpResponse response) =>
         {
-            var products = await GetProducts(db);
-
-            return Results.Extensions.RazorSlice<Slices.Products, List<ProductVm>>(products);
-        });
-
-        app.MapGet("/Products/{category}", async (RazorShopDbContext db, HttpRequest request, HttpResponse response, string category) =>
-        {
-            var products = await GetProductsByCategoryName(db, category);
+            ProductsVm vm = new();
+            vm.Products = await GetProducts(db);
 
             if (ApiUtil.IsHtmx(request))
             {
                 response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Slices.Products, List<ProductVm>>(products!);
+                return Results.Extensions.RazorSlice<Slices.Products, ProductsVm>(vm);
             }
 
-            return Results.Extensions.RazorSlice<Pages.Products, List<ProductVm>>(products);
+            return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
+        });
+
+        app.MapGet("/Products/{category}", async (RazorShopDbContext db, HttpRequest request, HttpResponse response, string category) =>
+        {
+            ProductsVm vm = new();
+            vm.Products = await GetProductsByCategoryName(db, category);
+            vm.Category = category;
+
+            if (ApiUtil.IsHtmx(request))
+            {
+                response.Headers.Append("Vary", "HX-Request");
+                return Results.Extensions.RazorSlice<Slices.Products, ProductsVm>(vm);
+            }
+
+            return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
         app.MapGet("/Product/{id}", async (HttpRequest request, HttpResponse response, RazorShopDbContext dbCtx, int id) =>

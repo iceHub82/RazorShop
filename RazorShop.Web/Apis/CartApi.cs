@@ -196,9 +196,9 @@ public static class CartApis
         return new CheckoutCartVm
         {
             CheckoutCartQuantity = items.Sum(c => c.Quantity),
-            CheckoutCartItems = items.Select(item => new CheckoutCartItemVm
-            {
+            CheckoutCartItems = items.Select(item => new CheckoutCartItemVm {
                 Id = item.Id,
+                ProductId = item.ProductId,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,
                 Price = $"{item.Product.Price:#.00} kr",
