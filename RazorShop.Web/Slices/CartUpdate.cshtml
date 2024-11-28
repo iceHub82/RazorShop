@@ -3,5 +3,5 @@
     @(await RenderPartialAsync<ShoppingCart, ShoppingCartVm>(Model.ShoppingCartVm!))
 </div>
 <div id="section" hx-swap-oob="true">
-    @(await RenderPartialAsync<CheckoutCart, CheckoutCartVm>(Model.CheckoutCartVm!))
+    @(await RenderPartialAsync<Cart, CheckoutCartVm>(Model.CheckoutCartVm!))
 </div>

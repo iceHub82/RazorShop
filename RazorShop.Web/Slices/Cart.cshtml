@@ -114,7 +114,13 @@
                                 </div>
                                 <div class="row pt-2">
                                     <div class="col">
-                                        <button class="btn btn-primary w-100">Checkout</button>
+                                        <button hx-get="/Checkout"
+                                                hx-target="#section"
+                                                hx-push-url="true"
+                                                hx-swap="outerHTML"
+                                                class="btn btn-primary w-100">
+                                            Checkout
+                                        </button>
                                     </div>
                                 </div>
                             </div>

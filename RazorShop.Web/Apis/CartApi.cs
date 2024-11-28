@@ -67,7 +67,7 @@ public static class CartApis
                         vm.CheckoutCartVm = checkoutCartVm;
                         vm.ShoppingCartVm = shoppingCartVm;
 
-                        return Results.Extensions.RazorSlice<Slices.CheckoutCartUpdate, UpdateCheckoutCartVm>(vm!);
+                        return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
                     }
                 }
             }
@@ -92,7 +92,7 @@ public static class CartApis
             vm.CheckoutCartVm = checkoutCartVm;
             vm.ShoppingCartVm = shoppingCartVm;
 
-            return Results.Extensions.RazorSlice<Slices.CheckoutCartDelete, DeleteCheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Slices.CartDelete, DeleteCheckoutCartVm>(vm!);
         });
 
         app.MapGet("/Cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
@@ -106,10 +106,10 @@ public static class CartApis
             if (ApiUtil.IsHtmx(request))
             {
                 response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Slices.CheckoutCart, CheckoutCartVm>(vm!);
+                return Results.Extensions.RazorSlice<Slices.Cart, CheckoutCartVm>(vm!);
             }
 
-            return Results.Extensions.RazorSlice<Pages.CheckoutCart, CheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Pages.Cart, CheckoutCartVm>(vm!);
         });
 
         app.MapGet("/cart/updatecartitemquantity/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity) =>
@@ -127,7 +127,7 @@ public static class CartApis
             vm.ShoppingCartVm = shoppingCartVm;
             vm.CheckoutCartVm = checkoutCartVm;
 
-            return Results.Extensions.RazorSlice<Slices.CheckoutCartUpdate, UpdateCheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
         });
     }
 
