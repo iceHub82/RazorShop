@@ -13,116 +13,256 @@
         else
         {
             <div class="row">
-                <div class="col-6">
-                    <div class="row">
-                        <div class="col">
-                            <h1 class="mb-2">Your shopping cart (@Model.CheckoutCartQuantity items)</h1>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            Will be sent Today!
-                        </div>
-                    </div>
-                    @foreach (var item in Model.CheckoutCartItems!)
-                    {
-                        <div class="row border-bottom">
-                            <div class="col">
-                                Image
-                            </div>
-                            <div class="col">
-                                <div class="row">
-                                    <div class="col">
-                                        Brand
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <a hx-get="/Product/@item.ProductId"
-                                           hx-target="#section"
-                                           hx-push-url="true" class="text-primary text-decoration-underline" style="cursor: pointer;">
-                                           @item.Name</a>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        @item.Description
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        @item.Price
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        @item.Size
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <select id="quantityDd" hx-get="/cart/updatecartitemquantity/@item.Id"
-                                        hx-trigger="change"
-                                        hx-target="#section"
-                                        hx-include="this"
-                                        name="quantity" class="form-select">
-                                    @for (int i = 1; i <= 10; i++)
-                                    {
-                                        <option value="@i" @(item.Quantity == i ? "selected" : string.Empty)>@i</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col">
-                                <div hx-delete="/checkoutcart/delete/@item.Id"
-                                     hx-target="#section"
-                                     role="button" class="col">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-                <div class="col-6">
-                    <div class="card">
+                <div class="col">
+                    <div class="card border-0 bg-light">
                         <div class="card-body">
                             <div class="container">
-                                <div class="row pb-2">
+                                <div class="row">
                                     <div class="col">
-                                        Subtotal
+                                        <h1 class="mb-2">Your shopping cart (@Model.CheckoutCartQuantity items)</h1>
+                                    </div>
+                                </div>
+                                <div class="row border-bottom">
+                                    <div class="col">
+                                        Product
+                                    </div>
+                                    <div class="col">
+                                        Quantity
                                     </div>
                                     <div class="col text-end">
-                                        @Model.CheckoutCartTotal
+                                        Price
                                     </div>
                                 </div>
-                                <div class="row pb-2">
+                                @foreach (var item in Model.CheckoutCartItems!)
+                                {
+                                    <div class="row border-bottom align-items-center">
+                                        <div class="col">
+                                            Image
+                                        </div>
+                                        <div class="col">
+                                            <div class="row">
+                                                <div class="col">
+                                                    Brand
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <a hx-get="/Product/@item.ProductId"
+                                                       hx-target="#section"
+                                                       hx-push-url="true" class="text-primary text-decoration-underline" style="cursor: pointer;">
+                                                        @item.Name
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    @item.Description
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    @item.Size
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <select id="quantityDd" hx-get="/cart/updatecartitemquantity/@item.Id"
+                                                            hx-trigger="change"
+                                                            hx-target="#section"
+                                                            hx-include="this"
+                                                            name="quantity" class="form-select">
+                                                        @for (int i = 1; i <= 10; i++)
+                                                        {
+                                                            <option value="@i" @(item.Quantity == i ? "selected" : string.Empty)>@i</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col">
+                                                    <div hx-delete="/cart/delete/@item.Id"
+                                                         hx-target="#section"
+                                                         role="button" class="col">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                                            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col text-end">
+                                            @item.Price
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="row">
+                                    <div class="col-8"></div>
+                                    <div class="col-4">
+                                        <div class="row pb-2">
+                                            <div class="col">
+                                                Subtotal
+                                            </div>
+                                            <div class="col text-end">
+                                                @Model.CheckoutCartTotal
+                                            </div>
+                                        </div>
+                                        <div class="row pb-2">
+                                            <div class="col">
+                                                Delivery
+                                            </div>
+                                            <div class="col text-end">
+                                                0,00 kr
+                                            </div>
+                                        </div>
+                                        <div class="row pt-2 border-top">
+                                            <div class="col">
+                                                <strong>Total</strong><span class="text-muted" style="font-size: 0.7rem;"> VAT included</span>
+                                            </div>
+                                            <div class="col text-end">
+                                                <strong>@Model.CheckoutCartTotal</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-0">
+
+            <form hx-post="/submit-order-form">
+                <input type="text" name="username" placeholder="Enter your username">
+                <input type="password" name="password" placeholder="Enter your password">
+                <button type="submit">Submit</button>
+            </form>
+
+            <div class="row">
+                <div class="col">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <div class="container">
+                                <div class="row">
                                     <div class="col">
-                                        Delivery
-                                    </div>
-                                    <div class="col text-end">
-                                        0,00 kr
+                                        <h1 class="mb-2">Personal information</h1>
                                     </div>
                                 </div>
-                                <div class="row pt-2 border-top">
+                                <h4 class="mb-3">Fakturaadresse</h4>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <label for="billing-first-name" class="form-label">Fornavn *</label>
+                                        <input type="text" id="billing-first-name" class="form-control" maxlength="30" autocomplete="billing given-name" required>
+                                    </div>
+                                    <div class="col-3">
+                                        <label for="billing-last-name" class="form-label">Efternavn *</label>
+                                        <input type="text" id="billing-last-name" class="form-control" maxlength="30" autocomplete="billing family-name" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-3">
+                                        <label for="billing-address" class="form-label">Adresse *</label>
+                                        <input type="text" id="billing-address" class="form-control" maxlength="40" autocomplete="billing address-line1" required>
+                                    </div>
+                                    <div class="col-3">
+                                        <label for="billing-postcode" class="form-label">Postnummer *</label>
+                                        <input type="text" id="billing-postcode" class="form-control" inputmode="numeric" autocomplete="billing postal-code" required>
+                                    </div>
+                                    <div class="col-3">
+                                        <label for="billing-city" class="form-label">By *</label>
+                                        <input type="text" id="billing-city" class="form-control" maxlength="30" autocomplete="billing address-level2" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <label for="country-select-dropdown" class="form-label">Land</label>
+                                        <select id="country-select-dropdown" class="form-select">
+                                            <option value="DNK">Danmark</option>
+                                            <option value="FRO">Færøerne</option>
+                                            <option value="GRL">Grønland</option>
+                                            <option value="ISL">Island</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col">
-                                        <strong>Total</strong><span class="text-muted" style="font-size: 0.7rem;"> VAT included</span>
-                                    </div>
-                                    <div class="col text-end">
-                                        <strong>@Model.CheckoutCartTotal</strong>
-                                    </div>
-                                </div>
-                                <div class="row pt-2">
-                                    <div class="col">
-                                        <button hx-get="/Checkout"
-                                                hx-target="#section"
-                                                hx-push-url="true"
-                                                hx-swap="outerHTML"
-                                                class="btn btn-primary w-100">
-                                            Checkout
-                                        </button>
+                                        <div class="form-check mt-4">
+                                            <input hx-get="/cart/billing-address"
+                                                   hx-trigger="change" 
+                                                   hx-target="#billing-address-div"
+                                                   hx-include="[name='billingAddressCb']"
+                                                   type="checkbox" name="billingAddressCb" class="form-check-input">
+                                            <label for="alternative-address" class="form-check-label">Vil du sende til en alternativ leveringsadresse?</label>
+                                        </div>
                                     </div>
                                 </div>
+                                <div id="billing-address-div"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-0">
+
+            <div class="row">
+                <div class="col">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <div class="container">
+                                <h4 class="mb-3">Kontaktoplysninger</h4>
+                                <div class="row g-3">
+                                    <div class="col-4">
+                                        <label for="contact-email" class="form-label">E-mail *</label>
+                                        <input type="email" id="contact-email" class="form-control" maxlength="100" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label for="contact-phone" class="form-label">Mobilnummer (8 cifre) *</label>
+                                        <input type="tel" id="contact-phone" class="form-control" inputmode="numeric" required>
+                                    </div>
+                                </div>
+                                <div class="form-check mt-4">
+                                    <input type="checkbox" id="newsletter" class="form-check-input">
+                                    <label for="newsletter" class="form-check-label">
+                                        Tilmeld dig vores nyhedsbrev og få skræddersyede tilbud via e-mail med op til 50 % rabat på udvalgte varer.
+                                    </label>
+                                    <div class="mt-2">
+                                        <small>
+                                            Ved at tilmelde dig vores nyhedsbrev accepterer du vores <a href="/information/persondatapolitik" class="text-decoration-underline">persondatapolitik</a>, og du giver samtykke til, at vi må sende dig markedsføring via e-mail. Du kan trække dit samtykke tilbage når som helst.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-0">
+
+            <div class="row">
+                <div class="col">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <div class="container">
+                                <h4 class="mb-3">Delivery Options</h4>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-0">
+
+            <div class="row">
+                <div class="col">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <div class="container">
+                                <h4 class="mb-3">Payment Options</h4>
+
                             </div>
                         </div>
                     </div>

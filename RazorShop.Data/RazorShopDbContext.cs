@@ -15,6 +15,11 @@ public class RazorShopDbContext : DbContext
     public DbSet<Size>? Sizes { get; set; }
     public DbSet<SizeType>? SizeTypes { get; set; }
     public DbSet<ProductSize>? ProductSizes { get; set; }
+    public DbSet<Order>? Orders { get; set; }
+    public DbSet<Address>? Addresses { get; set; }
+    public DbSet<BillingAddress>? BillingAddresses { get; set; }
+    public DbSet<Country>? Countries { get; set; }
+    public DbSet<Contact>? Contacts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

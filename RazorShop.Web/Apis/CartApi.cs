@@ -75,27 +75,7 @@ public static class CartApis
             return Results.Extensions.RazorSlice<Slices.ShoppingCartDelete, ShoppingCartVm>(shoppingCartVm!);
         });
 
-        app.MapDelete("/checkoutcart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
-        {
-            var cart = await GetCart(http, db);
-
-            var item = db.CartItems!.Find(id);
-            item!.Deleted = true;
-            item!.Updated = DateTime.UtcNow;
-            await db.SaveChangesAsync();
-
-            var items = await GetCartItems(cart.Id, db)!;
-            var shoppingCartVm = GetShoppingCartViewModel(items, cache);
-            var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
-
-            var vm = new DeleteCheckoutCartVm();
-            vm.CheckoutCartVm = checkoutCartVm;
-            vm.ShoppingCartVm = shoppingCartVm;
-
-            return Results.Extensions.RazorSlice<Slices.CartDelete, DeleteCheckoutCartVm>(vm!);
-        });
-
-        app.MapGet("/Cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
+        app.MapGet("/cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
         {
             var cart = await GetCart(http, db);
 
@@ -110,6 +90,26 @@ public static class CartApis
             }
 
             return Results.Extensions.RazorSlice<Pages.Cart, CheckoutCartVm>(vm!);
+        });
+
+        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
+        {
+            var cart = await GetCart(http, db);
+
+            var item = db.CartItems!.Find(id);
+            item!.Deleted = true;
+            item!.Updated = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            var items = await GetCartItems(cart.Id, db)!;
+            var shoppingCartVm = GetShoppingCartViewModel(items, cache);
+            var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
+
+            var vm = new UpdateCheckoutCartVm();
+            vm.CheckoutCartVm = checkoutCartVm;
+            vm.ShoppingCartVm = shoppingCartVm;
+
+            return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
         });
 
         app.MapGet("/cart/updatecartitemquantity/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity) =>
@@ -128,6 +128,17 @@ public static class CartApis
             vm.CheckoutCartVm = checkoutCartVm;
 
             return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
+        });
+
+        app.MapGet("/cart/billing-address", (string? billingAddressCb) =>
+        {
+            if (billingAddressCb == "on")
+            {
+                return Results.Extensions.RazorSlice<Slices.BillingAddress>();
+            }
+
+            return Results.Content(string.Empty);
+
         });
     }
 
