@@ -133,12 +133,16 @@ public static class CartApis
         app.MapGet("/cart/billing-address", (string? billingAddressCb) =>
         {
             if (billingAddressCb == "on")
-            {
                 return Results.Extensions.RazorSlice<Slices.BillingAddress>();
-            }
 
             return Results.Content(string.Empty);
+        });
 
+        app.MapPost("/cart/submit", (HttpContext http) =>
+        {
+            
+
+            return Results.Content(string.Empty);
         });
     }
 

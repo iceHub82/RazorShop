@@ -1,4 +1,6 @@
-﻿namespace RazorShop.Web.Models.ViewModels;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RazorShop.Web.Models.ViewModels;
 
 public class CartVm
 {
@@ -36,12 +38,6 @@ public class CheckoutCartVm
 }
 
 public class UpdateCheckoutCartVm
-{
-    public ShoppingCartVm? ShoppingCartVm { get; set; }
-    public CheckoutCartVm? CheckoutCartVm { get; set; }
-}
-
-public class DeleteCheckoutCartVm
 {
     public ShoppingCartVm? ShoppingCartVm { get; set; }
     public CheckoutCartVm? CheckoutCartVm { get; set; }

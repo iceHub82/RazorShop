@@ -1,27 +1,39 @@
-﻿<div id="billing-address-div">
+﻿@inherits RazorSlice
+
+<div id="billing-address-div">
     <h4 class="mb-3">Fakturaadresse</h4>
-    <div class="row">
+    <div class="row g-3">
         <div class="col-3">
-            <label for="billing-first-name" class="form-label">Fornavn *</label>
-            <input type="text" id="billing-first-name" class="form-control" maxlength="30" autocomplete="billing given-name" required>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="billing-first-name" placeholder="" maxlength="30" pattern="^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]{1,70}$" required />
+                <label for="billing-first-name">First Name</label>
+            </div>
         </div>
         <div class="col-3">
-            <label for="billing-last-name" class="form-label">Efternavn *</label>
-            <input type="text" id="billing-last-name" class="form-control" maxlength="30" autocomplete="billing family-name" required>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="billing-last-name" placeholder="" maxlength="30" pattern="^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]{2,70}$" required>
+                <label for="billing-last-name">Last Name</label>
+            </div>
         </div>
     </div>
     <div class="row g-3">
         <div class="col-3">
-            <label for="billing-address" class="form-label">Adresse *</label>
-            <input type="text" id="billing-address" class="form-control" maxlength="40" autocomplete="billing address-line1" required>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="billing-address" placeholder="" maxlength="40" pattern="^.{3,64}$" required>
+                <label for="billing-address">Address</label>
+            </div>
         </div>
         <div class="col-3">
-            <label for="billing-postcode" class="form-label">Postnummer *</label>
-            <input type="text" id="billing-postcode" class="form-control" inputmode="numeric" autocomplete="billing postal-code" required>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="billing-zip-code" placeholder="" pattern="^[0-9]{2}[ ]?[0-9]{2}$" required>
+                <label for="billing-zip-code">Zip Code</label>
+            </div>
         </div>
         <div class="col-3">
-            <label for="billing-city" class="form-label">By *</label>
-            <input type="text" id="billing-city" class="form-control" maxlength="30" autocomplete="billing address-level2" required>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="billing-city" placeholder="" maxlength="30" pattern="^[a-zA-ZåäöÅÄÖæøÆØ]{1}[a-zA-ZåäöÅÄÖæøÆØ.\-]*([ ]{1}[a-zA-ZåäöÅÄÖæøÆØ.\-]+)*$" required>
+                <label for="billing-city">City</label>
+            </div>
         </div>
     </div>
 </div>

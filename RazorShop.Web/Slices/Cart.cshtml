@@ -133,11 +133,8 @@
 
             <hr class="border-0">
 
-            <form hx-post="/submit-order-form">
-                <input type="text" name="username" placeholder="Enter your username">
-                <input type="password" name="password" placeholder="Enter your password">
-                <button type="submit">Submit</button>
-            </form>
+            <form id="myForm" class="needs-validation" hx-post="/cart/submit" hx-trigger="submit" hx-target="#response" novalidate>
+
 
             <div class="row">
                 <div class="col">
@@ -149,42 +146,10 @@
                                         <h1 class="mb-2">Personal information</h1>
                                     </div>
                                 </div>
+
                                 <h4 class="mb-3">Fakturaadresse</h4>
-                                <div class="row">
-                                    <div class="col-3">
-                                        <label for="billing-first-name" class="form-label">Fornavn *</label>
-                                        <input type="text" id="billing-first-name" class="form-control" maxlength="30" autocomplete="billing given-name" required>
-                                    </div>
-                                    <div class="col-3">
-                                        <label for="billing-last-name" class="form-label">Efternavn *</label>
-                                        <input type="text" id="billing-last-name" class="form-control" maxlength="30" autocomplete="billing family-name" required>
-                                    </div>
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-3">
-                                        <label for="billing-address" class="form-label">Adresse *</label>
-                                        <input type="text" id="billing-address" class="form-control" maxlength="40" autocomplete="billing address-line1" required>
-                                    </div>
-                                    <div class="col-3">
-                                        <label for="billing-postcode" class="form-label">Postnummer *</label>
-                                        <input type="text" id="billing-postcode" class="form-control" inputmode="numeric" autocomplete="billing postal-code" required>
-                                    </div>
-                                    <div class="col-3">
-                                        <label for="billing-city" class="form-label">By *</label>
-                                        <input type="text" id="billing-city" class="form-control" maxlength="30" autocomplete="billing address-level2" required>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-3">
-                                        <label for="country-select-dropdown" class="form-label">Land</label>
-                                        <select id="country-select-dropdown" class="form-select">
-                                            <option value="DNK">Danmark</option>
-                                            <option value="FRO">Færøerne</option>
-                                            <option value="GRL">Grønland</option>
-                                            <option value="ISL">Island</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                @(await RenderPartialAsync<DeliveryAddress>())
+
                                 <div class="row">
                                     <div class="col">
                                         <div class="form-check mt-4">
@@ -206,12 +171,12 @@
 
             <hr class="border-0">
 
-            <div class="row">
+            @* <div class="row">
                 <div class="col">
                     <div class="card border-0">
                         <div class="card-body">
                             <div class="container">
-                                <h4 class="mb-3">Kontaktoplysninger</h4>
+                                <h4 class="mb-3">Contact Information</h4>
                                 <div class="row g-3">
                                     <div class="col-4">
                                         <label for="contact-email" class="form-label">E-mail *</label>
@@ -237,8 +202,11 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> *@
 
+                <button type="submit">Submit</button>
+
+            </form>
             <hr class="border-0">
 
             <div class="row">
