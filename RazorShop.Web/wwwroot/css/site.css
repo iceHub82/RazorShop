@@ -1,0 +1,6 @@
+.was-validated .excluded-input,
+.was-validated .excluded-label {
+    box-shadow: none !important;
+    border-color: initial !important;
+    color: initial !important;
+}

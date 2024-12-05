@@ -38,9 +38,9 @@ public static class ProductApis
             return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
-        app.MapGet("/Product/{id}", async (HttpRequest request, HttpResponse response, RazorShopDbContext dbCtx, int id) =>
+        app.MapGet("/Product/{id}", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, int id) =>
         {
-            var product = await dbCtx.Products!
+            var product = await db.Products!
                 .Include(x => x.ProductSizes!)
                 .ThenInclude(x => x.Size).AsNoTracking().FirstAsync(p => p.Id == id);
 
@@ -53,6 +53,8 @@ public static class ProductApis
                 foreach (var size in product.ProductSizes!)
                     productVm.ProductSizes!.Add(new ProductSizeVm { Id = size.SizeId, Name = size.Size!.Name });
             }
+
+            //http.Response.Headers["HX-Redirect"] = $"/Product/{id}";
 
             if (ApiUtil.IsHtmx(request))
             {

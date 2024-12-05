@@ -1,0 +1,67 @@
+﻿@inherits RazorLayoutSlice<LayoutModel>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.Title</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <script defer src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/htmx/htmx.min.js"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="/Products">Back to shop</a>
+        </div>
+    </nav>
+
+    @await RenderBodyAsync()
+
+    @(await RenderPartialAsync<Footer>())
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+
+    <script>
+
+        (() => {
+            'use strict'
+
+            let form = document.getElementById('submit-form')
+            if(form){
+                form.addEventListener('submit', (e) => {
+                    if (!form.checkValidity()) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            }
+
+            document.addEventListener('htmx:afterSwap', () => {
+                let form = document.getElementById('submit-form')
+                form.addEventListener('submit', (e) => {
+                    if (!form.checkValidity()) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                })
+            })
+
+            document.addEventListener('htmx:configRequest', (e) => {
+                let form = e.target;
+                if (form && !form.checkValidity()) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    form.classList.add('was-validated')
+                }
+            })
+        })()
+    </script>
+
+</body>
+</html>

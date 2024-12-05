@@ -37,7 +37,8 @@
                 </li>
             </ul>
             <div hx-get="/shoppingcart"
-                 hx-trigger="load"
+                 hx-trigger="load, history-restore from:body"
+
                  class="d-flex">
             </div>
         </div>

@@ -1,0 +1,10 @@
+﻿@inherits RazorSlice
+@implements IUsesLayout<_CheckoutLayout, LayoutModel>
+
+@(await RenderPartialAsync<EmptyCart>())
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Cart",
+        };
+}

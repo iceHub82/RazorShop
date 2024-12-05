@@ -1,7 +1,7 @@
 ﻿@inherits RazorSliceHttpResult<CheckoutCartVm>
-@implements IUsesLayout<_Layout, LayoutModel>
+@implements IUsesLayout<_CheckoutLayout, LayoutModel>
 
-@(await RenderPartialAsync<Cart, CheckoutCartVm>(Model))
+@(await RenderPartialAsync<CartV2, CheckoutCartVm>(Model))
 
 @functions {
     public LayoutModel LayoutModel => new() {

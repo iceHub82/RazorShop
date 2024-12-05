@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using System.ComponentModel.DataAnnotations;
 
 namespace RazorShop.Web.Models.ViewModels;
 
@@ -35,6 +36,7 @@ public class CheckoutCartVm
     public List<CheckoutCartItemVm>? CheckoutCartItems { get; set; } = new();
     public string? CheckoutCartTotal { get; set; }
     public int CheckoutCartQuantity { get; set; }
+    public string? AntiForgeryToken { get; set; }
 }
 
 public class UpdateCheckoutCartVm

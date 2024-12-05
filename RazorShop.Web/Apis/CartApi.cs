@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
@@ -55,94 +56,7 @@ public static class CartApis
             var items = await GetCartItems(cart.Id, db)!;
             var shoppingCartVm = GetShoppingCartViewModel(items, cache);
 
-            // We need to check if we are on the checkoutcart page to update both shopping cart
-            // and checkout cart. Otherwise only update shopping cart
-            if (http.Request.Headers.TryGetValue("Referer", out var referer)) {
-                if (Uri.TryCreate(referer, UriKind.Absolute, out var refererUri)) {
-                    if (refererUri.PathAndQuery == "/Cart")
-                    {
-                        var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
-
-                        var vm = new UpdateCheckoutCartVm();
-                        vm.CheckoutCartVm = checkoutCartVm;
-                        vm.ShoppingCartVm = shoppingCartVm;
-
-                        return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
-                    }
-                }
-            }
-
             return Results.Extensions.RazorSlice<Slices.ShoppingCartDelete, ShoppingCartVm>(shoppingCartVm!);
-        });
-
-        app.MapGet("/cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache) =>
-        {
-            var cart = await GetCart(http, db);
-
-            var items = await GetCartItems(cart.Id, db)!;
-
-            var vm = GetCheckoutCartViewModel(items, cache);
-
-            if (ApiUtil.IsHtmx(request))
-            {
-                response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Slices.Cart, CheckoutCartVm>(vm!);
-            }
-
-            return Results.Extensions.RazorSlice<Pages.Cart, CheckoutCartVm>(vm!);
-        });
-
-        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
-        {
-            var cart = await GetCart(http, db);
-
-            var item = db.CartItems!.Find(id);
-            item!.Deleted = true;
-            item!.Updated = DateTime.UtcNow;
-            await db.SaveChangesAsync();
-
-            var items = await GetCartItems(cart.Id, db)!;
-            var shoppingCartVm = GetShoppingCartViewModel(items, cache);
-            var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
-
-            var vm = new UpdateCheckoutCartVm();
-            vm.CheckoutCartVm = checkoutCartVm;
-            vm.ShoppingCartVm = shoppingCartVm;
-
-            return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
-        });
-
-        app.MapGet("/cart/updatecartitemquantity/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity) =>
-        {
-            var result = await UpdateCartItemQuantity(db, itemId, quantity);
-
-            var cart = await GetCart(http, db);
-
-            var items = await GetCartItems(cart.Id, db)!;
-
-            var shoppingCartVm = GetShoppingCartViewModel(items, cache);
-            var checkoutCartVm = GetCheckoutCartViewModel(items, cache);
-
-            var vm = new UpdateCheckoutCartVm();
-            vm.ShoppingCartVm = shoppingCartVm;
-            vm.CheckoutCartVm = checkoutCartVm;
-
-            return Results.Extensions.RazorSlice<Slices.CartUpdate, UpdateCheckoutCartVm>(vm!);
-        });
-
-        app.MapGet("/cart/billing-address", (string? billingAddressCb) =>
-        {
-            if (billingAddressCb == "on")
-                return Results.Extensions.RazorSlice<Slices.BillingAddress>();
-
-            return Results.Content(string.Empty);
-        });
-
-        app.MapPost("/cart/submit", (HttpContext http) =>
-        {
-            
-
-            return Results.Content(string.Empty);
         });
     }
 
@@ -166,14 +80,14 @@ public static class CartApis
         return cart!;
     }
 
-    private static async Task<bool> UpdateCartItemQuantity(RazorShopDbContext db, int itemId, int quantity)
-    {
-        var item = db.CartItems!.Find(itemId);
-        item!.Quantity = quantity;
-        item!.Updated = DateTime.UtcNow;
+    //private static async Task<bool> UpdateCartItemQuantity(RazorShopDbContext db, int itemId, int quantity)
+    //{
+    //    var item = db.CartItems!.Find(itemId);
+    //    item!.Quantity = quantity;
+    //    item!.Updated = DateTime.UtcNow;
 
-        return await db.SaveChangesAsync() > 0;
-    }
+    //    return await db.SaveChangesAsync() > 0;
+    //}
 
     private static async Task<List<CartItem>>? GetCartItems(int cartId, RazorShopDbContext db)
     {
@@ -201,26 +115,25 @@ public static class CartApis
         };
     }
 
-    private static CheckoutCartVm? GetCheckoutCartViewModel(List<CartItem> items, IMemoryCache cache)
-    {
-        if (items.Count == 0)
-            return new CheckoutCartVm();
+    //private static CheckoutCartVm? GetCheckoutCartViewModel(List<CartItem> items, IMemoryCache cache)
+    //{
+    //    if (items.Count == 0)
+    //        return new CheckoutCartVm();
 
-        var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
+    //    var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
 
-        return new CheckoutCartVm
-        {
-            CheckoutCartQuantity = items.Sum(c => c.Quantity),
-            CheckoutCartItems = items.Select(item => new CheckoutCartItemVm {
-                Id = item.Id,
-                ProductId = item.ProductId,
-                Name = item.Product!.Name,
-                Description = item.Product.Description,
-                Price = $"{item.Product.Price:#.00} kr",
-                Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
-                Quantity = item.Quantity
-            }).ToList(),
-            CheckoutCartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
-        };
-    }
+    //    return new CheckoutCartVm {
+    //        CheckoutCartQuantity = items.Sum(c => c.Quantity),
+    //        CheckoutCartItems = items.Select(item => new CheckoutCartItemVm {
+    //            Id = item.Id,
+    //            ProductId = item.ProductId,
+    //            Name = item.Product!.Name,
+    //            Description = item.Product.Description,
+    //            Price = $"{item.Product.Price:#.00} kr",
+    //            Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
+    //            Quantity = item.Quantity
+    //        }).ToList(),
+    //        CheckoutCartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
+    //    };
+    //}
 }

@@ -19,6 +19,7 @@ builder.Services.AddDbContext<RazorShopDbContext>(options => {
     options.UseSqlite(connStr!);
 });
 
+builder.Services.AddAntiforgery();
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
@@ -78,7 +79,9 @@ app.UseStatusCodePages();
 app.UseStaticFiles();
 app.SiteApi();
 app.CartApi();
+app.CartVsApi();
 app.ProductApi();
+app.UseAntiforgery();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 
