@@ -1,0 +1,10 @@
+﻿@inherits RazorSliceHttpResult<CheckoutVm>
+@implements IUsesLayout<_CheckoutLayout, LayoutModel>
+
+@(await RenderPartialAsync<Checkout, CheckoutVm>(Model))
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Checkout",
+        };
+}

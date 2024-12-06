@@ -50,7 +50,7 @@
                         <input name="quantity" type="number" class="form-control" value="1" min="1" max="10">
                     </div>
                     <div class="col">
-                        <button hx-get="/shoppingcart/add/@Model.Id"
+                        <button hx-get="/cart/add/@Model.Id"
                                 hx-include="[name='size'], [name='quantity']"
                                 hx-target="#cart-div"
                                 hx-swap="outerHTML"

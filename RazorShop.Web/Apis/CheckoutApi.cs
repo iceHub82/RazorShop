@@ -7,11 +7,11 @@ using RazorShop.Web.Models.ViewModels;
 
 namespace RazorShop.Web.Apis;
 
-public static class CartV2Apis
+public static class CheckoutApis
 {
-    public static void CartVsApi(this WebApplication app)
+    public static void CheckoutApi(this WebApplication app)
     {
-        app.MapGet("/cart", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery) =>
+        app.MapGet("/checkout", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery) =>
         {
             var cart = await GetCart(http, db);
 
@@ -19,27 +19,27 @@ public static class CartV2Apis
             if (items.Count == 0)
                 return Results.Extensions.RazorSlice<Pages.EmptyCart>();
 
-            var vm = GetCheckoutCartViewModel(items, cache);
+            var vm = GetCheckoutViewModel(items, cache);
 
             var tokens = antiforgery.GetAndStoreTokens(http);
-            vm!.AntiForgeryToken = tokens.RequestToken;
+            vm!.CheckoutFormAntiForgeryToken = tokens.RequestToken;
 
-            return Results.Extensions.RazorSlice<Pages.CartV2, CheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Pages.Checkout, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/cart/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity) =>
+        app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity) =>
         {
             var result = await UpdateCartItemQuantity(db, itemId, quantity);
 
             var cart = await GetCart(http, db);
             var items = await GetCartItems(cart.Id, db)!;
 
-            var vm = GetCheckoutCartViewModel(items, cache);
+            var vm = GetCheckoutViewModel(items, cache);
 
-            return Results.Extensions.RazorSlice<Slices.CartUpdateV2, CheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
+        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
         {
             var cart = await GetCart(http, db);
 
@@ -52,12 +52,12 @@ public static class CartV2Apis
             if (items.Count == 0)
                 return Results.Extensions.RazorSlice<Slices.EmptyCart>();
 
-            var vm = GetCheckoutCartViewModel(items, cache);
+            var vm = GetCheckoutViewModel(items, cache);
 
-            return Results.Extensions.RazorSlice<Slices.CartUpdateV2, CheckoutCartVm>(vm!);
+            return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/cart/billing-address", (string? billingAddressCb) =>
+        app.MapGet("/checkout/billing-address", (string? billingAddressCb) =>
         {
             if (billingAddressCb == "on")
                 return Results.Extensions.RazorSlice<Slices.BillingAddress>();
@@ -65,7 +65,7 @@ public static class CartV2Apis
             return Results.Content(string.Empty);
         });
 
-        app.MapPost("/cart/submit", async (HttpContext http, HttpRequest request, IAntiforgery antiforgery) =>
+        app.MapPost("/checkout/submit", async (HttpContext http, HttpRequest request, IAntiforgery antiforgery) =>
         {
             await antiforgery.ValidateRequestAsync(http); // Validate token
 
@@ -116,37 +116,16 @@ public static class CartV2Apis
         return await db.CartItems!.Where(c => c.CartId == cartId && !c.Deleted).Include(c => c.Product).ToListAsync();
     }
 
-    private static ShoppingCartVm? GetShoppingCartViewModel(List<CartItem> items, IMemoryCache cache)
+    private static CheckoutVm? GetCheckoutViewModel(List<CartItem> items, IMemoryCache cache)
     {
         if (items.Count == 0)
-            return new ShoppingCartVm();
+            return new CheckoutVm();
 
         var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
 
-        return new ShoppingCartVm {
-            ShoppingCartQuantity = items.Sum(c => c.Quantity),
-            ShoppingCartItems = items.Select(item => new ShoppingCartItemVm {
-                Id = item.Id,
-                Name = item.Product!.Name,
-                Description = item.Product.Description,
-                Price = $"{item.Product.Price:#.00} kr",
-                Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
-                Quantity = item.Quantity
-            }).ToList(),
-            ShoppingCartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
-        };
-    }
-
-    private static CheckoutCartVm? GetCheckoutCartViewModel(List<CartItem> items, IMemoryCache cache)
-    {
-        if (items.Count == 0)
-            return new CheckoutCartVm();
-
-        var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
-
-        return new CheckoutCartVm {
-            CheckoutCartQuantity = items.Sum(c => c.Quantity),
-            CheckoutCartItems = items.Select(item => new CheckoutCartItemVm {
+        return new CheckoutVm {
+            CheckoutQuantity = items.Sum(c => c.Quantity),
+            CheckoutItems = items.Select(item => new CheckoutItemVm {
                 Id = item.Id,
                 ProductId = item.ProductId,
                 Name = item.Product!.Name,
@@ -155,7 +134,7 @@ public static class CartV2Apis
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
                 Quantity = item.Quantity
             }).ToList(),
-            CheckoutCartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
+            CheckoutTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
         };
     }
 }

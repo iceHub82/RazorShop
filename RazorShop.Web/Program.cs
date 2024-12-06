@@ -79,9 +79,9 @@ app.UseStatusCodePages();
 app.UseStaticFiles();
 app.SiteApi();
 app.CartApi();
-app.CartVsApi();
+app.CheckoutApi();
 app.ProductApi();
-app.UseAntiforgery();
+//app.UseAntiforgery();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 

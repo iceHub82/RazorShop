@@ -1,9 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
-using System.ComponentModel.DataAnnotations;
+﻿namespace RazorShop.Web.Models.ViewModels;
 
-namespace RazorShop.Web.Models.ViewModels;
-
-public class CartVm
+public class ItemVm
 {
     public int Id { get; set; }
     public int ProductId { get; set; }
@@ -14,33 +11,27 @@ public class CartVm
     public int Quantity { get; set; }
 }
 
-public class ShoppingCartItemVm : CartVm
+public class CartItemVm : ItemVm
 {
 
 }
 
-public class CheckoutCartItemVm : CartVm
+public class CheckoutItemVm : ItemVm
 {
 
 }
 
-public class ShoppingCartVm
+public class CartVm
 {
-    public List<ShoppingCartItemVm>? ShoppingCartItems { get; set; } = new();
-    public string? ShoppingCartTotal { get; set; }
-    public int ShoppingCartQuantity { get; set; }
+    public List<CartItemVm>? CartItems { get; set; } = new();
+    public string? CartTotal { get; set; }
+    public int CartQuantity { get; set; }
 }
 
-public class CheckoutCartVm
+public class CheckoutVm
 {
-    public List<CheckoutCartItemVm>? CheckoutCartItems { get; set; } = new();
-    public string? CheckoutCartTotal { get; set; }
-    public int CheckoutCartQuantity { get; set; }
-    public string? AntiForgeryToken { get; set; }
-}
-
-public class UpdateCheckoutCartVm
-{
-    public ShoppingCartVm? ShoppingCartVm { get; set; }
-    public CheckoutCartVm? CheckoutCartVm { get; set; }
+    public List<CheckoutItemVm>? CheckoutItems { get; set; } = new();
+    public string? CheckoutTotal { get; set; }
+    public int CheckoutQuantity { get; set; }
+    public string? CheckoutFormAntiForgeryToken { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
 using RazorShop.Web.Models.ViewModels;
 
@@ -53,8 +52,6 @@ public static class ProductApis
                 foreach (var size in product.ProductSizes!)
                     productVm.ProductSizes!.Add(new ProductSizeVm { Id = size.SizeId, Name = size.Size!.Name });
             }
-
-            //http.Response.Headers["HX-Redirect"] = $"/Product/{id}";
 
             if (ApiUtil.IsHtmx(request))
             {

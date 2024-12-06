@@ -26,7 +26,6 @@
     <script src="/lib/jquery/dist/jquery.min.js"></script>
 
     <script>
-
         (() => {
             'use strict'
 
@@ -61,6 +60,14 @@
                 }
             })
         })()
+
+        window.addEventListener('popstate', () => {
+            const checkbox = document.getElementById('billing-input');
+            if (checkbox) {
+                checkbox.checked = false; // Uncheck the checkbox
+            }
+        });
+
     </script>
 
 </body>

@@ -1,10 +1,10 @@
-﻿@inherits RazorSliceHttpResult<ShoppingCartVm>
+﻿@inherits RazorSliceHttpResult<CartVm>
 
 <span id="cart-quantity" class="badge bg-dark text-white ms-1 rounded-pill" hx-swap-oob="true">
-    @Model.ShoppingCartQuantity
+    @Model.CartQuantity
 </span>
 
-@if (Model.ShoppingCartItems!.Any())
+@if (Model.CartItems!.Any())
 {
     <div class="row">
         <div class="col text-center">
@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    @foreach (var item in Model.ShoppingCartItems!)
+    @foreach (var item in Model.CartItems!)
     {
         <div class="row">
             <div class="col">
@@ -31,7 +31,7 @@
             <div class="col">
                 @item.Price
             </div>
-            <div hx-delete="/shoppingcart/delete/@item.Id"
+            <div hx-delete="/cart/delete/@item.Id"
                  hx-target="#shopping-cart-dropdown"
                  role="button" class="col">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
@@ -49,16 +49,12 @@
             Total:
         </div>
         <div class="col">
-            @Model.ShoppingCartTotal
+            @Model.CartTotal
         </div>
     </div>
     <div class="row">
         <div class="col">
-            <button hx-get="/cart"
-                    hx-target="#section"
-                    hx-push-url="/Cart"
-                    hx-swap="outerHTML"
-                    class="btn btn-primary w-100">Shopping Cart</button>
+            <a href="/Checkout" class="btn btn-primary w-100" role="button">Checkout</a>
         </div>
     </div>
 }
