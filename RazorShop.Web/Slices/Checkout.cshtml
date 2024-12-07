@@ -16,7 +16,7 @@
 
         <hr class="border-0">
 
-        <form id="submit-form" class="needs-validation" hx-post="/cart/submit" hx-target="#form-result" novalidate>
+        <form id="submit-form" class="needs-validation" hx-post="/checkout/submit" novalidate>
             <input type="hidden" name="__RequestVerificationToken" value="@Model.CheckoutFormAntiForgeryToken" />
         <div class="row">
             <div class="col">
@@ -33,21 +33,21 @@
 
                             <div class="container p-5 bg-light">
                                 <h6 class="mb-3">Leveringsadresse</h6>
-                                @(await RenderPartialAsync<DeliveryAddress>())
+                                @(await RenderPartialAsync<Address>())
 
                                 <div class="row">
                                     <div class="col">
                                         <div class="form-check mt-4">
-                                            <input hx-get="/checkout/billing-address"
-                                                hx-trigger="change" 
-                                                hx-target="#billing-address-div"
-                                                hx-include="[name='billingAddressCb']"
-                                                type="checkbox" name="billingAddressCb" class="form-check-input excluded-input" autocomplete="off">
+                                            <input hx-get="/checkout/address-billing"
+                                                hx-trigger="change"
+                                                hx-target="#address-billing-div"
+                                                hx-include="[name='addressbillingCb']"
+                                                type="checkbox" name="addressbillingCb" class="form-check-input excluded-input" autocomplete="off">
                                             <label for="alternative-address" class="form-check-label excluded-label">Vil du sende til en alternativ leveringsadresse?</label>
                                         </div>
                                     </div>
                                 </div>
-                            <div id="billing-address-div"></div>
+                                <div id="address-billing-div"></div>
                             </div>
                         </div>
                     </div>
@@ -74,8 +74,8 @@
                                 </div>
                             </div>
                             <div class="form-check mt-4">
-                                <input type="checkbox" id="newsletter" class="form-check-input">
-                                <label for="newsletter" class="form-check-label">
+                                <input type="checkbox" id="newsletter" class="form-check-input" autocomplete="off">
+                                <label for="newsletter" class="form-check-label excluded-label">
                                     Tilmeld dig vores nyhedsbrev og få skræddersyede tilbud via e-mail med op til 50 % rabat på udvalgte varer.
                                 </label>
                                 <div class="mt-2">
@@ -121,6 +121,8 @@
             <button type="submit">Submit</button>
 
         </form>
+
+
 
     </div>
     <div id="header" hx-swap-oob="delete"></div>

@@ -17,7 +17,7 @@ public class RazorShopDbContext : DbContext
     public DbSet<ProductSize>? ProductSizes { get; set; }
     public DbSet<Order>? Orders { get; set; }
     public DbSet<Address>? Addresses { get; set; }
-    public DbSet<BillingAddress>? BillingAddresses { get; set; }
+    public DbSet<AddressBilling>? BillingAddresses { get; set; }
     public DbSet<Country>? Countries { get; set; }
     public DbSet<Contact>? Contacts { get; set; }
 

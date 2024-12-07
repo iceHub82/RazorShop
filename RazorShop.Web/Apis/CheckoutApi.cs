@@ -17,7 +17,7 @@ public static class CheckoutApis
 
             var items = await GetCartItems(cart.Id, db)!;
             if (items.Count == 0)
-                return Results.Extensions.RazorSlice<Pages.EmptyCart>();
+                return Results.Extensions.RazorSlice<Pages.CheckoutEmpty>();
 
             var vm = GetCheckoutViewModel(items, cache);
 
@@ -50,33 +50,46 @@ public static class CheckoutApis
 
             var items = await GetCartItems(cart.Id, db)!;
             if (items.Count == 0)
-                return Results.Extensions.RazorSlice<Slices.EmptyCart>();
+                return Results.Extensions.RazorSlice<Slices.CheckoutEmpty>();
 
             var vm = GetCheckoutViewModel(items, cache);
 
             return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/checkout/billing-address", (string? billingAddressCb) =>
+        app.MapGet("/checkout/address-billing", (string? addressbillingCb) =>
         {
-            if (billingAddressCb == "on")
-                return Results.Extensions.RazorSlice<Slices.BillingAddress>();
+            if (addressbillingCb == "on")
+                return Results.Extensions.RazorSlice<Slices.AddressBilling>();
 
             return Results.Content(string.Empty);
         });
 
-        app.MapPost("/checkout/submit", async (HttpContext http, HttpRequest request, IAntiforgery antiforgery) =>
+        app.MapPost("/checkout/submit", async (HttpContext http, IAntiforgery antiforgery) =>
         {
-            await antiforgery.ValidateRequestAsync(http); // Validate token
-
-            var body = request.Body;
+            try
+            {
+                await antiforgery.ValidateRequestAsync(http); // Validate token
+            }
+            catch (AntiforgeryValidationException ex)
+            {
+                Console.WriteLine("Processing is cancelled.");
+            }
 
             var formData = await http.Request.ReadFormAsync();
-            var name = formData["name"];
-            var email = formData["email"];
+
+
+
+            var firstName = formData["first-name"];
+            var lastName = formData["last-name"];
+            var address = formData["address"];
+            var zipCode = formData["zip-code"];
+            var city = formData["city"];
+            var countryId = formData["country-id"];
+
 
             // Simulate saving data or processing
-            return Results.Json(new { success = true, name, email });
+            return Results.Json(new { success = true, firstName, lastName, address, zipCode, city, countryId});
 
             return Results.Content(string.Empty);
         });

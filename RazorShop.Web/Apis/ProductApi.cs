@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
 using RazorShop.Web.Models.ViewModels;
 
@@ -8,36 +9,36 @@ public static class ProductApis
 {
     public static void ProductApi(this WebApplication app)
     {
-        app.MapGet("/Products", async (RazorShopDbContext db, HttpRequest request, HttpResponse response) =>
+        app.MapGet("/Products", async (RazorShopDbContext db, HttpContext http) =>
         {
             ProductsVm vm = new();
             vm.Products = await GetProducts(db);
 
-            if (ApiUtil.IsHtmx(request))
+            if (ApiUtil.IsHtmx(http.Request))
             {
-                response.Headers.Append("Vary", "HX-Request");
+                http.Response.Headers.Append("Vary", "HX-Request");
                 return Results.Extensions.RazorSlice<Slices.Products, ProductsVm>(vm);
             }
 
             return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
-        app.MapGet("/Products/{category}", async (RazorShopDbContext db, HttpRequest request, HttpResponse response, string category) =>
+        app.MapGet("/Products/{category}", async (RazorShopDbContext db, HttpContext http, string category) =>
         {
             ProductsVm vm = new();
             vm.Products = await GetProductsByCategoryName(db, category);
             vm.Category = category;
 
-            if (ApiUtil.IsHtmx(request))
+            if (ApiUtil.IsHtmx(http.Request))
             {
-                response.Headers.Append("Vary", "HX-Request");
+                http.Response.Headers.Append("Vary", "HX-Request");
                 return Results.Extensions.RazorSlice<Slices.Products, ProductsVm>(vm);
             }
 
             return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
-        app.MapGet("/Product/{id}", async (HttpContext http, HttpRequest request, HttpResponse response, RazorShopDbContext db, int id) =>
+        app.MapGet("/Product/{id}", async(RazorShopDbContext db, HttpContext http, int id) =>
         {
             var product = await db.Products!
                 .Include(x => x.ProductSizes!)
@@ -53,9 +54,9 @@ public static class ProductApis
                     productVm.ProductSizes!.Add(new ProductSizeVm { Id = size.SizeId, Name = size.Size!.Name });
             }
 
-            if (ApiUtil.IsHtmx(request))
+            if (ApiUtil.IsHtmx(http.Request))
             {
-                response.Headers.Append("Vary", "HX-Request");
+                http.Response.Headers.Append("Vary", "HX-Request");
                 return Results.Extensions.RazorSlice<Slices.Product, ProductVm>(productVm);
             }
 
