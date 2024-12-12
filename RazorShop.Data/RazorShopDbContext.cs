@@ -17,7 +17,7 @@ public class RazorShopDbContext : DbContext
     public DbSet<ProductSize>? ProductSizes { get; set; }
     public DbSet<Order>? Orders { get; set; }
     public DbSet<Address>? Addresses { get; set; }
-    public DbSet<AddressBilling>? BillingAddresses { get; set; }
+    public DbSet<AddressBill>? AddressBills { get; set; }
     public DbSet<Country>? Countries { get; set; }
     public DbSet<Contact>? Contacts { get; set; }
 
@@ -76,6 +76,13 @@ public class RazorShopDbContext : DbContext
             new ProductSize { ProductId = 4, SizeId = 5 },
             new ProductSize { ProductId = 4, SizeId = 6 },
             new ProductSize { ProductId = 5, SizeId = 5 }
+        );
+
+        modelBuilder.Entity<Country>().HasData(
+            new Country { Id = 1, Name = "Danmark" },
+            new Country { Id = 2, Name = "Færøerne" },
+            new Country { Id = 3, Name = "Grønland" },
+            new Country { Id = 4, Name = "Island" }
         );
     }
 }

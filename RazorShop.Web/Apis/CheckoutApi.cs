@@ -4,6 +4,9 @@ using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Models.ViewModels;
+using Quickpay.Services;
+using Quickpay.RequestParams;
+using Quickpay.Models.Payments;
 
 namespace RazorShop.Web.Apis;
 
@@ -57,62 +60,149 @@ public static class CheckoutApis
             return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/checkout/address-billing", (string? addressbillingCb) =>
+        app.MapGet("/checkout/address-bill", (string? addressbillCb) =>
         {
-            if (addressbillingCb == "on")
+            if (addressbillCb == "on")
                 return Results.Extensions.RazorSlice<Slices.AddressBilling>();
 
             return Results.Content(string.Empty);
         });
 
-        app.MapPost("/checkout/submit", async (HttpContext http, IAntiforgery antiforgery) =>
+        app.MapPost("/checkout/submit", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IConfiguration config) =>
         {
+            using var transaction = db.Database.BeginTransaction();
+
             try
             {
                 await antiforgery.ValidateRequestAsync(http); // Validate token
+
+                var form = await http.Request.ReadFormAsync();
+
+                var contact = new Contact();
+                contact.Email = form["email"]; ;
+                contact.PhoneNumber = form["phone"];
+                contact.Newsletter = form["newsletter"] == "on";
+
+                await db.Contacts!.AddAsync(contact);
+                await db.SaveChangesAsync();
+
+                var address = new Address();
+                address.FirstName = form["first-name"];
+                address.LastName = form["last-name"];
+                address.StreetName = form["address"];
+                address.ZipCode = form["zip-code"];
+                address.City = form["city"];
+                address.CountryId = int.Parse(form["country-id"]!);
+
+                await db.Addresses!.AddAsync(address);
+                await db.SaveChangesAsync();
+
+                AddressBill? addressBill = null;
+                if (form["addressbillCb"] == "on")
+                {
+                    addressBill = new();
+                    addressBill.FirstName = form["bill-first-name"];
+                    addressBill.LastName = form["bill-last-name"];
+                    addressBill.StreetName = form["bill-address"];
+                    addressBill.ZipCode = form["bill-zip-code"];
+                    addressBill.City = form["bill-city"];
+
+                    await db.AddressBills!.AddAsync(addressBill);
+                    await db.SaveChangesAsync();
+                }
+
+                var cart = await GetCart(http, db) ?? throw new Exception("Cart not found");
+
+                var order = new Order();
+                order.CartId = cart.Id;
+                order.Created = DateTime.UtcNow;
+                order.AddressId = address.Id;
+                order.AddressBillId = addressBill == null ? null : addressBill!.Id;
+                order.ContactId = contact.Id;
+                order.StatusId = 1;
+
+                await db.Orders!.AddAsync(order);
+                await db.SaveChangesAsync();
+
+                transaction.Commit();
+
+                var qpApiKey = config["PaymentApiKey"];
+                var ps = new PaymentsService(qpApiKey);
+
+                // First we must create a payment and for this we need a CreatePaymentRequestParams object
+                var createPaymentParams = new CreatePaymentRequestParams("DKK", createRandomOrderId());
+                createPaymentParams.text_on_statement = "QuickPay .NET Example";
+
+                var basketItemJeans = new Basket();
+                basketItemJeans.qty = 1;
+                basketItemJeans.item_name = "Jeans";
+                basketItemJeans.item_price = 100;
+                basketItemJeans.vat_rate = 0.25;
+                basketItemJeans.item_no = "123";
+
+                var basketItemShirt = new Basket();
+                basketItemShirt.qty = 1;
+                basketItemShirt.item_name = "Shirt";
+                basketItemShirt.item_price = 300;
+                basketItemShirt.vat_rate = 0.25;
+                basketItemShirt.item_no = "321";
+
+                createPaymentParams.basket = new Basket[] { basketItemJeans, basketItemShirt };
+
+                var payment = await ps.CreatePayment(createPaymentParams);
+
+                // Second we must create a payment link for the payment. This payment link can be opened in a browser to show the payment window from QuickPay.
+                var createPaymentLinkParams = new CreatePaymentLinkRequestParams((int)((basketItemJeans.qty * basketItemJeans.item_price + basketItemShirt.qty * basketItemShirt.item_price) * 100));
+                createPaymentLinkParams.payment_methods = "creditcard";
+                //createPaymentLinkParams.callback_url = "/Callback";
+                createPaymentLinkParams.auto_capture = true; // This will automatically capture the payment right after it has been authorized.
+
+                var paymentLink = await ps.CreateOrUpdatePaymentLink(payment.id, createPaymentLinkParams);
+
+                var test = $"""
+                    <script>
+                        window.location.href = '{paymentLink.url}';
+                    </script>
+                """;
+                return Results.Content(test);
             }
             catch (AntiforgeryValidationException ex)
             {
+                Console.WriteLine("AntiforgeryValidationException was thrown");
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine("Processing is cancelled.");
             }
-
-            var formData = await http.Request.ReadFormAsync();
-
-
-
-            var firstName = formData["first-name"];
-            var lastName = formData["last-name"];
-            var address = formData["address"];
-            var zipCode = formData["zip-code"];
-            var city = formData["city"];
-            var countryId = formData["country-id"];
-
-
-            // Simulate saving data or processing
-            return Results.Json(new { success = true, firstName, lastName, address, zipCode, city, countryId});
 
             return Results.Content(string.Empty);
         });
     }
 
+    private static string createRandomOrderId()
+    {
+        return Guid.NewGuid().ToString().Replace("-", "")[..20];
+    }
+
     private static async Task<Cart> GetCart(HttpContext http, RazorShopDbContext db)
     {
-        Cart? cart;
-
-        if (!http.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
+        if (http.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
         {
-            var guid = Guid.NewGuid();
-            cartSessionGuid = guid.ToString();
-            http.Response.Cookies.Append("CartSessionId", cartSessionGuid);
+            var existingCart = await db.Carts!.FirstOrDefaultAsync(c => c.CartGuid == Guid.Parse(cartSessionGuid!));
 
-            cart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
-            db.Carts!.Add(cart);
-            await db.SaveChangesAsync();
+            if (existingCart != null)
+                return existingCart;
         }
-        else
-            cart = await db.Carts!.Where(c => c.CartGuid == Guid.Parse(cartSessionGuid!)).FirstOrDefaultAsync();
 
-        return cart!;
+        var guid = Guid.NewGuid();
+        cartSessionGuid = guid.ToString();
+        http.Response.Cookies.Append("CartSessionId", cartSessionGuid);
+
+        var newCart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
+        db.Carts!.Add(newCart);
+        await db.SaveChangesAsync();
+
+        return newCart;
     }
 
     private static async Task<bool> UpdateCartItemQuantity(RazorShopDbContext db, int itemId, int quantity)
@@ -143,11 +233,12 @@ public static class CheckoutApis
                 ProductId = item.ProductId,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,
-                Price = $"{item.Product.Price:#.00} kr",
+                Price = $"{item.Product.Price:00.#} kr.",
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
                 Quantity = item.Quantity
             }).ToList(),
-            CheckoutTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
+            Delivery = "49 kr.",
+            CheckoutTotal = $"{(items.Sum(c => c.Product!.Price * c.Quantity)) + 49:00.#} kr."
         };
     }
 }

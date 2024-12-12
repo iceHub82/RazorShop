@@ -21,6 +21,13 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
         });
 
+        app.MapPost("/Callback", (HttpContext context) =>
+        {
+            
+
+            return Results.Extensions.RazorSlice<Pages.Error>();
+        });
+
         app.MapGet("/Redirects", (int statusCode) =>
         {
 

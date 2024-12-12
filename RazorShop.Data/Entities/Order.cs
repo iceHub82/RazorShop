@@ -10,8 +10,8 @@ public class Order
     public int Id { get; set; }
     public int AddressId { get; set; }
     public Address? Address { get; set; }
-    public int? AddressBillingId { get; set; }
-    public AddressBilling? AddressBilling { get; set; }
+    public int? AddressBillId { get; set; }
+    public AddressBill? AddressBill { get; set; }
     public int ContactId { get; set; }
     public Contact? Contact { get; set; }
     public int CartId { get; set; }

@@ -6,7 +6,7 @@ using RazorShop.Web.Apis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connStr = builder.Configuration.GetConnectionString("RazorShop");
+var connStr = builder.Configuration.GetConnectionString("RazorShopDb");
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
 builder.Services.AddDbContext<RazorShopDbContext>(options => {
@@ -81,7 +81,6 @@ app.SiteApi();
 app.CartApi();
 app.CheckoutApi();
 app.ProductApi();
-//app.UseAntiforgery();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 

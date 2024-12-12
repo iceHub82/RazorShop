@@ -53,30 +53,31 @@ public static class CartApis
             await db.SaveChangesAsync();
 
             var items = await GetCartItems(cart.Id, db)!;
-            var shoppingCartVm = GetCartViewModel(items, cache);
+            var vm = GetCartViewModel(items, cache);
 
-            return Results.Extensions.RazorSlice<Slices.CartDelete, CartVm>(shoppingCartVm!);
+            return Results.Extensions.RazorSlice<Slices.CartDelete, CartVm>(vm!);
         });
     }
 
     private static async Task<Cart> GetCart(HttpContext http, RazorShopDbContext db)
     {
-        Cart? cart;
-
-        if (!http.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
+        if (http.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
         {
-            var guid = Guid.NewGuid();
-            cartSessionGuid = guid.ToString();
-            http.Response.Cookies.Append("CartSessionId", cartSessionGuid);
+            var existingCart = await db.Carts!.FirstOrDefaultAsync(c => c.CartGuid == Guid.Parse(cartSessionGuid!));
 
-            cart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
-            db.Carts!.Add(cart);
-            await db.SaveChangesAsync();
+            if (existingCart != null)
+                return existingCart;
         }
-        else
-            cart = await db.Carts!.Where(c => c.CartGuid == Guid.Parse(cartSessionGuid!)).FirstOrDefaultAsync();
 
-        return cart!;
+        var guid = Guid.NewGuid();
+        cartSessionGuid = guid.ToString();
+        http.Response.Cookies.Append("CartSessionId", cartSessionGuid);
+
+        var newCart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
+        db.Carts!.Add(newCart);
+        await db.SaveChangesAsync();
+
+        return newCart;
     }
 
     private static async Task<List<CartItem>>? GetCartItems(int cartId, RazorShopDbContext db)
@@ -97,11 +98,12 @@ public static class CartApis
                 Id = item.Id,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,
-                Price = $"{item.Product.Price:#.00} kr",
+                Price = $"{item.Product.Price:00.#} kr.",
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
                 Quantity = item.Quantity
             }).ToList(),
-            CartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity):#.00} kr"
+            Delivery = "49 kr.",
+            CartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity) + 49:00.#} kr."
         };
     }
 }

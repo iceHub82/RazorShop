@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RazorShop.Data.Entities;
 
-public class AddressBilling
+public class AddressBill
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

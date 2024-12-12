@@ -26,6 +26,7 @@ public class CartVm
     public List<CartItemVm>? CartItems { get; set; } = new();
     public string? CartTotal { get; set; }
     public int CartQuantity { get; set; }
+    public string? Delivery { get; set; }
 }
 
 public class CheckoutVm
@@ -34,4 +35,5 @@ public class CheckoutVm
     public string? CheckoutTotal { get; set; }
     public int CheckoutQuantity { get; set; }
     public string? CheckoutFormAntiForgeryToken { get; set; }
+    public string? Delivery { get; set; }
 }

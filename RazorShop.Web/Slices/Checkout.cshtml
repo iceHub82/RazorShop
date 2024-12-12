@@ -17,78 +17,77 @@
         <hr class="border-0">
 
         <form id="submit-form" class="needs-validation" hx-post="/checkout/submit" novalidate>
-            <input type="hidden" name="__RequestVerificationToken" value="@Model.CheckoutFormAntiForgeryToken" />
-        <div class="row">
-            <div class="col">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col">
-                                    <h2 class="mb-2">Personoplysninger</h2>
-                                </div>
-                            </div>
-
-                            <hr class="border-1">
-
-                            <div class="container p-5 bg-light">
-                                <h6 class="mb-3">Leveringsadresse</h6>
-                                @(await RenderPartialAsync<Address>())
-
+            <div class="row">
+                <div class="col">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <div class="container">
                                 <div class="row">
                                     <div class="col">
-                                        <div class="form-check mt-4">
-                                            <input hx-get="/checkout/address-billing"
-                                                hx-trigger="change"
-                                                hx-target="#address-billing-div"
-                                                hx-include="[name='addressbillingCb']"
-                                                type="checkbox" name="addressbillingCb" class="form-check-input excluded-input" autocomplete="off">
-                                            <label for="alternative-address" class="form-check-label excluded-label">Vil du sende til en alternativ leveringsadresse?</label>
-                                        </div>
+                                        <h2 class="mb-2">Personoplysninger</h2>
                                     </div>
                                 </div>
-                                <div id="address-billing-div"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <hr class="border-0">
+                                <hr class="border-1">
 
-        <div class="row">
-            <div class="col">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <div class="container p-3 bg-light">
-                            <h6 class="mb-3">Kontaktoplysninger</h6>
-                            <div class="row g-3">
-                                <div class="col-4">
-                                    <label for="contact-email" class="form-label">E-mail *</label>
-                                    <input type="email" id="contact-email" class="form-control" maxlength="100" required>
-                                </div>
-                                <div class="col-4">
-                                    <label for="contact-phone" class="form-label">Mobilnummer (8 cifre) *</label>
-                                    <input type="tel" id="contact-phone" class="form-control" inputmode="numeric" required>
-                                </div>
-                            </div>
-                            <div class="form-check mt-4">
-                                <input type="checkbox" id="newsletter" class="form-check-input" autocomplete="off">
-                                <label for="newsletter" class="form-check-label excluded-label">
-                                    Tilmeld dig vores nyhedsbrev og få skræddersyede tilbud via e-mail med op til 50 % rabat på udvalgte varer.
-                                </label>
-                                <div class="mt-2">
-                                    <small>
-                                        Ved at tilmelde dig vores nyhedsbrev accepterer du vores <a href="/information/persondatapolitik" class="text-decoration-underline">persondatapolitik</a>, og du giver samtykke til, at vi må sende dig markedsføring via e-mail. Du kan trække dit samtykke tilbage når som helst.
-                                    </small>
+                                <div class="container p-5 bg-light">
+                                    <h6 class="mb-3">Leveringsadresse</h6>
+                                    @(await RenderPartialAsync<Address>())
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-check mt-4">
+                                                <input hx-get="/checkout/address-bill"
+                                                    hx-trigger="change"
+                                                    hx-target="#address-billing-div"
+                                                    hx-include="[name='addressbillCb']"
+                                                    type="checkbox" name="addressbillCb" class="form-check-input excluded-input" autocomplete="off">
+                                                <label for="alternative-address" class="form-check-label excluded-label">Vil du sende til en alternativ leveringsadresse?</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="address-billing-div"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <hr class="border-0">
+
+            <div class="row">
+                <div class="col">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <div class="container p-3 bg-light">
+                                <h6 class="mb-3">Kontaktoplysninger</h6>
+                                <div class="row g-3">
+                                    <div class="col-4">
+                                        <label for="email" class="form-label">E-mail *</label>
+                                        <input type="email" id="email" name="email" class="form-control" maxlength="100" pattern="^[a-zA-Z0-9.!#$%&’*+\/=?^_`\{\|\}~\-]+@@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label for="phone" class="form-label">Mobilnummer (8 cifre) *</label>
+                                        <input id="phone" inputmode="numeric" type="tel" maxlength="30" name="phone" autocomplete="tel" spellcheck="false" autocorrect="off" pattern="^[0-9]{8}$" required value="" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-check mt-4">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input" autocomplete="off">
+                                    <label for="newsletter" class="form-check-label excluded-label">
+                                        Tilmeld dig vores nyhedsbrev og få skræddersyede tilbud via e-mail med op til 50 % rabat på udvalgte varer.
+                                    </label>
+                                    <div class="mt-2">
+                                        <small>
+                                            Ved at tilmelde dig vores nyhedsbrev accepterer du vores <a href="/information/persondatapolitik" class="text-decoration-underline">persondatapolitik</a>, og du giver samtykke til, at vi må sende dig markedsføring via e-mail. Du kan trække dit samtykke tilbage når som helst.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <hr class="border-0">
 
@@ -98,6 +97,19 @@
                         <div class="card-body">
                             <div class="container">
                                 <h4 class="mb-3">Delivery Options</h4>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="delivery" value="1" checked>
+                                            <label class="form-check-label">
+                                                PostNord - Privatpakke Home med omdeling
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        49 kr.
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -112,6 +124,10 @@
                         <div class="card-body">
                             <div class="container">
                                 <h4 class="mb-3">Payment Options</h4>
+                                <div class="row">
+                                    <div class="col">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -120,10 +136,8 @@
 
             <button type="submit">Submit</button>
 
+            <input type="hidden" name="__RequestVerificationToken" value="@Model.CheckoutFormAntiForgeryToken" />
         </form>
-
-
-
     </div>
     <div id="header" hx-swap-oob="delete"></div>
 </section>
