@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /RazorShop.Web/appsettings.Production.json
 /RazorShop.Web/appsettings.Development.json
+/RazorShop.Web/appsettings.Development.json
