@@ -99,7 +99,7 @@ public static class CheckoutApis
 
                 AddressBill? addressBill = null;
                 if (form["addressbillCb"] == "on")
-                {
+{
                     addressBill = new();
                     addressBill.FirstName = form["bill-first-name"];
                     addressBill.LastName = form["bill-last-name"];
@@ -112,7 +112,7 @@ public static class CheckoutApis
                 }
 
                 var cart = await GetCart(http, db) ?? throw new Exception("Cart not found");
-
+                
                 var order = new Order();
                 order.CartId = cart.Id;
                 order.Created = DateTime.UtcNow;
@@ -126,45 +126,44 @@ public static class CheckoutApis
 
                 transaction.Commit();
 
-                var qpApiKey = config["PaymentApiKey"];
-                var ps = new PaymentsService(qpApiKey);
+                var paymentKey = config["PaymentApiKey"];
+
+                if (string.IsNullOrEmpty(paymentKey))
+                    throw new Exception("No PaymentKey has been provided");
+
+                var items = await GetCartItems(cart.Id, db)!;
+
+                var ps = new PaymentsService(paymentKey);
 
                 // First we must create a payment and for this we need a CreatePaymentRequestParams object
                 var createPaymentParams = new CreatePaymentRequestParams("DKK", createRandomOrderId());
                 createPaymentParams.text_on_statement = "QuickPay .NET Example";
 
-                var basketItemJeans = new Basket();
-                basketItemJeans.qty = 1;
-                basketItemJeans.item_name = "Jeans";
-                basketItemJeans.item_price = 100;
-                basketItemJeans.vat_rate = 0.25;
-                basketItemJeans.item_no = "123";
+                var basket = new Basket[items.Count];
 
-                var basketItemShirt = new Basket();
-                basketItemShirt.qty = 1;
-                basketItemShirt.item_name = "Shirt";
-                basketItemShirt.item_price = 300;
-                basketItemShirt.vat_rate = 0.25;
-                basketItemShirt.item_no = "321";
+                for (int i = 0; i < items.Count; i++)
+                {
+                    basket[i] = new Basket { item_no = items[i].Id.ToString(), item_name = items[i].Product!.Name, item_price = (double)items[i].Product!.Price, qty = items[i].Quantity, vat_rate = 0.25 };
+                }
 
-                createPaymentParams.basket = new Basket[] { basketItemJeans, basketItemShirt };
-
+                createPaymentParams.basket = basket;
                 var payment = await ps.CreatePayment(createPaymentParams);
 
                 // Second we must create a payment link for the payment. This payment link can be opened in a browser to show the payment window from QuickPay.
-                var createPaymentLinkParams = new CreatePaymentLinkRequestParams((int)((basketItemJeans.qty * basketItemJeans.item_price + basketItemShirt.qty * basketItemShirt.item_price) * 100));
+                var createPaymentLinkParams = new CreatePaymentLinkRequestParams((int)(items.Sum(c => c.Product!.Price * c.Quantity) * 100));
                 createPaymentLinkParams.payment_methods = "creditcard";
                 //createPaymentLinkParams.callback_url = "/Callback";
                 createPaymentLinkParams.auto_capture = true; // This will automatically capture the payment right after it has been authorized.
 
                 var paymentLink = await ps.CreateOrUpdatePaymentLink(payment.id, createPaymentLinkParams);
 
-                var test = $"""
+                var redirectToPaymentScreenScript = $"""
                     <script>
                         window.location.href = '{paymentLink.url}';
                     </script>
                 """;
-                return Results.Content(test);
+
+                return Results.Content(redirectToPaymentScreenScript);
             }
             catch (AntiforgeryValidationException ex)
             {

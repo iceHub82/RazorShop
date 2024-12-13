@@ -3,14 +3,19 @@ using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Apis;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, config) => {
+    config.ReadFrom.Configuration(context.Configuration);
+});
 
 var connStr = builder.Configuration.GetConnectionString("RazorShopDb");
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
 builder.Services.AddDbContext<RazorShopDbContext>(options => {
-    if (env == "Development")
+    if (env == "Local")
     {
         options.EnableSensitiveDataLogging();
         options.LogTo(Console.WriteLine, LogLevel.Debug);

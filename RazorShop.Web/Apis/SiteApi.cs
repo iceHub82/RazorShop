@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
+using RazorShop.Data.Entities;
 using RazorShop.Web.Models.ViewModels;
 
 namespace RazorShop.Web.Apis;
@@ -21,10 +22,10 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
         });
 
-        app.MapPost("/Callback", (HttpContext context) =>
+        app.MapGet("/Callback", (HttpContext context, ILogger<object> log) =>
         {
+            log.LogInformation("Callback url called xxxxxxxxxxxxxxxx");
             
-
             return Results.Extensions.RazorSlice<Pages.Error>();
         });
 
