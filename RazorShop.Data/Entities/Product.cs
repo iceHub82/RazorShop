@@ -14,6 +14,6 @@ public class Product
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
 
-    // Navigation property for Sizes
     public ICollection<ProductSize>? ProductSizes { get; set; }
+    public ICollection<ProductImage>? ProductImages { get; set; }
 }

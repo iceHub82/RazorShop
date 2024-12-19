@@ -2,53 +2,49 @@
 
 <div class="row">
     <div class="col">
-        <h1 class="mb-2">Your shopping cart (@Model.CheckoutQuantity items)</h1>
+        <h4 class="mt-4 mb-4">Ordreoversigt</h4>
     </div>
 </div>
 <div class="row border-bottom">
-    <div class="col">
-        Product
+    <div class="col-6">
+        Produkt
     </div>
-    <div class="col">
-        Quantity
+    <div class="col-4">
+        Antal
     </div>
-    <div class="col text-end">
-        Price
+    <div class="col-2 text-end">
+        Pris
     </div>
 </div>
 @foreach (var item in Model.CheckoutItems!)
 {
-    <div class="row border-bottom align-items-center">
-        <div class="col">
-            Image
-        </div>
-        <div class="col">
+    <div class="row pb-4 pt-4 border-bottom align-items-center">
+        <div class="col-6">
             <div class="row">
-                <div class="col">
-                    Brand
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
+                <div class="col-4">
                     <a href="/Product/@item.ProductId" class="text-primary text-decoration-underline" style="cursor: pointer;">
-                        @item.Name
+                        <img class="img-fluid" src="/products/@item.ProductId/@($"{item.ProductId}_thumbnail.webp")" alt="..." />
                     </a>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    @item.Description
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    @item.Size
+                <div class="pt-4 col-6">
+                    <div class="row">
+                        <div class="col">
+                            <a href="/Product/@item.ProductId" class="text-primary text-decoration-underline" style="cursor: pointer;">
+                                @item.Name
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            Størrelse: @item.Size
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col">
+        <div class="col-4">
             <div class="row">
-                <div class="col">
+                <div class="col-5">
                     <select id="quantityDd" hx-get="/checkout/update/@item.Id"
                             hx-trigger="change"
                             hx-target="#cart-container"
@@ -60,10 +56,9 @@
                         }
                     </select>
                 </div>
-                <div class="col">
+                <div class="col-7">
                     <div hx-delete="/checkout/delete/@item.Id"
                     @(Model.CheckoutItems.Count == 1 ? "hx-target=#section hx-swap=outerHTML" : "hx-target=#cart-container")
-
                          role="button" class="col">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                             <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
@@ -72,7 +67,7 @@
                 </div>
             </div>
         </div>
-        <div class="col text-end">
+        <div class="col-2 text-end">
             @item.Price
         </div>
     </div>
@@ -83,7 +78,7 @@
     <div class="col-4">
         <div class="row">
             <div class="col">
-                Delivery
+                Levering
             </div>
             <div class="col text-end">
                 49 kr.

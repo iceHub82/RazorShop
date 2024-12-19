@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\products\.gitignore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.9.0" />
     <PackageReference Include="QuickPay.API.Client" Version="2.2.4" />
     <PackageReference Include="RazorSlices" Version="0.8.1" />
     <PackageReference Include="RestSharp" Version="112.1.0" />
@@ -22,6 +27,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\img\products\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\products\.gitignore" />
   </ItemGroup>
 
 </Project>

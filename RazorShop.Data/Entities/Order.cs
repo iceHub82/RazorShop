@@ -8,10 +8,11 @@ public class Order
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+    public string? Reference { get; set; }
     public int AddressId { get; set; }
     public Address? Address { get; set; }
     public int? AddressBillId { get; set; }
-    public AddressBill? AddressBill { get; set; }
+    public Address? AddressBill { get; set; }
     public int ContactId { get; set; }
     public Contact? Contact { get; set; }
     public int CartId { get; set; }

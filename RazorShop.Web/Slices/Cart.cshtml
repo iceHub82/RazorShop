@@ -14,44 +14,51 @@
                 {
                     <div class="row">
                         <div class="col text-center">
-                            <strong>Your shopping cart</strong>
+                            <strong>Indkøbsvogn</strong>
                         </div>
                     </div>
 
                     @foreach (var item in Model.CartItems!)
                     {
                         <div class="row">
-                            <div class="col">
-                                @item.Name
+                            <div class="col-4">
+                                <a href="/Product/@item.ProductId">
+                                    <img src="/products/@item.ProductId/@($"{item.ProductId}_thumbnail.webp")" alt="..." />
+                                </a>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                @item.Description
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col">
+                                        <a href="/Product/@item.ProductId">
+                                            @item.Name
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        Størrelse: @item.Size
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        @item.Price
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                @item.Size
-                            </div>
-                            <div class="col">
-                                @item.Price
-                            </div>
-                            <div hx-delete="/cart/delete/@item.Id"
-                                 hx-target="#shopping-cart-dropdown"
-                                 role="button" class="col">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                                </svg>
-                            </div>
-                            <div class="col">
-                                Quantity: @item.Quantity
+                            <div class="col-2">
+                                <div hx-delete="/cart/delete/@item.Id"
+                                     hx-target="#shopping-cart-dropdown"
+                                     role="button" class="col">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     }
                     <div class="row pt-2 border-top">
                         <div class="col">
-                            Delivery:
+                            Levering:
                         </div>
                         <div class="col text-end">
                             49 kr.

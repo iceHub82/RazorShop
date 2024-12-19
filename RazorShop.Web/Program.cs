@@ -81,7 +81,7 @@ app.Use(async (context, next) => {
 
 app.UseSession();
 app.UseStatusCodePages();
-app.UseStaticFiles();
+app.UseStaticFiles();   
 app.SiteApi();
 app.CartApi();
 app.CheckoutApi();

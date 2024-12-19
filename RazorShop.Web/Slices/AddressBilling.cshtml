@@ -1,38 +1,38 @@
 ﻿@inherits RazorSlice
 
-<div id="address-billing-div">
+<div class="mt-2" id="address-bill-div">
     <h6 class="mb-3">Fakturaadresse</h6>
-    <div class="row g-3">
-        <div class="col-3">
+    <div class="row">
+        <div class="col-md-3">
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="billing-first-name" placeholder="" maxlength="30" pattern="^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]{1,70}$" required />
-                <label for="billing-first-name">First Name</label>
+                <input type="text" class="form-control" id="bill-first-name" name="bill-first-name" placeholder="" maxlength="30" pattern="^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]{1,70}$" required />
+                <label for="bill-first-name">Fornavn</label>
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-md-3">
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="billing-last-name" placeholder="" maxlength="30" pattern="^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]{2,70}$" required>
-                <label for="billing-last-name">Last Name</label>
+                <input type="text" class="form-control" id="bill-last-name" name="bill-last-name" placeholder="" maxlength="30" pattern="^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]{2,70}$" required>
+                <label for="bill-last-name">Efternavn</label>
             </div>
         </div>
     </div>
-    <div class="row g-3">
-        <div class="col-3">
+    <div class="row">
+        <div class="col-md-3">
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="billing-address" placeholder="" maxlength="40" pattern="^.{3,64}$" required>
-                <label for="billing-address">Address</label>
+                <input type="text" class="form-control" id="bill-address" name="bill-address" placeholder="" maxlength="40" pattern="^.{3,64}$" required>
+                <label for="bill-address">Adresse</label>
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-md-3">
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="billing-zip-code" placeholder="" pattern="^[0-9]{2}[ ]?[0-9]{2}$" required>
-                <label for="billing-zip-code">Zip Code</label>
+                <input type="text" class="form-control" id="bill-zip-code" name="bill-zip-code" placeholder="" pattern="^[0-9]{2}[ ]?[0-9]{2}$" required>
+                <label for="bill-zip-code">Postnummer</label>
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-md-3">
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="billing-city" placeholder="" maxlength="30" pattern="^[a-zA-ZåäöÅÄÖæøÆØ]{1}[a-zA-ZåäöÅÄÖæøÆØ.\-]*([ ]{1}[a-zA-ZåäöÅÄÖæøÆØ.\-]+)*$" required>
-                <label for="billing-city">City</label>
+                <input type="text" class="form-control" id="bill-city" name="bill-city" placeholder="" maxlength="30" pattern="^[a-zA-ZåäöÅÄÖæøÆØ]{1}[a-zA-ZåäöÅÄÖæøÆØ.\-]*([ ]{1}[a-zA-ZåäöÅÄÖæøÆØ.\-]+)*$" required>
+                <label for="bill-city">By</label>
             </div>
         </div>
     </div>

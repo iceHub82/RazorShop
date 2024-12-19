@@ -95,6 +95,7 @@ public static class CartApis
         return new CartVm {
             CartQuantity = items.Sum(c => c.Quantity),
             CartItems = items.Select(item => new CartItemVm {
+                ProductId = item.ProductId,
                 Id = item.Id,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,

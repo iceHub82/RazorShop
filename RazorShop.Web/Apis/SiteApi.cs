@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
+using RazorShop.Web.Models;
 using RazorShop.Web.Models.ViewModels;
+using System.Text.Json;
 
 namespace RazorShop.Web.Apis;
 
@@ -20,13 +22,6 @@ public static class SiteApis
                 .ToListAsync();
 
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
-        });
-
-        app.MapGet("/Callback", (HttpContext context, ILogger<object> log) =>
-        {
-            log.LogInformation("Callback url called xxxxxxxxxxxxxxxx");
-            
-            return Results.Extensions.RazorSlice<Pages.Error>();
         });
 
         app.MapGet("/Redirects", (int statusCode) =>
