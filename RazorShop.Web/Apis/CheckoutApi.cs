@@ -305,6 +305,9 @@ public static class CheckoutApis
 
         var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
 
+        var total = items.Sum(c => c.Product!.Price * c.Quantity) + 49;
+        var vat = total * 0.25m;
+
         return new CheckoutVm {
             CheckoutQuantity = items.Sum(c => c.Quantity),
             CheckoutItems = items.Select(item => new CheckoutItemVm {
@@ -316,8 +319,9 @@ public static class CheckoutApis
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
                 Quantity = item.Quantity
             }).ToList(),
+            VAT = $"{vat:#.00} kr.",
             Delivery = "49 kr.",
-            CheckoutTotal = $"{(items.Sum(c => c.Product!.Price * c.Quantity)) + 49:00.#} kr."
+            CheckoutTotal = $"{total:00.#} kr."
         };
     }
 
