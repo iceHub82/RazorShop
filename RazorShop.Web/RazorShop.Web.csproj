@@ -26,10 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\img\products\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="wwwroot\products\.gitignore" />
   </ItemGroup>
 
