@@ -315,13 +315,13 @@ public static class CheckoutApis
                 ProductId = item.ProductId,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,
-                Price = $"{item.Product.Price * item.Quantity:00.#} kr.",
+                Price = $"{item.Product.Price * item.Quantity:#.00} kr",
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
                 Quantity = item.Quantity
             }).ToList(),
-            VAT = $"{vat:#.00} kr.",
-            Delivery = "49 kr.",
-            CheckoutTotal = $"{total:00.#} kr."
+            VAT = $"{vat:#.00} kr",
+            Delivery = "49.00 kr",
+            CheckoutTotal = $"{total:#.00} kr"
         };
     }
 
@@ -364,7 +364,7 @@ public static class CheckoutApis
             mailStr += $"<img src='{mainImgPath}' alt='&nbsp;' width='77' style='display: block; background-color: rgb(55, 55, 55) !important; line-height: 111px; font-size: 1px;'>";
             mailStr += "</a>";
             mailStr += "</td>";
-            mailStr += $"<td align='left' valign='top'><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%'><tbody><tr><td style='font-family:Tiempos,Times New Roman,serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#66676E'>Størrelse: {item.Product.Name} </td></tr></tbody></table></td><td align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{price} DKK </td></tr></tbody></table><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td aria-hidden='true' height='8' style='font-size:0px; line-height:0px'>&nbsp;</td></tr><tr><td align='left'></td></tr></tbody></table></td>";
+            mailStr += $"<td align='left' valign='top'><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%'><tbody><tr><td style='font-family:Tiempos,Times New Roman,serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#66676E'>Størrelse: {item.Product.Name} </td></tr></tbody></table></td><td align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{price:#.00} kr </td></tr></tbody></table><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td aria-hidden='true' height='8' style='font-size:0px; line-height:0px'>&nbsp;</td></tr><tr><td align='left'></td></tr></tbody></table></td>";
             mailStr += "";
             mailStr += "</tr>";
             mailStr += "</tbody>";
@@ -391,7 +391,7 @@ public static class CheckoutApis
         mailStr += "</tr>";
         mailStr += "<tr>";
         mailStr += $"<td {successMailStyleBottom}>Købsbeløb</td>";
-        mailStr += $"<td align='right' {successMailStyleBottom}>{totalPrice}</td>";
+        mailStr += $"<td align='right' {successMailStyleBottom}>{totalPrice:#.00} kr</td>";
         //successMailStr += $"<td align='right' {successMailStyleBottom}>{totalPrice} {currency.Symbol}</td>";
         mailStr += "</tr>";
 
@@ -403,7 +403,7 @@ public static class CheckoutApis
         //    successMailStr += "</tr>";
         //}
 
-        var deliveryStr = delivery == 0.0m ? "Gratis" : delivery.ToString() /*+ $" {currency.Symbol}"*/;
+        var deliveryStr = delivery == 0.0m ? "Gratis" : "49.00 kr" /*+ $" {currency.Symbol}"*/;
 
         mailStr += "<tr>";
         mailStr += $"<td {successMailStyleBottom}>Levering</td>";
@@ -416,7 +416,7 @@ public static class CheckoutApis
         mailStr += "<tr>";
         mailStr += "<td width='50%' align='left' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif;'><span style='font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>Total</span>&nbsp;<span style='font-family: HelveticaNow, Helvetica, sans-serif, serif, EmojiFont; font-size: 12px; letter-spacing: 0px; line-height: 16px; color: rgb(102, 103, 110); text-align: left;'>inkl. moms</span></td>";
         //successMailStr += $"<td width='50%' align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>{totalPrice + delivery} {currency.Symbol}</td>";
-        mailStr += $"<td width='50%' align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>{totalPrice + delivery}</td>";
+        mailStr += $"<td width='50%' align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>{totalPrice + delivery:#.00} kr</td>";
         mailStr += "</tr>";
         mailStr += "</tbody>";
         mailStr += "</table>";

@@ -99,12 +99,12 @@ public static class CartApis
                 Id = item.Id,
                 Name = item.Product!.Name,
                 Description = item.Product.Description,
-                Price = $"{item.Product.Price:00.#} kr.",
+                Price = $"{item.Product.Price:#.00} kr",
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
                 Quantity = item.Quantity
             }).ToList(),
-            Delivery = "49 kr.",
-            CartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity) + 49:00.#} kr."
+            Delivery = "49.00 kr",
+            CartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity) + 49:#.00} kr"
         };
     }
 }

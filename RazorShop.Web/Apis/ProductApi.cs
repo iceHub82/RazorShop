@@ -67,7 +67,7 @@ public static class ProductApis
     {
         return await db.Products!
                 .AsNoTracking()
-                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = p.Price.ToString() })
+                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
     }
 
@@ -76,7 +76,7 @@ public static class ProductApis
         return await db.Products!
                 .AsNoTracking()
                 .Where(p => p.Category!.Name == name)
-                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = p.Price.ToString() })
+                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
     }
 }

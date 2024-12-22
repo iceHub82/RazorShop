@@ -18,7 +18,7 @@ public static class SiteApis
             ProductsVm vm = new();
             vm.Products = await db.Products!
                 .AsNoTracking()
-                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = p.Price.ToString() })
+                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
 
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);

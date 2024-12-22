@@ -49,17 +49,23 @@
                     <div class="col-3">
                         <input name="quantity" type="number" class="form-control" value="1" min="1" max="10">
                     </div>
-                    <div class="col">
+                    <div class="col-3">
                         <button hx-get="/cart/add/@Model.Id"
                                 hx-include="[name='size'], [name='quantity']"
                                 hx-target="#cart-div"
                                 hx-swap="outerHTML"
-                                class="btn btn-outline-dark flex-shrink-0">
+                                hx-indicator="#spinner"
+                                class="btn btn-outline-dark flex-shrink-0 w-100">
                             <i class="bi-cart-fill me-1"></i>
-                            Add to cart
+                            <span class="button-text">Add to cart</span>
                         </button>
                     </div>
-                </div>
+                    <div class="col-6 px-0 pt-1">
+                        <div id="spinner" class="spinner-border spinner-border-sm htmx-indicator" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div> 
             </div>
         </div>
     </div>
