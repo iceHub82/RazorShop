@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Antiforgery;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
@@ -8,9 +9,7 @@ using RazorShop.Web.Models.ViewModels;
 using Quickpay.Services;
 using Quickpay.RequestParams;
 using Quickpay.Models.Payments;
-using Quickpay.Models.Account;
 using Address = RazorShop.Data.Entities.Address;
-using System.Globalization;
 
 namespace RazorShop.Web.Apis;
 
@@ -179,17 +178,17 @@ public static class CheckoutApis
             }
             catch (AntiforgeryValidationException ex)
             {
-                Console.WriteLine("AntiforgeryValidationException was thrown");
+                log.LogError("AntiforgeryValidationException was thrown");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Processing is cancelled.");
+                log.LogError("Processing is cancelled.");
             }
 
             return Results.Content(string.Empty);
         });
 
-        app.MapGet("/Success/{referenceId}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, string? referenceId, IConfiguration config, ILogger<object> log) =>
+        app.MapGet("/Success/{referenceId}", async (IWebHostEnvironment env, HttpContext http, IMemoryCache cache, RazorShopDbContext db, string? referenceId, IConfiguration config, ILogger<object> log) =>
         {
             try
             {
@@ -209,7 +208,9 @@ public static class CheckoutApis
 
                     var items = await GetCartItems(order.Cart!.Id, db)!;
 
-                    var productsHtml = GenerateProductsHtmlStringInDanish(baseUrl, items, "DKK", 49);
+                    var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
+
+                    var productsHtml = GenerateProductsHtmlStringInDanish(baseUrl, items, sizes, "DKK", 49);
 
                     var handler = new EmailHandler(config);
 
@@ -250,8 +251,6 @@ public static class CheckoutApis
             if (!await db.Orders!.AnyAsync(o => o.Reference == referenceId))
             {
                 log.LogWarning($"Unsuccessful order page called with unknown reference Id: {referenceId}");
-
-
             }
 
             return Results.Content(string.Empty);
@@ -339,7 +338,7 @@ public static class CheckoutApis
         return addressStr;
     }
 
-    private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, string countryCode, /*Currency currency,*/ decimal delivery)
+    private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, IEnumerable<Size> sizes, string countryCode, /*Currency currency,*/ decimal delivery)
     {
         
         var mailStr = string.Empty;
@@ -355,6 +354,10 @@ public static class CheckoutApis
             var mainImgPath = $"{baseUrl}/products/{productId}/{productId}_1.webp";
 
             var price = item.Product!.Price;
+            var quantity = item.Quantity;
+            var quantityPrice = price * quantity;
+
+            var size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name;
 
             mailStr += "<table role='presentation' border='0' cellpadding='0' cellspacing='0' width='100%'>";
             mailStr += "<tbody>";
@@ -364,7 +367,7 @@ public static class CheckoutApis
             mailStr += $"<img src='{mainImgPath}' alt='&nbsp;' width='77' style='display: block; background-color: rgb(55, 55, 55) !important; line-height: 111px; font-size: 1px;'>";
             mailStr += "</a>";
             mailStr += "</td>";
-            mailStr += $"<td align='left' valign='top'><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%'><tbody><tr><td style='font-family:Tiempos,Times New Roman,serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#66676E'>Størrelse: {item.Product.Name} </td></tr></tbody></table></td><td align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{price:#.00} kr </td></tr></tbody></table><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td aria-hidden='true' height='8' style='font-size:0px; line-height:0px'>&nbsp;</td></tr><tr><td align='left'></td></tr></tbody></table></td>";
+            mailStr += $"<td align='left' valign='top'><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%'><tbody><tr><td style='font-family:Tiempos,Times New Roman,serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>Antal: {item.Quantity}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#66676E'>Størrelse: {size} </td></tr></tbody></table></td><td align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{price:#.00} kr </td></tr></tbody></table><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td aria-hidden='true' height='8' style='font-size:0px; line-height:0px'>&nbsp;</td></tr><tr><td align='left'></td></tr></tbody></table></td>";
             mailStr += "";
             mailStr += "</tr>";
             mailStr += "</tbody>";
@@ -378,7 +381,7 @@ public static class CheckoutApis
             }
             i++;
 
-            totalPrice += price;
+            totalPrice += quantityPrice;
         }
 
         var successMailStyleBottom = "width='50%' style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#1A1A1A;'";
@@ -403,7 +406,7 @@ public static class CheckoutApis
         //    successMailStr += "</tr>";
         //}
 
-        var deliveryStr = delivery == 0.0m ? "Gratis" : "49.00 kr" /*+ $" {currency.Symbol}"*/;
+        var deliveryStr = delivery == 0.0m ? "Gratis" : $"{delivery:#.00} kr" /*+ $" {currency.Symbol}"*/;
 
         mailStr += "<tr>";
         mailStr += $"<td {successMailStyleBottom}>Levering</td>";

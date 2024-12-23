@@ -8,7 +8,7 @@
 {
     <div class="row">
         <div class="col text-center">
-            <strong>Your shopping cart</strong>
+            <strong>Din Indkøbsvogn</strong>
         </div>
     </div>
 
@@ -38,6 +38,11 @@
                         @item.Price
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col">
+                        Antal: @item.Quantity
+                    </div>
+                </div>
             </div>
             <div class="col-2">
                 <div hx-delete="/cart/delete/@item.Id"
@@ -62,7 +67,7 @@
         <div class="col">
             Total:
         </div>
-        <div class="col">
+        <div class="col text-end">
             @Model.CartTotal
         </div>
     </div>
