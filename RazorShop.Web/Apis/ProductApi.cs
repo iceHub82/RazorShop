@@ -43,7 +43,7 @@ public static class ProductApis
                 .Include(x => x.ProductSizes!)
                 .ThenInclude(x => x.Size).AsNoTracking().FirstAsync(p => p.Id == id);
 
-            var productVm = new ProductVm { Id = product.Id, Name = product.Name, Price = product.Price.ToString() };
+            var productVm = new ProductVm { Id = product.Id, Name = product.Name, Price = $"{product.Price:#.00} kr" };
 
             if (product.ProductSizes!.Any())
             {

@@ -7,77 +7,84 @@
 @if (Model.CartItems!.Any())
 {
     <div class="row">
-        <div class="col text-center">
+        <div class="col text-center pt-2 pb-3">
             <strong>Din Indkøbsvogn</strong>
         </div>
     </div>
 
-    @foreach (var item in Model.CartItems!)
-    {
-        <div class="row">
-            <div class="col-4">
-                <a href="/Product/@item.ProductId">
-                    <img src="/products/@item.ProductId/@($"{item.ProductId}_thumbnail.webp")" alt="..." />
-                </a>
+    <div style="overflow-y:auto; max-height:360px;scrollbar-width:thin;overflow-x: hidden;">
+
+        @foreach (var item in Model.CartItems!)
+        {
+            <div class="row">
+                <div class="col-4">
+                    <a href="/Product/@item.ProductId">
+                        <img src="/products/@item.ProductId/@($"{item.ProductId}_thumbnail.webp")" alt="..." />
+                    </a>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col">
+                            <a href="/Product/@item.ProductId">
+                                @item.Name
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            Størrelse: @item.Size
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            @item.Price
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            Antal: @item.Quantity
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div hx-delete="/cart/delete/@item.Id"
+                         hx-target="#shopping-cart-dropdown"
+                         role="button" class="col">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+                        </svg>
+                    </div>
+                </div>
             </div>
-            <div class="col-6">
-                <div class="row">
-                    <div class="col">
-                        <a href="/Product/@item.ProductId">
-                            @item.Name
-                        </a>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        Størrelse: @item.Size
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        @item.Price
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        Antal: @item.Quantity
-                    </div>
-                </div>
-            </div>
-            <div class="col-2">
-                <div hx-delete="/cart/delete/@item.Id"
-                     hx-target="#shopping-cart-dropdown"
-                     role="button" class="col">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-    }
-    <div class="row pt-2 border-top">
+        }
+
+    </div>
+
+    <div class="row mt-3 pt-3 pb-3 border-top">
         <div class="col">
-            Levering:
+            Forsendelse:
         </div>
         <div class="col text-end">
             49.00 kr
         </div>
     </div>
-    <div class="row border-top">
-        <div class="col">
-            Total:
+    <div class="row pt-3 pb-3 border-top">
+        <div class="col d-flex justify-content-between align-items-center">
+            <div>
+                Pris i alt <span class="text-muted" style="font-size: 0.7rem;">inkl. moms</span>
+            </div>
         </div>
         <div class="col text-end">
             @Model.CartTotal
         </div>
     </div>
-    <div class="row">
+    <div class="row pt-2 pb-1">
         <div class="col">
-            <a href="/Checkout" class="btn btn-outline-dark flex-shrink-0 w-100" role="button">Checkout</a>
+            <a href="/Checkout" class="btn btn-outline-dark flex-shrink-0 w-100" role="button">Indkøbskurv</a>
         </div>
     </div>
 }
 else
 {
-    <h4>Your shopping cart is empty</h4>
+    <h4>Din indkøbsvogn er tom!</h4>
 }

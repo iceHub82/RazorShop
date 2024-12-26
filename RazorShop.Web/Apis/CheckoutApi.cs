@@ -116,7 +116,7 @@ public static class CheckoutApis
 
                 var cart = await GetCart(http, db) ?? throw new Exception("Cart not found");
 
-                var reference = generateReferenceId();
+                var reference = GenerateReference();
 
                 var order = new Order();
                 order.Reference = reference;
@@ -188,61 +188,70 @@ public static class CheckoutApis
             return Results.Content(string.Empty);
         });
 
-        app.MapGet("/Success/{referenceId}", async (IWebHostEnvironment env, HttpContext http, IMemoryCache cache, RazorShopDbContext db, string? referenceId, IConfiguration config, ILogger<object> log) =>
+        app.MapGet("/Success/{reference}", async (IWebHostEnvironment env, HttpContext http, IMemoryCache cache, RazorShopDbContext db, string? reference, IConfiguration config, ILogger<object> log) =>
         {
+            var vm = new OrderSuccessVm();
+
             try
             {
-                var order = await db.Orders!.Include(o => o.Cart)!.Include(o => o.Address).ThenInclude(o => o!.Country!).Include(o => o.AddressBill).FirstOrDefaultAsync(o => o.Reference == referenceId);
+                var order = await db.Orders!.Include(o => o.Cart)!.Include(o => o.Address).ThenInclude(o => o!.Country!).Include(o => o.AddressBill).FirstOrDefaultAsync(o => o.Reference == reference);
 
-                if (order != null)
-                {
-                    order.StatusId = 2; // Paid
-                    order.Updated = DateTime.UtcNow;
-                    await db.SaveChangesAsync();
+                if (order == null || order!.StatusId == 2) {
 
-                    var address = order.AddressBill ?? order.Address;
+                    log.LogWarning($"Order success page called with unknown reference Id: {reference}");
 
-                    var addressHtml = GenerateAddressHtml(address!);
-
-                    var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}";
-
-                    var items = await GetCartItems(order.Cart!.Id, db)!;
-
-                    var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
-
-                    var productsHtml = GenerateProductsHtmlStringInDanish(baseUrl, items, sizes, "DKK", 49);
-
-                    var handler = new EmailHandler(config);
-
-                    var emailTemplatePath = $"{env.WebRootPath}/templates/email/order-success-email-danish.htm";
-
-                    var dateStr = DateTime.Now.ToString("dd. MMMM yyyy", new CultureInfo("da-DK"));
-
-                    //var emailLogoPath = $"{baseUrl}/img/email-logo.png";
-
-                    var content = handler.CreateMessageBody(emailTemplatePath, /*customer.Name,*/ addressHtml, dateStr, order.Reference!, productsHtml/*, emailLogoPath*/);
-
-                    var contact = await db.Contacts!.FirstAsync(c => c.Id == order.ContactId);
-
-                    var message = new Message([contact.Email!], $"Din bestilling er modtaget: {order.Reference}", content);
-                    handler.SendEmail(message);
-
-                    http.Session.Clear();
-                    http.Response.Cookies.Delete("CartSessionId");
-                }
-                else
-                {
-                    log.LogWarning($"Order success page called with unknown reference Id: {referenceId}");
+                    return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm); // Change this to error or not found
                 }
 
-                var vm = new OrderSuccessVm();
+                order.StatusId = 2; // Paid
+                order.Updated = DateTime.UtcNow;
+                await db.SaveChangesAsync();
+
+                var address = order.AddressBill ?? order.Address;
+
+                var addressHtml = GenerateAddressHtml(address!);
+
+                var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}";
+
+                var items = await GetCartItems(order.Cart!.Id, db)!;
+
+                var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
+
+                var productsHtml = GenerateProductsHtmlStringInDanish(baseUrl, items, sizes, "DKK", 49);
+
+                var handler = new EmailHandler(config);
+
+                var dateStr = DateTime.Now.ToString("dd. MMMM yyyy", new CultureInfo("da-DK"));
+
+                //var emailLogoPath = $"{baseUrl}/img/email-logo.png";
+                var emailTemplatePath = $"{env.WebRootPath}/templates/email/order-success-email-danish.htm";
+
+                var content = handler.CreateMessageBody(emailTemplatePath, /*customer.Name,*/ addressHtml, dateStr, order.Reference!, productsHtml/*, emailLogoPath*/);
+
+                var contact = await db.Contacts!.FirstAsync(c => c.Id == order.ContactId);
+
+                var message = new Message([contact.Email!], $"Din bestilling er modtaget: {order.Reference}", content);
+                handler.SendEmail(message);
+
+                http.Session.Clear();
+                http.Response.Cookies.Delete("CartSessionId");
+
+                //if (order != null)
+                //{
+
+                //}
+                //else
+                //{
+                //    log.LogWarning($"Order success page called with unknown reference Id: {referenceId}");
+                //}
 
                 return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
             }
             catch (Exception ex)
             {
+                log.LogError(ex, $"Order success page error with reference Id: {reference}");
 
-                throw;
+                return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
             }
         });
 
@@ -257,7 +266,7 @@ public static class CheckoutApis
         });
     }
 
-    private static string generateReferenceId()
+    private static string GenerateReference()
     {
         return Guid.NewGuid().ToString().Replace("-", "")[..20];
     }
