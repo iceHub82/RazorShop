@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RazorShop.Data.Entities;
-using System.Reflection.Emit;
 
 namespace RazorShop.Data;
 
@@ -22,6 +21,7 @@ public class RazorShopDbContext : DbContext
     public DbSet<Address>? Addresses { get; set; }
     public DbSet<Country>? Countries { get; set; }
     public DbSet<Contact>? Contacts { get; set; }
+    public DbSet<User>? Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

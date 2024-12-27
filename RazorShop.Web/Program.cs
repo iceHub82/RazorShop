@@ -34,6 +34,16 @@ builder.Services.AddSession(options => {
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddAuthentication("MyCookieAuth")
+    .AddCookie("MyCookieAuth", options => {
+        options.Cookie.Name = "MyAppCookie";
+        options.LoginPath = "/Login";
+        options.ExpireTimeSpan = TimeSpan.FromDays(90);
+        options.SlidingExpiration = false;
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope()) {
@@ -79,6 +89,8 @@ app.Use(async (context, next) => {
     await next();
 });
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseSession();
 app.UseStatusCodePages();
 app.UseStaticFiles();   
@@ -86,6 +98,7 @@ app.SiteApi();
 app.CartApi();
 app.CheckoutApi();
 app.ProductApi();
+app.AdminApi();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 

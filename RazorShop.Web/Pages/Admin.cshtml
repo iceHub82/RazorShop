@@ -1,0 +1,10 @@
+﻿@inherits RazorSliceHttpResult
+@implements IUsesLayout<_AdminLayout, LayoutModel>
+
+@(await RenderPartialAsync<Admin>())
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Admin",
+        };
+}
