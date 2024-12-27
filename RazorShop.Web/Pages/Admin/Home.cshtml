@@ -1,0 +1,10 @@
+﻿@inherits RazorSliceHttpResult
+@implements IUsesLayout<_AdminLayout, LayoutModel>
+
+@(await RenderPartialAsync<RazorShop.Web.Slices.Admin.Home>())
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Admin - Home",
+        };
+}
