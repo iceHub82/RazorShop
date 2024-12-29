@@ -1,3 +1,39 @@
 ﻿@inherits RazorSlice
 
 <div>Products</div>
+
+<table id="products-datatable" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>Name</th>
+        </tr>
+    </thead>
+</table>
+
+<div class="modal fade" id="product-modal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div id="content" class="modal-content">
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $('#products-datatable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            ajax: { url: '/admin/products-table' },
+            columns: [{
+                data: null, name: 'Name',
+                render: function(data) {
+                    return `<a hx-get="/admin/product-modal/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#product-modal">${data.name}</a>`;
+                }
+            }],
+            initComplete: function() {
+                htmx.process(document.getElementById('products-datatable'));
+            }
+        });
+    });
+</script>

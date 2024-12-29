@@ -12,6 +12,8 @@ public class Product
     public string? Description { get; set; }
     public string? ShortDescription { get; set; }
     public decimal Price { get; set; }
+    public DateTime Created { get; set; }
+    public DateTime? Updated { get; set; }
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
 

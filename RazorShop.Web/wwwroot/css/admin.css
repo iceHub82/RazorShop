@@ -123,3 +123,23 @@
     top: 50%;
     left: 50%;
 }
+
+.link-without-href {
+    color: blue; /* Default link color */
+    text-decoration: underline; /* Adds the underline */
+    cursor: pointer; /* Ensures it looks clickable */
+}
+
+.link-without-href:focus {
+    outline: 2px solid #0056b3; /* Focus outline for accessibility */
+    outline-offset: 2px;
+}
+
+.link-without-href:active {
+    color: darkblue; /* Change color when active (clicked) */
+}
+
+.link-without-href:hover {
+    color: #0056b3; /* Slightly darker blue on hover */
+    text-decoration: none; /* Optional: remove underline on hover */
+}
