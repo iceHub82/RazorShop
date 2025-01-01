@@ -91,6 +91,7 @@ app.Use(async (context, next) => {
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 app.UseSession();
 app.UseStatusCodePages();
 app.UseStaticFiles();   

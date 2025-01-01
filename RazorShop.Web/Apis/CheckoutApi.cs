@@ -9,6 +9,7 @@ using RazorShop.Web.Models.ViewModels;
 using Quickpay.Services;
 using Quickpay.RequestParams;
 using Quickpay.Models.Payments;
+
 using Address = RazorShop.Data.Entities.Address;
 
 namespace RazorShop.Web.Apis;
@@ -215,7 +216,7 @@ public static class CheckoutApis
 
                 var items = await GetCartItems(order.Cart!.Id, db)!;
 
-                var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
+                var sizes = (IEnumerable<Data.Entities.Size>)cache.Get("sizes")!;
 
                 var productsHtml = GenerateProductsHtmlStringInDanish(baseUrl, items, sizes, "DKK", 49);
 
@@ -311,7 +312,7 @@ public static class CheckoutApis
         if (items.Count == 0)
             return new CheckoutVm();
 
-        var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
+        var sizes = (IEnumerable<Data.Entities.Size>)cache.Get("sizes")!;
 
         var total = items.Sum(c => c.Product!.Price * c.Quantity) + 49;
         var vat = total * 0.25m;
@@ -347,7 +348,7 @@ public static class CheckoutApis
         return addressStr;
     }
 
-    private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, IEnumerable<Size> sizes, string countryCode, /*Currency currency,*/ decimal delivery)
+    private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, IEnumerable<Data.Entities.Size> sizes, string countryCode, /*Currency currency,*/ decimal delivery)
     {
         
         var mailStr = string.Empty;

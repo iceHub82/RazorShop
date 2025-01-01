@@ -51,6 +51,26 @@
                     </form>
                 </div>
                 <div class="col">
+
+                    <div class="row">
+                        <div class="col">
+                            Upload Primary image
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h1>File Upload with HTMX</h1>
+                            <form hx-post="/admin/product/upload-main/@Model.Id" 
+                                  hx-target="#result"
+                                  hx-swap="innerHTML"
+                                  enctype="multipart/form-data">
+                                    <input type="file" name="file" required>
+                                    <button type="submit">Upload</button>
+                                <input type="hidden" name="__RequestVerificationToken" value="@Model.AdminProductFormMainImageAntiForgeryToken" />
+                            </form>
+                            <div id="result"></div>
+                        </div>
+                    </div>
                     @foreach (var image in Model.AdminProductImages!)
                     {
 

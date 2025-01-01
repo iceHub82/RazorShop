@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
@@ -9,8 +9,10 @@ using RazorShop.Data.Entities;
 using RazorShop.Web.Slices.Admin;
 using RazorShop.Web.Models.ViewModels;
 using LinqKit;
-using Microsoft.AspNetCore.Antiforgery;
-using static System.Net.WebRequestMethods;
+using SixLabors.ImageSharp.Formats.Webp;
+
+using Image = SixLabors.ImageSharp.Image;
+using Size = SixLabors.ImageSharp.Size;
 
 namespace RazorShop.Web.Apis;
 
@@ -83,11 +85,13 @@ public static class AdminApis
             vm.Description = product.Description;
             vm.ShortDescription = product.ShortDescription;
 
-            var tokens = antiforgery.GetAndStoreTokens(http);
-            vm!.AdminProductFormAntiForgeryToken = tokens.RequestToken;
+            var token1 = antiforgery.GetAndStoreTokens(http);
+            vm!.AdminProductFormAntiForgeryToken = token1.RequestToken;
+            var token2 = antiforgery.GetAndStoreTokens(http);
+            vm!.AdminProductFormMainImageAntiForgeryToken = token2.RequestToken;            
 
             return Results.Extensions.RazorSlice<ProductModal, AdminProductVm>(vm);
-        });
+        }).RequireAuthorization();
 
         app.MapPost("/admin/product/edit/{id}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
         {
@@ -118,7 +122,45 @@ public static class AdminApis
             vm.ShortDescription = product.ShortDescription;
 
             return Results.Extensions.RazorSlice<ProductModal, AdminProductVm>(vm);
-        });
+        }).RequireAuthorization();
+
+        app.MapPost("/admin/product/upload-main/{id}", async (IWebHostEnvironment env, HttpContext http, IFormFile file, IAntiforgery antiforgery, int id) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var uploadPath = $"{env.WebRootPath}\\products\\{id}";
+            if (!Directory.Exists(uploadPath))
+                Directory.CreateDirectory(uploadPath);
+
+            var sizes = new List<(string type, int width, int height, int quality)> {
+                ("thumbnail", 80, 100, 65),
+                ("listing", 260, 330, 75),
+                ("product", 600, 740, 80),
+                //("zoom", 1024, 1200)
+            };
+
+            foreach (var (type, width, height, quality) in sizes)
+            {
+                var outputPath = Path.Combine(uploadPath, $"{id}_{type}.webp");
+
+                var stream = file.OpenReadStream();
+
+                using (var image = await Image.LoadAsync(stream))
+                {
+                    image.Mutate(x => x.Resize(new ResizeOptions {
+                        Size = new Size(width, height),
+                        Mode = ResizeMode.Crop
+                    }));
+
+                    await image.SaveAsync(outputPath, new WebpEncoder { Quality = quality });
+                }
+
+                stream.Position = 0;
+            }
+
+            return Results.Ok();
+        }).RequireAuthorization();
+
 
         app.MapGet("/Login", () => { 
             return Results.Extensions.RazorSlice<Pages.Admin.Login>();
@@ -142,7 +184,7 @@ public static class AdminApis
 
                 await context.SignInAsync("MyCookieAuth", claimsPrincipal);
 
-                return Results.Extensions.RazorSlice<Pages.Home>();
+                return Results.Extensions.RazorSlice<Pages.Admin.Home>();
             }
 
             return Results.Redirect("/Login");

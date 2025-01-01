@@ -20,6 +20,7 @@ public class AdminProductVm
     public string? Description { get; set; }
     public string? ShortDescription { get; set; }
     public string? AdminProductFormAntiForgeryToken { get; set; }
+    public string? AdminProductFormMainImageAntiForgeryToken { get; set; }
     public List<AdminProductSizeVm>? AdminProductSizes { get; set; } = new();
 
     public List<AdminProductImageVm>? AdminProductImages { get; set; } = new();

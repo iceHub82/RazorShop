@@ -4,6 +4,8 @@ using RazorShop.Data;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Models.ViewModels;
 
+using Size = RazorShop.Data.Entities.Size;
+
 namespace RazorShop.Web.Apis;
 
 public static class CartApis
@@ -12,11 +14,17 @@ public static class CartApis
     {
         app.MapGet("/cart", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache) =>
         {
-            var cart = await GetCart(http, db);
-            var items = await GetCartItems(cart.Id, db)!;
-            var vm = GetCartViewModel(items!, cache);
+            if (ApiUtil.IsHtmx(http.Request))
+            {
+                var cart = await GetCart(http, db);
+                var items = await GetCartItems(cart.Id, db)!;
+                var vm = GetCartViewModel(items!, cache);
 
-            return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
+                return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
+            }
+
+            return Results.Extensions.RazorSlice<Pages.CheckoutEmpty>();
+
         }).NoCache();
 
         app.MapGet("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id, int size, int quantity) =>
