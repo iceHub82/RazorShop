@@ -9,6 +9,7 @@ public class ItemVm
     public string? Price { get; set; }
     public string? Size { get; set; }
     public int Quantity { get; set; }
+    public string? TicksStamp { get; set; }
 }
 
 public class CartItemVm : ItemVm

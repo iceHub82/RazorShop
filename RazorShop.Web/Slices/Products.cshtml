@@ -7,14 +7,12 @@
             {
                 <div class="col mb-5">
                     <div class="card h-100">
-
                         <a hx-get="/Product/@product.Id"
                            hx-trigger="click"
                            hx-target="#section"
                            hx-push-url="true"
                            hx-swap="outerHTML" role="button">
-
-                           <img class="card-img-top" src="/products/@product.Id/@($"{product.Id}_listing.webp")" alt="..." />
+                           <img class="card-img-top" src="/products/@product.Id/@($"{product.Id}_listing.webp?v={product.TicksStamp}")" alt="..." />
                            <div class="card-body p-4">
                                <div class="text-start">
                                    <h5 class="fw-bolder">@product.Name</h5>

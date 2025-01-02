@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
+using RazorShop.Data.Repos;
 using RazorShop.Web.Models.ViewModels;
 
 namespace RazorShop.Web.Apis;
@@ -8,10 +9,10 @@ public static class ProductApis
 {
     public static void ProductApi(this WebApplication app)
     {
-        app.MapGet("/Products", async (RazorShopDbContext db, HttpContext http) =>
+        app.MapGet("/Products", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo) =>
         {
             ProductsVm vm = new();
-            vm.Products = await GetProducts(db);
+            vm.Products = await GetProducts(db, imgRepo);
 
             if (ApiUtil.IsHtmx(http.Request))
             {
@@ -37,13 +38,15 @@ public static class ProductApis
             return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
-        app.MapGet("/Product/{id}", async(RazorShopDbContext db, HttpContext http, int id) =>
+        app.MapGet("/Product/{id}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, int id) =>
         {
             var product = await db.Products!
                 .Include(x => x.ProductSizes!)
                 .ThenInclude(x => x.Size).AsNoTracking().FirstAsync(p => p.Id == id);
 
             var productVm = new ProductVm { Id = product.Id, Name = product.Name, Price = $"{product.Price:#.00} kr" };
+
+            productVm.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(product.Id);
 
             if (product.ProductSizes!.Any())
             {
@@ -63,12 +66,17 @@ public static class ProductApis
         });
     }
 
-    private static async Task<List<ProductVm>> GetProducts(RazorShopDbContext db)
+    private static async Task<List<ProductVm>> GetProducts(RazorShopDbContext db, ImagesRepo imgRepo)
     {
-        return await db.Products!
+        var products =  await db.Products!
                 .AsNoTracking()
                 .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
+
+        foreach (var product in products)
+            product.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(product.Id);
+
+        return products!;    
     }
 
     private static async Task<List<ProductVm>> GetProductsByCategoryName(RazorShopDbContext db, string name)

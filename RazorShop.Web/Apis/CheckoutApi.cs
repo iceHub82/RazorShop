@@ -11,6 +11,7 @@ using Quickpay.RequestParams;
 using Quickpay.Models.Payments;
 
 using Address = RazorShop.Data.Entities.Address;
+using RazorShop.Data.Repos;
 
 namespace RazorShop.Web.Apis;
 
@@ -18,7 +19,7 @@ public static class CheckoutApis
 {
     public static void CheckoutApi(this WebApplication app)
     {
-        app.MapGet("/checkout", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery) =>
+        app.MapGet("/checkout", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, ImagesRepo imgRepo) =>
         {
             var cart = await GetCart(http, db);
 
@@ -26,7 +27,7 @@ public static class CheckoutApis
             if (items.Count == 0)
                 return Results.Extensions.RazorSlice<Pages.CheckoutEmpty>();
 
-            var vm = GetCheckoutViewModel(items, cache);
+            var vm = await GetCheckoutViewModel(items, cache, imgRepo);
 
             var tokens = antiforgery.GetAndStoreTokens(http);
             vm!.CheckoutFormAntiForgeryToken = tokens.RequestToken;
@@ -34,19 +35,19 @@ public static class CheckoutApis
             return Results.Extensions.RazorSlice<Pages.Checkout, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity) =>
+        app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo) =>
         {
             var result = await UpdateCartItemQuantity(db, itemId, quantity);
 
             var cart = await GetCart(http, db);
             var items = await GetCartItems(cart.Id, db)!;
 
-            var vm = GetCheckoutViewModel(items, cache);
+            var vm = await GetCheckoutViewModel(items, cache, imgRepo);
 
             return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
+        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id) =>
         {
             var cart = await GetCart(http, db);
 
@@ -59,7 +60,7 @@ public static class CheckoutApis
             if (items.Count == 0)
                 return Results.Extensions.RazorSlice<Slices.CheckoutEmpty>();
 
-            var vm = GetCheckoutViewModel(items, cache);
+            var vm = await GetCheckoutViewModel(items, cache, imgRepo);
 
             return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
@@ -307,7 +308,7 @@ public static class CheckoutApis
         return await db.CartItems!.Where(c => c.CartId == cartId && !c.Deleted).Include(c => c.Product).ToListAsync();
     }
 
-    private static CheckoutVm? GetCheckoutViewModel(List<CartItem> items, IMemoryCache cache)
+    private static async Task<CheckoutVm?> GetCheckoutViewModel(List<CartItem> items, IMemoryCache cache, ImagesRepo imgRepo)
     {
         if (items.Count == 0)
             return new CheckoutVm();
@@ -317,7 +318,7 @@ public static class CheckoutApis
         var total = items.Sum(c => c.Product!.Price * c.Quantity) + 49;
         var vat = total * 0.25m;
 
-        return new CheckoutVm {
+        var vm = new CheckoutVm {
             CheckoutQuantity = items.Sum(c => c.Quantity),
             CheckoutItems = items.Select(item => new CheckoutItemVm {
                 Id = item.Id,
@@ -332,6 +333,11 @@ public static class CheckoutApis
             Delivery = "49.00 kr",
             CheckoutTotal = $"{total:#.00} kr"
         };
+
+        foreach (var item in vm.CheckoutItems)
+            item.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(item.ProductId);
+
+        return vm;
     }
 
     private static string GenerateAddressHtml(Address address)

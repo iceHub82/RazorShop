@@ -12,8 +12,6 @@ internal static class SeedData
         SeedCategories(builder);
         SeedProducts(builder);
         SeedProductSizes(builder);
-        SeedImages(builder);
-        SeedProductImages(builder);
         SeedCountries(builder);
     }
 
@@ -70,30 +68,6 @@ internal static class SeedData
             new ProductSize { ProductId = 4, SizeId = 5 },
             new ProductSize { ProductId = 4, SizeId = 6 },
             new ProductSize { ProductId = 5, SizeId = 5 }
-        );
-    }
-
-    private static void SeedImages(ModelBuilder builder)
-    {
-        builder.Entity<Image>().HasData(
-            new Image { Id = 1, FileName = "", ContentType = "webp", Primary = true }
-            //new Image { ProductId = 1, ImageId = 2 },
-            //new Image { ProductId = 1, ImageId = 3 },
-            //new Image { ProductId = 2, ImageId = 2 },
-            //new Image { ProductId = 3, ImageId = 2 },
-            //new Image { ProductId = 4, ImageId = 3 }
-        );
-    }
-
-    private static void SeedProductImages(ModelBuilder builder)
-    {
-        builder.Entity<ProductImage>().HasData(
-            new ProductImage { ProductId = 1, ImageId = 1 }
-            //new ProductImage { ProductId = 1, ImageId = 2 },
-            //new ProductImage { ProductId = 1, ImageId = 3 },
-            //new ProductImage { ProductId = 2, ImageId = 2 },
-            //new ProductImage { ProductId = 3, ImageId = 2 },
-            //new ProductImage { ProductId = 4, ImageId = 3 }
         );
     }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
+using RazorShop.Data.Repos;
 using RazorShop.Web.Models.ViewModels;
 
 using Size = RazorShop.Data.Entities.Size;
@@ -12,13 +13,13 @@ public static class CartApis
 {
     public static void CartApi(this WebApplication app)
     {
-        app.MapGet("/cart", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache) =>
+        app.MapGet("/cart", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo) =>
         {
             if (ApiUtil.IsHtmx(http.Request))
             {
                 var cart = await GetCart(http, db);
                 var items = await GetCartItems(cart.Id, db)!;
-                var vm = GetCartViewModel(items!, cache);
+                var vm = await GetCartViewModel(items!, cache, imgRepo);
 
                 return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
             }
@@ -27,7 +28,7 @@ public static class CartApis
 
         }).NoCache();
 
-        app.MapGet("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id, int size, int quantity) =>
+        app.MapGet("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id, int size, int quantity) =>
         {
             var cart = await GetCart(http, db);
 
@@ -46,12 +47,12 @@ public static class CartApis
             await db.SaveChangesAsync();
 
             var items = await GetCartItems(cart.Id, db)!;
-            var vm = GetCartViewModel(items, cache);
+            var vm = await GetCartViewModel(items, cache, imgRepo);
 
             return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
         });
 
-        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int id) =>
+        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id) =>
         {
             var cart = await GetCart(http, db);
 
@@ -61,7 +62,7 @@ public static class CartApis
             await db.SaveChangesAsync();
 
             var items = await GetCartItems(cart.Id, db)!;
-            var vm = GetCartViewModel(items, cache);
+            var vm = await GetCartViewModel(items, cache, imgRepo);
 
             return Results.Extensions.RazorSlice<Slices.CartDelete, CartVm>(vm!);
         });
@@ -93,14 +94,14 @@ public static class CartApis
         return await db.CartItems!.Where(c => c.CartId == cartId && !c.Deleted).Include(c => c.Product).ToListAsync();
     }
 
-    private static CartVm? GetCartViewModel(List<CartItem> items, IMemoryCache cache)
+    private static async Task<CartVm?> GetCartViewModel(List<CartItem> items, IMemoryCache cache, ImagesRepo imgRepo)
     {
         if (items.Count == 0)
             return new CartVm();
 
         var sizes = (IEnumerable<Size>)cache.Get("sizes")!;
 
-        return new CartVm {
+        var vm = new CartVm {
             CartQuantity = items.Sum(c => c.Quantity),
             CartItems = items.Select(item => new CartItemVm {
                 ProductId = item.ProductId,
@@ -109,10 +110,15 @@ public static class CartApis
                 Description = item.Product.Description,
                 Price = $"{item.Product.Price:#.00} kr",
                 Size = sizes.FirstOrDefault(s => s.Id == item.SizeId)?.Name,
-                Quantity = item.Quantity
+                Quantity = item.Quantity,
             }).ToList(),
             Delivery = "49.00 kr",
             CartTotal = $"{items.Sum(c => c.Product!.Price * c.Quantity) + 49:#.00} kr"
         };
+
+        foreach (var item in vm.CartItems)
+            item.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(item.ProductId);
+
+        return vm;
     }
 }

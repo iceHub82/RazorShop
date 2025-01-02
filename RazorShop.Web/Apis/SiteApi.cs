@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Antiforgery;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
-using RazorShop.Data.Entities;
-using RazorShop.Web.Models;
 using RazorShop.Web.Models.ViewModels;
-using System.Text.Json;
+using RazorShop.Data.Repos;
 
 namespace RazorShop.Web.Apis;
 
@@ -13,13 +10,16 @@ public static class SiteApis
 {
     public static void SiteApi(this WebApplication app)
     {
-        app.MapGet("/", async (RazorShopDbContext db) =>
+        app.MapGet("/", async (RazorShopDbContext db, ImagesRepo imgRepo) =>
         {
             ProductsVm vm = new();
             vm.Products = await db.Products!
                 .AsNoTracking()
                 .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
+
+            foreach (var product in vm.Products)
+                product.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(product.Id);
 
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
         });

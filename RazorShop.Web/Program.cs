@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
+using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Apis;
 using Serilog;
@@ -23,6 +24,8 @@ builder.Services.AddDbContext<RazorShopDbContext>(options => {
 
     options.UseSqlite(connStr!);
 });
+
+builder.Services.AddTransient<ImagesRepo>();
 
 builder.Services.AddAntiforgery();
 builder.Services.AddMemoryCache();

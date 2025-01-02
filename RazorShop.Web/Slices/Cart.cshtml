@@ -23,9 +23,9 @@
                     @foreach (var item in Model.CartItems!)
                     {
                         <div class="row">
-                            <div class="col-4">
+                            <div class="col-4 pb-2">
                                 <a href="/Product/@item.ProductId">
-                                    <img src="/products/@item.ProductId/@($"{item.ProductId}_thumbnail.webp")" alt="..." />
+                                    <img src="/products/@item.ProductId/@($"{item.ProductId}_thumbnail.webp?v={item.TicksStamp}")" alt="..." />
                                 </a>
                             </div>
                             <div class="col-6">

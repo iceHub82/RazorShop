@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
+using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Slices.Admin;
 using RazorShop.Web.Models.ViewModels;
@@ -74,7 +75,7 @@ public static class AdminApis
             });
         }).RequireAuthorization();
 
-        app.MapGet("/admin/product-modal/{id}", async (HttpContext http, IAntiforgery antiforgery, RazorShopDbContext db, int id) =>
+        app.MapGet("/admin/product-modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, int id) =>
         {
             var product = await db.Products!.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).FirstAsync();
 
@@ -84,6 +85,7 @@ public static class AdminApis
             vm.Price = $"{product.Price:#.00}";
             vm.Description = product.Description;
             vm.ShortDescription = product.ShortDescription;
+            vm.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(id);
 
             var token1 = antiforgery.GetAndStoreTokens(http);
             vm!.AdminProductFormAntiForgeryToken = token1.RequestToken;
@@ -124,13 +126,32 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<ProductModal, AdminProductVm>(vm);
         }).RequireAuthorization();
 
-        app.MapPost("/admin/product/upload-main/{id}", async (IWebHostEnvironment env, HttpContext http, IFormFile file, IAntiforgery antiforgery, int id) =>
+        app.MapPost("/admin/product/upload-main/{id}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, IFormFile img, IAntiforgery antiforgery, int id) =>
         {
             await antiforgery.ValidateRequestAsync(http);
 
+            var imgTimeStamp = DateTime.UtcNow;
+
             var uploadPath = $"{env.WebRootPath}\\products\\{id}";
             if (!Directory.Exists(uploadPath))
+            {
                 Directory.CreateDirectory(uploadPath);
+                await db.ProductImages!.AddAsync(new ProductImage { Image = new Data.Entities.Image { ContentType = img.ContentType, Primary = true, FileName = img.FileName, Created = imgTimeStamp }, ProductId = id });
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                var prodImg = await db.ProductImages!.Include(x => x.Image).FirstAsync(x => x.ProductId == id && x.Image!.Primary);
+                prodImg.Image!.FileName = img.FileName;
+                prodImg.Image!.ContentType = img.ContentType;
+                prodImg.Image!.Updated = imgTimeStamp;
+                await db.SaveChangesAsync();
+
+                foreach (var file in Directory.GetFiles(uploadPath))
+                    File.Delete(file);
+                foreach (var subDir in Directory.GetDirectories(uploadPath))
+                    Directory.Delete(subDir, true);
+            }
 
             var sizes = new List<(string type, int width, int height, int quality)> {
                 ("thumbnail", 80, 100, 65),
@@ -143,7 +164,7 @@ public static class AdminApis
             {
                 var outputPath = Path.Combine(uploadPath, $"{id}_{type}.webp");
 
-                var stream = file.OpenReadStream();
+                var stream = img.OpenReadStream();
 
                 using (var image = await Image.LoadAsync(stream))
                 {
@@ -157,8 +178,8 @@ public static class AdminApis
 
                 stream.Position = 0;
             }
-
-            return Results.Ok();
+            
+            return Results.Content($"<img src='/products/{id}/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'");
         }).RequireAuthorization();
 
 
@@ -171,7 +192,6 @@ public static class AdminApis
             var username = context.Request.Form["username"];
             var password = context.Request.Form["password"];
 
-            // Dummy authentication logic
             if (username == "admin" && password == "password")
             {
                 var claims = new List<Claim> { 
@@ -222,8 +242,7 @@ public static class AdminApis
         var dir = request.Query["order[0][dir]"].FirstOrDefault() ?? "asc";
         var sort = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
 
-        return new DataTablesParameters
-        {
+        return new DataTablesParameters {
             Search = search!,
             Draw = draw!,
             Skip = skip,
