@@ -335,7 +335,7 @@ public static class CheckoutApis
         };
 
         foreach (var item in vm.CheckoutItems)
-            item.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(item.ProductId);
+            item.TicksStamp = await imgRepo.GetMainProductImageTickStamp(item.ProductId);
 
         return vm;
     }
@@ -367,7 +367,7 @@ public static class CheckoutApis
         {
             var productId = item.Product!.Id;
 
-            var mainImgPath = $"{baseUrl}/products/{productId}/{productId}_1.webp";
+            var mainImgPath = $"{baseUrl}/products/{productId}/{productId}_thumbnail.webp";
 
             var price = item.Product!.Price;
             var quantity = item.Quantity;

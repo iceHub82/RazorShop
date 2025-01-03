@@ -22,14 +22,14 @@ public class AdminProductVm
     public string? TicksStamp { get; set; }
     public string? AdminProductFormAntiForgeryToken { get; set; }
     public string? AdminProductFormMainImageAntiForgeryToken { get; set; }
-    public List<AdminProductSizeVm>? AdminProductSizes { get; set; } = new();
-
-    public List<AdminProductImageVm>? AdminProductImages { get; set; } = new();
+    //public List<AdminProductSizeVm>? AdminProductSizes { get; set; } = new();
+    public List<AdminImageVm>? AdminImageVms { get; set; } = new();
 }
 
-public class AdminProductImageVm
+public class AdminImageVm
 {
     public int Id { get; set; }
+    public string? TicksStamp { get; set; }
 }
 
 public class AdminProductSizeVm

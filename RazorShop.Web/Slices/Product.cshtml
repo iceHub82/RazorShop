@@ -6,16 +6,16 @@
             <div class="col-md-6">
                 <div class="row">
                     <div class="col">
-                        <img id="main-img" class="card-img-top mb-5 mb-md-0" src="/products/@Model.Id/@($"{Model.Id}_product.webp?v={Model.TicksStamp}")" alt="..." />
+                        <img id="main-img" class="card-img-top mb-5 mb-md-0" src="/products/@Model.Id/main/@($"{Model.Id}_product.webp?v={Model.TicksStamp}")" alt="..." />
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-3">
-                        <img src="/products/@Model.Id/@($"{Model.Id}_1.webp")" class="img-fluid" role="button" onclick="changeImg(this)" alt="..." />
-                    </div>
-                    <div class="col-3">
-                        <img src="/products/@Model.Id/@($"{Model.Id}_2.webp")" class="img-fluid" role="button" onclick="changeImg(this)" alt="..." />
-                    </div>
+                    @foreach (var img in Model.ProductImages!)
+                    {
+                        <div class="col-3">
+                            <img src="/products/@Model.Id/gallery/@($"{img.Id}_thumbnail.webp?v={img.TicksStamp}")" class="img-fluid" role="button" onclick="changeImg(this)" />
+                        </div>
+                    }
                 </div>
             </div>
             <div class="col-md-6">

@@ -5,5 +5,8 @@
 var mainImg = document.getElementById('main-img');
 
 changeImg = (target) => {
-    mainImg.src = target.src;
+
+    var targetSrc = target.src.replace('thumbnail', 'product');
+
+    mainImg.src = targetSrc;
 }

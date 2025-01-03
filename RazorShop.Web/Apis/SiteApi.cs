@@ -19,7 +19,7 @@ public static class SiteApis
                 .ToListAsync();
 
             foreach (var product in vm.Products)
-                product.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(product.Id);
+                product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
 
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
         });

@@ -54,16 +54,16 @@
 
                     <div class="row">
                         <div class="col">
-                            Upload Primary image
+                            Upload Main image
                         </div>
                     </div>
                     <div class="row">
-                        <div id="primary-img-div" class="col">
-                            <img src="/products/@Model.Id/@($"{Model.Id}_thumbnail.webp?v={Model.TicksStamp}")" />
+                        <div id="main-img-div" class="col">
+                            <img src="/products/@Model.Id/main/@($"{Model.Id}_thumbnail.webp?v={Model.TicksStamp}")" />
                         </div>
                         <div class="col">
                             <form hx-post="/admin/product/upload-main/@Model.Id"
-                                  hx-target="#primary-img-div"
+                                  hx-target="#main-img-div"
                                   hx-swap="innerHTML"
                                   enctype="multipart/form-data">
                                     <input type="file" name="img" required>
@@ -72,10 +72,30 @@
                             </form>
                         </div>
                     </div>
-                    @foreach (var image in Model.AdminProductImages!)
-                    {
-
-                    }
+                    <div class="row">
+                        <div class="col">
+                            Upload Product images
+                        </div>
+                    </div>
+                    <div id="gallery-img-div" class="row">
+                        <div class="col">
+                            @foreach (var image in Model.AdminImageVms!)
+                            {
+                                <img src="/products/@Model.Id/gallery/@($"{image.Id}_thumbnail.webp?v={image.TicksStamp}")" />
+                            }
+                        </div>
+                        <div class="col">
+                            <form hx-post="/admin/product/upload-images/@Model.Id"
+                                  hx-target="#gallery-img-div"
+                                  hx-swap="innerHTML"
+                                  enctype="multipart/form-data">
+                                <input type="file" name="img" accept=".jpg,.jpeg,.png" multiple required>
+                                <button type="submit">Upload</button>
+                                <input type="hidden" name="__RequestVerificationToken" value="@Model.AdminProductFormMainImageAntiForgeryToken" />
+                            </form>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
             @* <div class="row">

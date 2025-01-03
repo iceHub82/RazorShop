@@ -117,7 +117,7 @@ public static class CartApis
         };
 
         foreach (var item in vm.CartItems)
-            item.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(item.ProductId);
+            item.TicksStamp = await imgRepo.GetMainProductImageTickStamp(item.ProductId);
 
         return vm;
     }

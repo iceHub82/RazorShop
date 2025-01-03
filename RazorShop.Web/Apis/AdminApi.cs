@@ -77,7 +77,7 @@ public static class AdminApis
 
         app.MapGet("/admin/product-modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, int id) =>
         {
-            var product = await db.Products!.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).FirstAsync();
+            var product = await db.Products!.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).Include(x => x.ProductImages)!.ThenInclude(x => x.Image).FirstAsync();
 
             var vm = new AdminProductVm();
             vm.Id = product.Id;
@@ -85,12 +85,17 @@ public static class AdminApis
             vm.Price = $"{product.Price:#.00}";
             vm.Description = product.Description;
             vm.ShortDescription = product.ShortDescription;
-            vm.TicksStamp = await imgRepo.GetPrimaryProductImageTickStamp(id);
+            vm.TicksStamp = await imgRepo.GetMainProductImageTickStamp(id);
 
             var token1 = antiforgery.GetAndStoreTokens(http);
             vm!.AdminProductFormAntiForgeryToken = token1.RequestToken;
             var token2 = antiforgery.GetAndStoreTokens(http);
-            vm!.AdminProductFormMainImageAntiForgeryToken = token2.RequestToken;            
+            vm!.AdminProductFormMainImageAntiForgeryToken = token2.RequestToken;
+
+            var imgIds = product.ProductImages!.Where(x => x.ProductId == id && !x.Image!.Main).Select(x => x.ImageId);
+
+            foreach (var imgId in imgIds)
+                vm.AdminImageVms!.Add(new AdminImageVm { Id = imgId, TicksStamp = await imgRepo.GetGalleryProductImageTickStamp(imgId) });
 
             return Results.Extensions.RazorSlice<ProductModal, AdminProductVm>(vm);
         }).RequireAuthorization();
@@ -132,16 +137,16 @@ public static class AdminApis
 
             var imgTimeStamp = DateTime.UtcNow;
 
-            var uploadPath = $"{env.WebRootPath}\\products\\{id}";
+            var uploadPath = $"{env.WebRootPath}\\products\\{id}\\main";
             if (!Directory.Exists(uploadPath))
             {
                 Directory.CreateDirectory(uploadPath);
-                await db.ProductImages!.AddAsync(new ProductImage { Image = new Data.Entities.Image { ContentType = img.ContentType, Primary = true, FileName = img.FileName, Created = imgTimeStamp }, ProductId = id });
+                await db.ProductImages!.AddAsync(new ProductImage { Image = new Data.Entities.Image { ContentType = img.ContentType, Main = true, FileName = img.FileName, Created = imgTimeStamp }, ProductId = id });
                 await db.SaveChangesAsync();
             }
             else
             {
-                var prodImg = await db.ProductImages!.Include(x => x.Image).FirstAsync(x => x.ProductId == id && x.Image!.Primary);
+                var prodImg = await db.ProductImages!.Include(x => x.Image).FirstAsync(x => x.ProductId == id && x.Image!.Main);
                 prodImg.Image!.FileName = img.FileName;
                 prodImg.Image!.ContentType = img.ContentType;
                 prodImg.Image!.Updated = imgTimeStamp;
@@ -179,9 +184,60 @@ public static class AdminApis
                 stream.Position = 0;
             }
             
-            return Results.Content($"<img src='/products/{id}/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'");
+            return Results.Content($"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'");
         }).RequireAuthorization();
 
+        app.MapPost("/admin/product/upload-images/{id}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, IFormFileCollection files, IAntiforgery antiforgery, int id) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var uploadPath = $"{env.WebRootPath}\\products\\{id}\\gallery";
+
+            var sizes = new List<(string type, int width, int height, int quality)> {
+                ("thumbnail", 80, 100, 65),
+                //("listing", 260, 330, 75),
+                ("product", 600, 740, 80),
+                //("zoom", 1024, 1200)
+            };
+
+            if (!Directory.Exists(uploadPath))
+                Directory.CreateDirectory(uploadPath);
+
+            foreach (var file in files)
+            {
+                var timeStamp = DateTime.UtcNow;
+
+                var prodImg = new ProductImage { Image = new Data.Entities.Image { ContentType = file.ContentType, FileName = file.FileName, Created = timeStamp }, ProductId = id };
+                await db.ProductImages!.AddAsync(prodImg);
+                await db.SaveChangesAsync();
+
+                foreach (var (type, width, height, quality) in sizes)
+                {
+                    var outputPath = Path.Combine(uploadPath, $"{prodImg.ImageId}_{type}.webp");
+
+                    var stream = file.OpenReadStream();
+
+                    using (var image = await Image.LoadAsync(stream))
+                    {
+                        image.Mutate(x => x.Resize(new ResizeOptions
+                        {
+                            Size = new Size(width, height),
+                            Mode = ResizeMode.Crop
+                        }));
+
+                        await image.SaveAsync(outputPath, new WebpEncoder { Quality = quality });
+                    }
+
+                    stream.Position = 0;
+                }
+
+                //string test += $"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'";
+            }
+
+            
+
+            return Results.Content($"TESTTEST");
+        }).RequireAuthorization();
 
         app.MapGet("/Login", () => { 
             return Results.Extensions.RazorSlice<Pages.Admin.Login>();
