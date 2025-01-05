@@ -26,6 +26,11 @@ public class AdminProductVm
     public List<AdminImageVm>? AdminImageVms { get; set; } = new();
 }
 
+public class AdminNewProductVm
+{
+    public string? AdminNewProductFormAntiForgeryToken { get; set; }
+}
+
 public class AdminImageVm
 {
     public int Id { get; set; }

@@ -2,11 +2,11 @@
     $('#checkedSize').val($(this).val())
 });
 
-var mainImg = document.getElementById('main-img');
+//var mainImg = document.getElementById('main-img');
 
-changeImg = (target) => {
+//changeImg = (target) => {
 
-    var targetSrc = target.src.replace('thumbnail', 'product');
+//    var targetSrc = target.src.replace('thumbnail', 'product');
 
-    mainImg.src = targetSrc;
-}
+//    mainImg.src = targetSrc;
+//}

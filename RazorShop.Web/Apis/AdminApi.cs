@@ -14,6 +14,7 @@ using SixLabors.ImageSharp.Formats.Webp;
 
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
+using Microsoft.AspNetCore.Http;
 
 namespace RazorShop.Web.Apis;
 
@@ -75,7 +76,7 @@ public static class AdminApis
             });
         }).RequireAuthorization();
 
-        app.MapGet("/admin/product-modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, int id) =>
+        app.MapGet("/admin/product/modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, int id) =>
         {
             var product = await db.Products!.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).Include(x => x.ProductImages)!.ThenInclude(x => x.Image).FirstAsync();
 
@@ -97,7 +98,7 @@ public static class AdminApis
             foreach (var imgId in imgIds)
                 vm.AdminImageVms!.Add(new AdminImageVm { Id = imgId, TicksStamp = await imgRepo.GetGalleryProductImageTickStamp(imgId) });
 
-            return Results.Extensions.RazorSlice<ProductModal, AdminProductVm>(vm);
+            return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
         }).RequireAuthorization();
 
         app.MapPost("/admin/product/edit/{id}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
@@ -128,7 +129,7 @@ public static class AdminApis
             vm.Description = product.Description;
             vm.ShortDescription = product.ShortDescription;
 
-            return Results.Extensions.RazorSlice<ProductModal, AdminProductVm>(vm);
+            return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
         }).RequireAuthorization();
 
         app.MapPost("/admin/product/upload-main/{id}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, IFormFile img, IAntiforgery antiforgery, int id) =>
@@ -233,8 +234,28 @@ public static class AdminApis
 
                 //string test += $"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'";
             }
+        }).RequireAuthorization();
 
-            
+        app.MapGet("/admin/product/modal/new", async (HttpContext http, IAntiforgery antiforgery) =>
+        {
+            var vm = new AdminNewProductVm();
+            var token = antiforgery.GetAndStoreTokens(http);
+            vm.AdminNewProductFormAntiForgeryToken = token.RequestToken;
+
+            return Results.Extensions.RazorSlice<ProductNew, AdminNewProductVm>(vm);
+        }).RequireAuthorization();
+
+        app.MapPost("/admin/product/modal/new/save", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var form = await http.Request.ReadFormAsync();
+
+            var name = form["name"];
+            var shortDescription = form["shortDescription"];
+            var description = form["description"];
+
+            await db.Products!.AddAsync(new Product { Name = name, ShortDescription = shortDescription, Description = description });
 
             return Results.Content($"TESTTEST");
         }).RequireAuthorization();
