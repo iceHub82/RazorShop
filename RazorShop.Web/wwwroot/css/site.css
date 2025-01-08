@@ -9,3 +9,24 @@
 #ddBtn.show {
     fill: white;
 }
+
+.credit-card-img {
+    max-height: 35px;
+}
+
+.clickable-div {
+    display: inline-block;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.clickable-div input[type="checkbox"] {
+    display: none;
+}
+
+.clickable-div label {
+    display: block;
+}
