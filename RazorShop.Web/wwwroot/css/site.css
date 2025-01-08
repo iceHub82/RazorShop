@@ -4,3 +4,8 @@
     border-color: initial !important;
     color: initial !important;
 }
+
+#ddBtn:hover svg.icon,
+#ddBtn.show {
+    fill: white;
+}

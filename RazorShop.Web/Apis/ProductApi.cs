@@ -47,7 +47,7 @@ public static class ProductApis
                 .ThenInclude(x => x.Image)
                 .AsNoTracking().FirstAsync(p => p.Id == id);
 
-            var vm = new ProductVm { Id = product.Id, Name = product.Name, Price = $"{product.Price:#.00} kr" };
+            var vm = new ProductVm { Id = product.Id, Name = product.Name, Price = $"{product.Price:#.00} kr", Description = product.Description };
 
             vm.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
 

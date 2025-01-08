@@ -12,6 +12,20 @@ public class AdminProductsVm
     public int TotalCount { get; set; }
 }
 
+public class AdminCategoriesVm
+{
+    public List<AdminCategoryVm> AdminCategories { get; set; } = new();
+    public int FilteredCount { get; set; }
+    public int TotalCount { get; set; }
+}
+
+public class AdminSizesVm
+{
+    public List<AdminSizeVm> AdminSizes { get; set; } = new();
+    public int FilteredCount { get; set; }
+    public int TotalCount { get; set; }
+}
+
 public class AdminProductVm
 {
     public int Id { get; set; }
@@ -28,8 +42,23 @@ public class AdminProductVm
 
 public class AdminNewProductVm
 {
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public string? Price { get; set; }
+    public string? Description { get; set; }
+    public string? ShortDescription { get; set; }
     public string? AdminNewProductFormAntiForgeryToken { get; set; }
 }
+
+//public class AdminNewCategoryVm
+//{
+//    public string? AdminNewCategoryFormAntiForgeryToken { get; set; }
+//}
+
+//public class AdminNewSizeVm
+//{
+//    public string? AdminNewSizeFormAntiForgeryToken { get; set; }
+//}
 
 public class AdminImageVm
 {
@@ -37,7 +66,16 @@ public class AdminImageVm
     public string? TicksStamp { get; set; }
 }
 
-public class AdminProductSizeVm
+public class AdminSizeVm
 {
     public int Id { get; set; }
+    public string? Name { get; set; }
+    public string? AdminSizeFormAntiForgeryToken { get; internal set; }
+}
+
+public class AdminCategoryVm
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public string? AdminCategoryFormAntiForgeryToken { get; internal set; }
 }

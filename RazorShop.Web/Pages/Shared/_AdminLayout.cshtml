@@ -164,6 +164,24 @@
                                     Products
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a hx-get="/Admin/Settings/Categories"
+                                   hx-target="#admin-container"
+                                   hx-push-url="true"
+                                   class="nav-link d-flex align-items-center gap-2">
+                                    <svg class="bi"><use xlink:href="#cart" /></svg>
+                                    Categories
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a hx-get="/Admin/Settings/Sizes"
+                                   hx-target="#admin-container"
+                                   hx-push-url="true"
+                                   class="nav-link d-flex align-items-center gap-2">
+                                    <svg class="bi"><use xlink:href="#cart" /></svg>
+                                    Sizes
+                                </a>
+                            </li>
                         </ul>
                         <hr class="my-3">
                     </div>
@@ -178,5 +196,7 @@
     </div>
     <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="//cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+    <script src="/js/admin.js"></script>
+
 </body>
 </html>

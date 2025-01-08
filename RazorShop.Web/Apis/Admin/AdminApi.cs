@@ -14,15 +14,15 @@ using SixLabors.ImageSharp.Formats.Webp;
 
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
-using Microsoft.AspNetCore.Http;
 
-namespace RazorShop.Web.Apis;
+namespace RazorShop.Web.Apis.Admin;
 
 public static class AdminApis
 {
     public static void AdminApi(this WebApplication app)
     {
-        app.MapGet("/Admin", (HttpContext http) => {
+        app.MapGet("/admin", (HttpContext http) =>
+        {
 
             if (ApiUtil.IsHtmx(http.Request))
             {
@@ -33,7 +33,8 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<Pages.Admin.Home>();
         }).RequireAuthorization();
 
-        app.MapGet("/Admin/Orders", (HttpContext http) => {
+        app.MapGet("/admin/orders", (HttpContext http) =>
+        {
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
@@ -43,7 +44,8 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<Pages.Admin.Orders>();
         }).RequireAuthorization();
 
-        app.MapGet("/Admin/Products", (HttpContext http) => {
+        app.MapGet("/admin/products", (HttpContext http) =>
+        {
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
@@ -53,7 +55,7 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<Pages.Admin.Products>();
         }).RequireAuthorization();
 
-        app.MapGet("/admin/products-table", async (RazorShopDbContext db, HttpRequest request, IMemoryCache cache) =>
+        app.MapGet("/admin/products-table", async (RazorShopDbContext db, HttpRequest request) =>
         {
             var dtParams = GetDatatableParameters(request);
 
@@ -62,7 +64,8 @@ public static class AdminApis
             List<object> productTableVm = new();
             foreach (var product in vm.AdminProducts)
             {
-                productTableVm.Add(new {
+                productTableVm.Add(new
+                {
                     product.Id,
                     product.Name,
                 });
@@ -174,7 +177,8 @@ public static class AdminApis
 
                 using (var image = await Image.LoadAsync(stream))
                 {
-                    image.Mutate(x => x.Resize(new ResizeOptions {
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
                         Size = new Size(width, height),
                         Mode = ResizeMode.Crop
                     }));
@@ -184,7 +188,7 @@ public static class AdminApis
 
                 stream.Position = 0;
             }
-            
+
             return Results.Content($"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'");
         }).RequireAuthorization();
 
@@ -236,7 +240,7 @@ public static class AdminApis
             }
         }).RequireAuthorization();
 
-        app.MapGet("/admin/product/modal/new", async (HttpContext http, IAntiforgery antiforgery) =>
+        app.MapGet("/admin/product/modal/new", (HttpContext http, IAntiforgery antiforgery) =>
         {
             var vm = new AdminNewProductVm();
             var token = antiforgery.GetAndStoreTokens(http);
@@ -260,7 +264,8 @@ public static class AdminApis
             return Results.Content($"TESTTEST");
         }).RequireAuthorization();
 
-        app.MapGet("/Login", () => { 
+        app.MapGet("/Login", () =>
+        {
             return Results.Extensions.RazorSlice<Pages.Admin.Login>();
         });
 
@@ -271,9 +276,9 @@ public static class AdminApis
 
             if (username == "admin" && password == "password")
             {
-                var claims = new List<Claim> { 
-                    new(ClaimTypes.Name, username!), 
-                    new(ClaimTypes.Role, "Admin") 
+                var claims = new List<Claim> {
+                    new(ClaimTypes.Name, username!),
+                    new(ClaimTypes.Role, "Admin")
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
@@ -295,7 +300,8 @@ public static class AdminApis
         if (!string.IsNullOrWhiteSpace(search))
             predicate = predicate.And(i => i.Name!.ToLower().Contains(search.ToLower()));
 
-        return new() {
+        return new()
+        {
             AdminProducts = await db.Products!.AsNoTracking()
             .Where(predicate)
             .Select(o => new AdminProductVm { Id = o.Id, Name = o.Name/*, StatusId = o.StatusId */})
@@ -319,7 +325,8 @@ public static class AdminApis
         var dir = request.Query["order[0][dir]"].FirstOrDefault() ?? "asc";
         var sort = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
 
-        return new DataTablesParameters {
+        return new DataTablesParameters
+        {
             Search = search!,
             Draw = draw!,
             Skip = skip,

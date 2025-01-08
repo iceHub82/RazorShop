@@ -1,0 +1,42 @@
+﻿@inherits RazorSlice
+
+<div>Sizes</div>
+
+<div class="row">
+    <div class="col">
+        <table id="sizes-datatable" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $('#sizes-datatable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            ajax: { url: '/admin/settings/sizes/table' },
+            columns: [{
+                data: null, name: 'Name',
+                render: function(data) {
+                    return `<a hx-get="/admin/settings/sizes/modal/edit/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#sizes-modal">${data.name}</a>`;
+                }
+            }],
+            drawCallback: function() {
+                htmx.process(document.getElementById('sizes-datatable'));
+            }
+        });
+    });
+</script>
+
+<div class="modal fade" id="sizes-modal">
+    <div class="modal-dialog">
+        <div id="content" class="modal-content">
+        </div>
+    </div>
+</div>

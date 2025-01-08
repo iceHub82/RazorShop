@@ -9,7 +9,5 @@ public class SizeType
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public string? Name { get; set; }
-
-    // Navigation property for Sizes
     public ICollection<Size>? Sizes { get; set; }
 }

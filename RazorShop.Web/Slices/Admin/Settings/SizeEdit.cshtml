@@ -1,0 +1,29 @@
+﻿@inherits RazorSliceHttpResult<AdminSizeVm>
+
+<div id="content" class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Edit Size</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <form id="sizes-form"
+                          hx-post="/admin/settings/sizes/modal/edit/@Model.Id"
+                          hx-swap="none" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="@Model.Name" maxlength="255" required>
+                            <div class="invalid-feedback">Please enter size name.</div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        <input type="hidden" name="__RequestVerificationToken" value="@Model.AdminSizeFormAntiForgeryToken" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -5,6 +5,8 @@ using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Apis;
 using Serilog;
+using RazorShop.Web.Apis.Admin;
+using RazorShop.Web.Apis.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +62,7 @@ using (var scope = app.Services.CreateScope()) {
     var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
     var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
     cache.Set("sizes", sizes, options);
-    cache.Set("sizeTyeps", sizeTypes, options);
+    cache.Set("sizeTypes", sizeTypes, options);
     cache.Set("categories", categories, options);
 }
 
@@ -103,6 +105,7 @@ app.CartApi();
 app.CheckoutApi();
 app.ProductApi();
 app.AdminApi();
+app.SettingsApi();
 
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 
