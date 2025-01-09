@@ -22,7 +22,7 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col">
-                                        <h4 class="mt-4 mb-4">Personoplysninger</h4>
+                                        <h4 class="mt-4 mb-4">1. Personoplysninger</h4>
                                     </div>
                                 </div>
                                 <hr class="border-1">
@@ -68,7 +68,7 @@
                                     </div>
                                 </div>
                                 <div class="form-check mt-4">
-                                    <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input" autocomplete="off">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input excluded-input" autocomplete="off">
                                     <label for="newsletter" class="form-check-label excluded-label">
                                         Tilmeld dig vores nyhedsbrev og få skræddersyede tilbud via e-mail med op til 50 % rabat på udvalgte varer.
                                     </label>
@@ -89,7 +89,7 @@
                     <div class="card border-0">
                         <div class="card-body">
                             <div class="container">
-                                <h4 class="mb-3">Leveringsmuligheder</h4>
+                                <h4 class="mb-3">2. Leveringsmuligheder</h4>
                                 <hr class="border-1">
                                 <div class="row">
                                     <div class="col-6">
@@ -115,25 +115,25 @@
                     <div class="card border-0">
                         <div class="card-body">
                             <div class="container">
-                                <h4 class="mb-3">Betalingsmetode</h4>
+                                <h4 class="mb-3">3. Betalingsmetode</h4>
                                 <hr class="border-1">
                                 <div class="row">
-                                    <div class="col">
+                                    <div class="col-5">
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input excluded-input" type="radio" name="delivery" value="1" checked>
+                                            <input class="form-check-input excluded-input" type="radio" name="payment" value="1" checked>
                                             <label class="form-check-label excluded-label">
                                                 Kreditkort, G Pay eller Apple Pay
                                             </label>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <div class="col-5">
                                         <img src="/img/googlepay.webp" class="credit-card-img">
                                         <img src="/img/applepay.webp" class="credit-card-img">
                                         <img src="/img/mastercard.webp" class="credit-card-img">
                                         <img src="/img/maestro.webp" class="credit-card-img">
                                         <img src="/img/visa.webp" class="credit-card-img">
                                     </div>
-                                    <div class="col-1">
+                                    <div class="col-2 text-end">
                                         0 kr
                                     </div>
                                 </div>
@@ -146,24 +146,26 @@
                                 <div class="row">
                                     <div class="col">
                                         <div class="col d-flex justify-content-center align-items-center">
-                                            <div>@Model.CheckoutTotal</div>
+                                            <strong>@Model.CheckoutTotal</strong>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col d-flex justify-content-center align-items-center">
-                                        <div class="card">
-                                            <div class="card-body">
+                                    <div class="col d-flex justify-content-center align-items-center p-4">
+                                        <div class="card bg-body-tertiary">
+                                            <div id="submit-card" class="card-body">
                                                <div class="row">
-                                                    <div class="col d-flex justify-content-center align-items-center">
-                                                        <div class="border p-3">
+                                                    <div class="col-2">
+                                                        <div class="pt-3">
                                                             <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" id="flexCheckDefault">
-                                                                <label class="form-check-label" for="flexCheckDefault">
-                                                                    Jeg har læst og accepteret Av-Cables.dk <a href="#">forretningsvilkår</a> samt <a href="#">persondatapolitik</a>.
-                                                                </label>
+                                                                <input id="consentCb" type="checkbox" class="form-check-input-lg excluded-input" autocomplete="off" required>
                                                             </div>
                                                         </div>
+                                                    </div>
+                                                    <div class="col-10 px-3">
+                                                        <label class="form-check-label excluded-label" for="consentCb">
+                                                            Jeg har læst og accepteret ArtForm.dk<br /> <a href="#">forretningsvilkår</a> og <a href="#">persondatapolitik</a>
+                                                        </label>
                                                     </div>
                                                </div>
                                             </div>
@@ -172,7 +174,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col d-flex justify-content-center align-items-center">
-                                        <button class="btn btn-primary" type="submit">Gennemfør køb</button>
+                                        <button class="btn btn-lg btn-primary" type="submit">Gennemfør køb</button>
                                     </div>
                                 </div>
                             </div>

@@ -35,6 +35,9 @@
                     if (!form.checkValidity()) {
                         e.preventDefault()
                         e.stopPropagation()
+                        if(!$('#consentCb').is(":checked")){
+                            $('#submit-card').addClass('bg-danger')
+                        }
                     }
                     form.classList.add('was-validated')
                 }, false)
