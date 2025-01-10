@@ -14,6 +14,7 @@ using SixLabors.ImageSharp.Formats.Webp;
 
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
+using SixLabors.ImageSharp.Web.Caching;
 
 namespace RazorShop.Web.Apis.Admin;
 
@@ -55,7 +56,7 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<Pages.Admin.Products>();
         }).RequireAuthorization();
 
-        app.MapGet("/admin/products-table", async (RazorShopDbContext db, HttpRequest request) =>
+        app.MapGet("/admin/products/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
             var dtParams = GetDatatableParameters(request);
 
@@ -79,7 +80,7 @@ public static class AdminApis
             });
         }).RequireAuthorization();
 
-        app.MapGet("/admin/product/modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, int id) =>
+        app.MapGet("/admin/product/modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, IMemoryCache cache, int id) =>
         {
             var product = await db.Products!.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).Include(x => x.ProductImages)!.ThenInclude(x => x.Image).FirstAsync();
 
@@ -90,14 +91,18 @@ public static class AdminApis
             vm.Description = product.Description;
             vm.ShortDescription = product.ShortDescription;
             vm.TicksStamp = await imgRepo.GetMainProductImageTickStamp(id);
+            vm.CategoryId = product.CategoryId;
 
             var token1 = antiforgery.GetAndStoreTokens(http);
             vm!.AdminProductFormAntiForgeryToken = token1.RequestToken;
             var token2 = antiforgery.GetAndStoreTokens(http);
             vm!.AdminProductFormMainImageAntiForgeryToken = token2.RequestToken;
 
-            var imgIds = product.ProductImages!.Where(x => x.ProductId == id && !x.Image!.Main).Select(x => x.ImageId);
+            var categories = (IEnumerable<Category>)cache.Get("categories")!;
+            foreach (var category in categories)
+                vm.AdminCategories!.Add(new AdminCategoryVm { Id = category.Id, Name = category.Name });
 
+            var imgIds = product.ProductImages!.Where(x => x.ProductId == id && !x.Image!.Main).Select(x => x.ImageId);
             foreach (var imgId in imgIds)
                 vm.AdminImageVms!.Add(new AdminImageVm { Id = imgId, TicksStamp = await imgRepo.GetGalleryProductImageTickStamp(imgId) });
 
@@ -115,6 +120,8 @@ public static class AdminApis
             product!.Name = form["name"]; ;
             product.ShortDescription = form["shortDescription"];
             product.Description = form["description"];
+            var categoryId = int.Parse(form["categoryDd"]!);
+            product.CategoryId = categoryId == 0 ? null : categoryId;
 
             if (form.TryGetValue("price", out var priceValue) && decimal.TryParse(priceValue, out var price))
                 product.Price = price;
@@ -133,6 +140,43 @@ public static class AdminApis
             vm.ShortDescription = product.ShortDescription;
 
             return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
+        }).RequireAuthorization();
+
+        app.MapGet("/admin/product/modal/new", (HttpContext http, IMemoryCache cache, IAntiforgery antiforgery) =>
+        {
+            var vm = new AdminNewProductVm();
+            var token = antiforgery.GetAndStoreTokens(http);
+            vm.AdminNewProductFormAntiForgeryToken = token.RequestToken;
+
+            var categories = (IEnumerable<Category>)cache.Get("categories")!;
+            foreach (var category in categories)
+                vm.AdminCategories!.Add(new AdminCategoryVm { Id = category.Id, Name = category.Name });
+
+            return Results.Extensions.RazorSlice<ProductNew, AdminNewProductVm>(vm);
+        }).RequireAuthorization();
+
+        app.MapPost("/admin/product/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var form = await http.Request.ReadFormAsync();
+
+            var product = new Product();
+            product.Name = form["name"];
+            product.ShortDescription = form["shortDescription"];
+            product.Description = form["description"];
+            var categoryId = int.Parse(form["categoryDd"]!);
+            product.CategoryId = categoryId == 0 ? null : categoryId;
+
+            if (form.TryGetValue("price", out var priceValue) && decimal.TryParse(priceValue, out var price))
+                product.Price = price;
+            else
+                product.Price = 0m;
+
+            await db.Products!.AddAsync(product);
+            await db.SaveChangesAsync();
+
+            return Results.Content($"TESTTEST");
         }).RequireAuthorization();
 
         app.MapPost("/admin/product/upload-main/{id}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, IFormFile img, IAntiforgery antiforgery, int id) =>
@@ -240,30 +284,6 @@ public static class AdminApis
             }
         }).RequireAuthorization();
 
-        app.MapGet("/admin/product/modal/new", (HttpContext http, IAntiforgery antiforgery) =>
-        {
-            var vm = new AdminNewProductVm();
-            var token = antiforgery.GetAndStoreTokens(http);
-            vm.AdminNewProductFormAntiForgeryToken = token.RequestToken;
-
-            return Results.Extensions.RazorSlice<ProductNew, AdminNewProductVm>(vm);
-        }).RequireAuthorization();
-
-        app.MapPost("/admin/product/modal/new/save", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
-        {
-            await antiforgery.ValidateRequestAsync(http);
-
-            var form = await http.Request.ReadFormAsync();
-
-            var name = form["name"];
-            var shortDescription = form["shortDescription"];
-            var description = form["description"];
-
-            await db.Products!.AddAsync(new Product { Name = name, ShortDescription = shortDescription, Description = description });
-
-            return Results.Content($"TESTTEST");
-        }).RequireAuthorization();
-
         app.MapGet("/Login", () =>
         {
             return Results.Extensions.RazorSlice<Pages.Admin.Login>();
@@ -325,8 +345,7 @@ public static class AdminApis
         var dir = request.Query["order[0][dir]"].FirstOrDefault() ?? "asc";
         var sort = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
 
-        return new DataTablesParameters
-        {
+        return new DataTablesParameters {
             Search = search!,
             Draw = draw!,
             Skip = skip,

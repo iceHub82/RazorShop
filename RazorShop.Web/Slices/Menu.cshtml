@@ -1,0 +1,24 @@
+﻿@using RazorShop.Data.Entities
+@inherits RazorSliceHttpResult<IEnumerable<Category>>
+
+<li>
+    <a hx-get="/Products"
+       hx-target="#section"
+       hx-push-url="true"
+       hx-swap="outerHTML"
+       class="dropdown-item" role="button">All Products</a>
+</li>
+<li>
+    <hr class="dropdown-divider" />
+</li>
+
+@foreach (var item in Model)
+{
+    <li>
+        <a hx-get="/Products/@item.Name"
+           hx-target="#section"
+           hx-push-url="true"
+           hx-swap="outerHTML"
+           class="dropdown-item" role="button">@item.Name</a>
+    </li>
+}

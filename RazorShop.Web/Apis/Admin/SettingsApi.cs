@@ -1,14 +1,15 @@
 ﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Slices.Admin;
 using RazorShop.Web.Models.ViewModels;
+using RazorShop.Web.Slices.Admin.Settings;
 using LinqKit;
 
 using Size = RazorShop.Data.Entities.Size;
-using RazorShop.Web.Slices.Admin.Settings;
 
 namespace RazorShop.Web.Apis.Settings;
 
@@ -76,7 +77,7 @@ public static class SettingsApis
             return Results.Extensions.RazorSlice<CategoryEdit, AdminCategoryVm>(vm);
         }).RequireAuthorization();
 
-        app.MapPost($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
+        app.MapPost($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IMemoryCache cache, int id) =>
         {
             await antiforgery.ValidateRequestAsync(http);
 
@@ -85,6 +86,10 @@ public static class SettingsApis
             var category = await db.Categories!.FindAsync(id);
             category!.Name = form["name"];
             await db.SaveChangesAsync();
+
+            var categories = await db.Categories.ToListAsync();
+            var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+            cache.Set("categories", categories, options);
 
             return Results.Ok();
         }).RequireAuthorization();

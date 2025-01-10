@@ -34,11 +34,14 @@
 
                         <div class="mb-3">
                             <label for="categoryId" class="form-label">Category</label>
-                            <select class="form-select" id="categoryId" name="categoryId" required>
-                                <option value="" selected disabled>Select a category</option>
-                                <!-- Dynamically populate categories here -->
-                                <option value="1">Category 1</option>
-                                <option value="2">Category 2</option>
+                            <select class="form-select" id="categoryId" name="categoryDd" required>
+                                <option value="0" selected>Select a category</option>
+                                
+                                @foreach (var category in Model.AdminCategories!)
+                                {
+                                    <option value="@category.Id" @(Model.CategoryId == category.Id ? "selected" : "")>@category.Name</option>
+                                }
+
                             </select>
                             <div class="invalid-feedback">Please select a category.</div>
                         </div>

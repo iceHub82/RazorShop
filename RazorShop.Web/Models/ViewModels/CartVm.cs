@@ -38,4 +38,5 @@ public class CheckoutVm
     public string? CheckoutFormAntiForgeryToken { get; set; }
     public string? Delivery { get; set; }
     public string? VAT { get; set; }
+    public string? ShopName { get; set; }
 }

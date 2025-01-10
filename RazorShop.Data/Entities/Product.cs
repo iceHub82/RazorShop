@@ -14,7 +14,7 @@ public class Product
     public decimal Price { get; set; }
     public DateTime Created { get; set; }
     public DateTime? Updated { get; set; }
-    public int CategoryId { get; set; }
+    public int? CategoryId { get; set; }
     public Category? Category { get; set; }
 
     public ICollection<ProductSize>? ProductSizes { get; set; }

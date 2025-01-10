@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using RazorShop.Data;
 using RazorShop.Web.Models.ViewModels;
 using RazorShop.Data.Repos;
+using Microsoft.Extensions.Caching.Memory;
+using RazorShop.Data.Entities;
 
 namespace RazorShop.Web.Apis;
 
@@ -22,6 +24,13 @@ public static class SiteApis
                 product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
 
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
+        });
+
+        app.MapGet("/categories", (IMemoryCache cache) =>
+        {
+            var categories = (IEnumerable<Category>)cache.Get("categories")!;
+
+            return Results.Extensions.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
         });
 
         app.MapGet("/Redirects", (int statusCode) =>

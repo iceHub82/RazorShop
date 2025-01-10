@@ -34,10 +34,12 @@ public class AdminProductVm
     public string? Description { get; set; }
     public string? ShortDescription { get; set; }
     public string? TicksStamp { get; set; }
+    public int? CategoryId { get; set; }
     public string? AdminProductFormAntiForgeryToken { get; set; }
     public string? AdminProductFormMainImageAntiForgeryToken { get; set; }
     //public List<AdminProductSizeVm>? AdminProductSizes { get; set; } = new();
     public List<AdminImageVm>? AdminImageVms { get; set; } = new();
+    public List<AdminCategoryVm>? AdminCategories { get; set; } = new();
 }
 
 public class AdminNewProductVm
@@ -48,6 +50,7 @@ public class AdminNewProductVm
     public string? Description { get; set; }
     public string? ShortDescription { get; set; }
     public string? AdminNewProductFormAntiForgeryToken { get; set; }
+    public List<AdminCategoryVm>? AdminCategories { get; set; } = new();
 }
 
 //public class AdminNewCategoryVm

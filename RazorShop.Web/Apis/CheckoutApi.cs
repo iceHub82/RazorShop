@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
+using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Email;
 using RazorShop.Web.Models.ViewModels;
@@ -11,7 +12,6 @@ using Quickpay.RequestParams;
 using Quickpay.Models.Payments;
 
 using Address = RazorShop.Data.Entities.Address;
-using RazorShop.Data.Repos;
 
 namespace RazorShop.Web.Apis;
 
@@ -19,7 +19,7 @@ public static class CheckoutApis
 {
     public static void CheckoutApi(this WebApplication app)
     {
-        app.MapGet("/checkout", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, ImagesRepo imgRepo) =>
+        app.MapGet("/checkout", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, IConfiguration config, ImagesRepo imgRepo) =>
         {
             var cart = await GetCart(http, db);
 
@@ -27,7 +27,7 @@ public static class CheckoutApis
             if (items.Count == 0)
                 return Results.Extensions.RazorSlice<Pages.CheckoutEmpty>();
 
-            var vm = await GetCheckoutViewModel(items, cache, imgRepo);
+            var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
             var tokens = antiforgery.GetAndStoreTokens(http);
             vm!.CheckoutFormAntiForgeryToken = tokens.RequestToken;
@@ -35,19 +35,19 @@ public static class CheckoutApis
             return Results.Extensions.RazorSlice<Pages.Checkout, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo) =>
+        app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo, IConfiguration config) =>
         {
             var result = await UpdateCartItemQuantity(db, itemId, quantity);
 
             var cart = await GetCart(http, db);
             var items = await GetCartItems(cart.Id, db)!;
 
-            var vm = await GetCheckoutViewModel(items, cache, imgRepo);
+            var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
             return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id) =>
+        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config, int id) =>
         {
             var cart = await GetCart(http, db);
 
@@ -60,7 +60,7 @@ public static class CheckoutApis
             if (items.Count == 0)
                 return Results.Extensions.RazorSlice<Slices.CheckoutEmpty>();
 
-            var vm = await GetCheckoutViewModel(items, cache, imgRepo);
+            var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
             return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
@@ -225,10 +225,13 @@ public static class CheckoutApis
 
                 var dateStr = DateTime.Now.ToString("dd. MMMM yyyy", new CultureInfo("da-DK"));
 
-                //var emailLogoPath = $"{baseUrl}/img/email-logo.png";
+                var emailLogoPath = $"{env.WebRootPath}/img/logo/logo2.svg";
                 var emailTemplatePath = $"{env.WebRootPath}/templates/email/order-success-email-danish.htm";
 
-                var content = handler.CreateMessageBody(emailTemplatePath, /*customer.Name,*/ addressHtml, dateStr, order.Reference!, productsHtml/*, emailLogoPath*/);
+                var shopName = config["ShopName"];
+                var shopLink = config["ShopLink"];
+
+                var content = handler.CreateMessageBody(emailTemplatePath, addressHtml, dateStr, order.Reference!, productsHtml, emailLogoPath, shopName!, shopLink!);
 
                 var contact = await db.Contacts!.FirstAsync(c => c.Id == order.ContactId);
 
@@ -237,15 +240,6 @@ public static class CheckoutApis
 
                 http.Session.Clear();
                 http.Response.Cookies.Delete("CartSessionId");
-
-                //if (order != null)
-                //{
-
-                //}
-                //else
-                //{
-                //    log.LogWarning($"Order success page called with unknown reference Id: {referenceId}");
-                //}
 
                 return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
             }
@@ -308,7 +302,7 @@ public static class CheckoutApis
         return await db.CartItems!.Where(c => c.CartId == cartId && !c.Deleted).Include(c => c.Product).ToListAsync();
     }
 
-    private static async Task<CheckoutVm?> GetCheckoutViewModel(List<CartItem> items, IMemoryCache cache, ImagesRepo imgRepo)
+    private static async Task<CheckoutVm?> GetCheckoutViewModel(List<CartItem> items, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config)
     {
         if (items.Count == 0)
             return new CheckoutVm();
@@ -320,7 +314,8 @@ public static class CheckoutApis
 
         var vm = new CheckoutVm {
             CheckoutQuantity = items.Sum(c => c.Quantity),
-            CheckoutItems = items.Select(item => new CheckoutItemVm {
+            CheckoutItems = items.Select(item => new CheckoutItemVm
+            {
                 Id = item.Id,
                 ProductId = item.ProductId,
                 Name = item.Product!.Name,
@@ -331,7 +326,8 @@ public static class CheckoutApis
             }).ToList(),
             VAT = $"{vat:#.00} kr",
             Delivery = "49.00 kr",
-            CheckoutTotal = $"{total:#.00} kr"
+            CheckoutTotal = $"{total:#.00} kr",
+            ShopName = config["ShopName"]
         };
 
         foreach (var item in vm.CheckoutItems)
@@ -354,11 +350,9 @@ public static class CheckoutApis
         return addressStr;
     }
 
-    private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, IEnumerable<Data.Entities.Size> sizes, string countryCode, /*Currency currency,*/ decimal delivery)
+    private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, IEnumerable<Data.Entities.Size> sizes, string countryCode, decimal delivery)
     {
-        
         var mailStr = string.Empty;
-        //var discount = false;
 
         var totalPrice = 0.0m;
 
@@ -411,18 +405,9 @@ public static class CheckoutApis
         mailStr += "<tr>";
         mailStr += $"<td {successMailStyleBottom}>Købsbeløb</td>";
         mailStr += $"<td align='right' {successMailStyleBottom}>{totalPrice:#.00} kr</td>";
-        //successMailStr += $"<td align='right' {successMailStyleBottom}>{totalPrice} {currency.Symbol}</td>";
         mailStr += "</tr>";
 
-        //if (discount)
-        //{
-        //    successMailStr += "<tr>";
-        //    successMailStr += $"<td {successMailStyleBottom}>Rabat</td>";
-        //    successMailStr += $"<td align='right' {successMailStyleBottom}>{"Discount"} {currency.Symbol}</td>";
-        //    successMailStr += "</tr>";
-        //}
-
-        var deliveryStr = delivery == 0.0m ? "Gratis" : $"{delivery:#.00} kr" /*+ $" {currency.Symbol}"*/;
+        var deliveryStr = delivery == 0.0m ? "Gratis" : $"{delivery:#.00} kr";
 
         mailStr += "<tr>";
         mailStr += $"<td {successMailStyleBottom}>Levering</td>";
@@ -434,7 +419,6 @@ public static class CheckoutApis
         mailStr += "</tr>";
         mailStr += "<tr>";
         mailStr += "<td width='50%' align='left' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif;'><span style='font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>Total</span>&nbsp;<span style='font-family: HelveticaNow, Helvetica, sans-serif, serif, EmojiFont; font-size: 12px; letter-spacing: 0px; line-height: 16px; color: rgb(102, 103, 110); text-align: left;'>inkl. moms</span></td>";
-        //successMailStr += $"<td width='50%' align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>{totalPrice + delivery} {currency.Symbol}</td>";
         mailStr += $"<td width='50%' align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:18px; line-height:24px; letter-spacing:-0.18px; color:#1A1A1A; font-weight:bold'>{totalPrice + delivery:#.00} kr</td>";
         mailStr += "</tr>";
         mailStr += "</tbody>";
