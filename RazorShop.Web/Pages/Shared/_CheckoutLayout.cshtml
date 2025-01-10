@@ -29,15 +29,18 @@
         (() => {
             'use strict'
 
-            let form = document.getElementById('submit-form')
+            const consentCb = document.getElementById('consentCb');
+            const submitCard = document.getElementById('submit-card');
+            const consentLbl = document.getElementById('consent-lbl');
+            const form = document.getElementById('submit-form')
+
             if(form){
                 form.addEventListener('submit', (e) => {
                     if (!form.checkValidity()) {
                         e.preventDefault()
                         e.stopPropagation()
-                        if(!$('#consentCb').is(":checked")){
-                            $('#submit-card').addClass('bg-danger')
-                        }
+                        submitCard.classList.toggle('bg-danger', !consentCb.checked);
+                        consentLbl.classList.toggle('consent', !consentCb.checked);
                     }
                     form.classList.add('was-validated')
                 }, false)

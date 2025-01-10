@@ -10,6 +10,10 @@
     fill: white;
 }
 
+.consent span {
+    color: white;
+}
+
 .credit-card-img {
     max-height: 35px;
 }
