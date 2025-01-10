@@ -7,6 +7,10 @@
         hideModal('sizes-modal');
         reloadDataTable('sizes-datatable');
     }
+    if (e.detail.elt.id == 'product-form') {
+        hideModal('product-modal');
+        reloadDataTable('products-datatable');
+    }
 });
 
 hideModal = (modal) => {
