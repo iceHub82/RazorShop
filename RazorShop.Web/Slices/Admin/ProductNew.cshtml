@@ -1,6 +1,6 @@
 ﻿@inherits RazorSliceHttpResult<AdminNewProductVm>
 
-<div id="content" class="modal-content">
+<div id="new-product-modal-content" class="modal-content">
     <div class="modal-header">
         <h5 class="modal-title">Edit Product</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -9,8 +9,9 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    <form hx-post="/admin/product/modal/new"
-                          hx-target="#content"
+                    <form id="new-product-form"
+                          hx-post="/admin/product/modal/new"
+                          hx-target="#new-product-modal-content"
                           hx-swap="none" novalidate>
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
@@ -55,7 +56,6 @@
                         <input type="hidden" name="__RequestVerificationToken" value="@Model.AdminNewProductFormAntiForgeryToken" />
                     </form>
                 </div>
-               
             </div>
         </div>
     </div>

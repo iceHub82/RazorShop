@@ -8,8 +8,10 @@
 <div class="row">
     <div class="col">
         <button hx-get="/admin/product/modal/new"
-                hx-target="#content" 
-                data-bs-toggle="modal" data-bs-target="#product-modal">Create Product</button>
+                hx-target="#new-product-modal-content"
+                data-bs-toggle="modal" data-bs-target="#new-product-modal">
+            Create Product
+        </button>
     </div>
 </div>
 <div class="row">
@@ -23,10 +25,15 @@
         </table>
     </div>
 </div>
-<div class="modal fade" id="product-modal" tabindex="-1">
+<div class="modal fade" id="product-modal">
     <div class="modal-dialog modal-xl">
         <div id="content" class="modal-content">
-            
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="new-product-modal">
+    <div class="modal-dialog">
+        <div id="new-product-modal-content" class="modal-content">
         </div>
     </div>
 </div>
@@ -40,10 +47,10 @@
             columns: [{
                 data: null, name: 'Name',
                 render: function(data) {
-                    return `<a hx-get="/admin/product/modal/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#product-modal">${data.name}</a>`;
+                    return `<a hx-get="/admin/product/modal/edit/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#product-modal">${data.name}</a>`;
                 }
             }],
-            initComplete: function() {
+            drawCallback: function() {
                 htmx.process(document.getElementById('products-datatable'));
             }
         });

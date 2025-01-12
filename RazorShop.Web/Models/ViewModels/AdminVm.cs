@@ -37,7 +37,7 @@ public class AdminProductVm
     public int? CategoryId { get; set; }
     public string? AdminProductFormAntiForgeryToken { get; set; }
     public string? AdminProductFormMainImageAntiForgeryToken { get; set; }
-    //public List<AdminProductSizeVm>? AdminProductSizes { get; set; } = new();
+    public List<AdminSizeVm>? AdminSizes { get; set; } = new();
     public List<AdminImageVm>? AdminImageVms { get; set; } = new();
     public List<AdminCategoryVm>? AdminCategories { get; set; } = new();
 }

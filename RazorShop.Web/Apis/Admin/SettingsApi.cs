@@ -1,15 +1,14 @@
 ﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
-using RazorShop.Web.Slices.Admin;
 using RazorShop.Web.Models.ViewModels;
 using RazorShop.Web.Slices.Admin.Settings;
 using LinqKit;
 
 using Size = RazorShop.Data.Entities.Size;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace RazorShop.Web.Apis.Settings;
 

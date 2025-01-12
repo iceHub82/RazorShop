@@ -1,7 +1,10 @@
 ﻿@inherits RazorSlice
 
-<div>Categories</div>
-
+<div class="row">
+    <div class="col">
+        <div>Categories</div>
+    </div>
+</div>
 <div class="row">
     <div class="col">
         <table id="categories-datatable" class="table table-striped" style="width:100%">
@@ -13,7 +16,12 @@
         </table>
     </div>
 </div>
-
+<div class="modal fade" id="category-modal">
+    <div class="modal-dialog">
+        <div id="content" class="modal-content">
+        </div>
+    </div>
+</div>
 <script>
     $(function() {
         $('#categories-datatable').DataTable({
@@ -24,7 +32,7 @@
             columns: [{
                 data: null, name: 'Name',
                 render: function(data) {
-                    return `<a hx-get="/admin/settings/categories/modal/edit/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#categories-modal">${data.name}</a>`;
+                    return `<a hx-get="/admin/settings/categories/modal/edit/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#category-modal">${data.name}</a>`;
                 }
             }],
             drawCallback: function() {
@@ -33,10 +41,3 @@
         });
     });
 </script>
-
-<div class="modal fade" id="categories-modal">
-    <div class="modal-dialog">
-        <div id="content" class="modal-content">
-        </div>
-    </div>
-</div>

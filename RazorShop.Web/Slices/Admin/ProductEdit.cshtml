@@ -9,9 +9,10 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    <form id="product-form" hx-post="/admin/product/edit/@Model.Id"
-                          hx-target="#content"
-                          hx-swap="none" novalidate>
+                    <form id="product-form"
+                          hx-post="/admin/product/modal/edit/@Model.Id"
+                          hx-swap="none"
+                          novalidate>
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" value="@Model.Name" maxlength="255" required>
@@ -46,6 +47,36 @@
 
                             </select>
                             <div class="invalid-feedback">Please select a category.</div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Sizes</label>
+                            <div class="col-md-10 form-check form-check-inline">
+                                <table>
+                                    @{
+                                        var j = 0;
+                                        @foreach (var size in Model.AdminSizes!)
+                                        {
+                                            if ((j % 4) == 0)
+                                            {
+                                                @:<tr>
+                                                }
+                                                <td>
+                                                    <div>
+                                                        <input type="checkbox" name="selectedSizes" value="@size.Id" class="" />
+                                                        <label class="control-label">@size.Name</label>
+                                                    </div>
+                                                </td>
+                                                if ((j % 4) == 3)
+                                                {
+                                                @:</tr>
+                                            }
+                                            j++;
+                                        }
+                                    }
+                                </table>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-end">
@@ -102,8 +133,5 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
     </div>
 </div>

@@ -14,7 +14,6 @@ using SixLabors.ImageSharp.Formats.Webp;
 
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
-using SixLabors.ImageSharp.Web.Caching;
 
 namespace RazorShop.Web.Apis.Admin;
 
@@ -80,7 +79,7 @@ public static class AdminApis
             });
         }).RequireAuthorization();
 
-        app.MapGet("/admin/product/modal/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, IMemoryCache cache, int id) =>
+        app.MapGet("/admin/product/modal/edit/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, IMemoryCache cache, int id) =>
         {
             var product = await db.Products!.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).Include(x => x.ProductImages)!.ThenInclude(x => x.Image).FirstAsync();
 
@@ -102,6 +101,10 @@ public static class AdminApis
             foreach (var category in categories)
                 vm.AdminCategories!.Add(new AdminCategoryVm { Id = category.Id, Name = category.Name });
 
+            var sizes = (IEnumerable<RazorShop.Data.Entities.Size>)cache.Get("sizes")!;
+            foreach (var size in sizes)
+                vm.AdminSizes!.Add(new AdminSizeVm { Id = size.Id, Name = size.Name });
+
             var imgIds = product.ProductImages!.Where(x => x.ProductId == id && !x.Image!.Main).Select(x => x.ImageId);
             foreach (var imgId in imgIds)
                 vm.AdminImageVms!.Add(new AdminImageVm { Id = imgId, TicksStamp = await imgRepo.GetGalleryProductImageTickStamp(imgId) });
@@ -109,7 +112,7 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
         }).RequireAuthorization();
 
-        app.MapPost("/admin/product/edit/{id}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
+        app.MapPost("/admin/product/modal/edit/{id}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
         {
             await antiforgery.ValidateRequestAsync(http);
 
@@ -117,7 +120,7 @@ public static class AdminApis
 
             var form = await http.Request.ReadFormAsync();
 
-            product!.Name = form["name"]; ;
+            product!.Name = form["name"];
             product.ShortDescription = form["shortDescription"];
             product.Description = form["description"];
             var categoryId = int.Parse(form["categoryDd"]!);
@@ -130,16 +133,7 @@ public static class AdminApis
 
             await db.SaveChangesAsync();
 
-            product = await db.Products.Where(p => p.Id == id).Include(p => p.ProductSizes)!.ThenInclude(p => p.Size).FirstAsync();
-
-            var vm = new AdminProductVm();
-            vm.Id = product.Id;
-            vm.Name = product.Name;
-            vm.Price = $"{product.Price:#.00}";
-            vm.Description = product.Description;
-            vm.ShortDescription = product.ShortDescription;
-
-            return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
+            return Results.Ok();
         }).RequireAuthorization();
 
         app.MapGet("/admin/product/modal/new", (HttpContext http, IMemoryCache cache, IAntiforgery antiforgery) =>
