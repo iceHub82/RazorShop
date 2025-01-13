@@ -141,7 +141,7 @@ public static class AdminApis
             await db.SaveChangesAsync();
 
             var sizes = form["selectedSizes"];
-            if (sizes.Count != 0)
+            if (sizes.Count > 0)
                 foreach (var sizeId in sizes)
                     await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = int.Parse(sizeId!) });
 
@@ -164,6 +164,10 @@ public static class AdminApis
             var categories = (IEnumerable<Category>)cache.Get("categories")!;
             foreach (var category in categories)
                 vm.AdminCategories!.Add(new AdminCategoryVm { Id = category.Id, Name = category.Name });
+
+            var sizes = (IEnumerable<Data.Entities.Size>)cache.Get("sizes")!;
+            foreach (var size in sizes)
+                vm.AdminSizes!.Add(new AdminSizeVm { Id = size.Id, Name = size.Name });
 
             return Results.Extensions.RazorSlice<ProductNew, AdminNewProductVm>(vm);
         }).RequireAuthorization();
@@ -189,6 +193,15 @@ public static class AdminApis
             await db.Products!.AddAsync(product);
             await db.SaveChangesAsync();
 
+            var sizes = form["selectedSizes"];
+            if (sizes.Count > 0)
+            {
+                foreach (var sizeId in sizes)
+                    await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = int.Parse(sizeId!) });
+
+                await db.SaveChangesAsync();
+            }
+                
             return Results.Content($"TESTTEST");
         }).RequireAuthorization();
 

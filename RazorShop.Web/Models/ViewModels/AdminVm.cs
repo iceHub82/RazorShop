@@ -51,17 +51,8 @@ public class AdminNewProductVm
     public string? ShortDescription { get; set; }
     public string? AdminNewProductFormAntiForgeryToken { get; set; }
     public List<AdminCategoryVm>? AdminCategories { get; set; } = new();
+    public List<AdminSizeVm>? AdminSizes { get; set; } = new();
 }
-
-//public class AdminNewCategoryVm
-//{
-//    public string? AdminNewCategoryFormAntiForgeryToken { get; set; }
-//}
-
-//public class AdminNewSizeVm
-//{
-//    public string? AdminNewSizeFormAntiForgeryToken { get; set; }
-//}
 
 public class AdminImageVm
 {
