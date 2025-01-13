@@ -1,6 +1,7 @@
 ﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Models.ViewModels;
@@ -8,7 +9,6 @@ using RazorShop.Web.Slices.Admin.Settings;
 using LinqKit;
 
 using Size = RazorShop.Data.Entities.Size;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace RazorShop.Web.Apis.Settings;
 
@@ -154,7 +154,7 @@ public static class SettingsApis
             return Results.Extensions.RazorSlice<SizeEdit, AdminSizeVm>(vm);
         }).RequireAuthorization();
 
-        app.MapPost($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
+        app.MapPost($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IMemoryCache cache, int id) =>
         {
             await antiforgery.ValidateRequestAsync(http);
 
@@ -163,6 +163,10 @@ public static class SettingsApis
             var size = await db.Sizes!.FindAsync(id);
             size!.Name = form["name"];
             await db.SaveChangesAsync();
+
+            var sizes = await db.Sizes!.ToListAsync();
+            var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+            cache.Set("sizes", sizes, options);
 
             return Results.Ok();
         }).RequireAuthorization();
