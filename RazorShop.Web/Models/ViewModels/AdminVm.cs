@@ -73,6 +73,7 @@ public class AdminSizeVm
 {
     public int Id { get; set; }
     public string? Name { get; set; }
+    public bool Selected { get; set; }
     public string? AdminSizeFormAntiForgeryToken { get; internal set; }
 }
 

@@ -12,8 +12,8 @@ using RazorShop.Web.Models.ViewModels;
 using LinqKit;
 using SixLabors.ImageSharp.Formats.Webp;
 
-using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace RazorShop.Web.Apis.Admin;
 
@@ -101,9 +101,19 @@ public static class AdminApis
             foreach (var category in categories)
                 vm.AdminCategories!.Add(new AdminCategoryVm { Id = category.Id, Name = category.Name });
 
-            var sizes = (IEnumerable<RazorShop.Data.Entities.Size>)cache.Get("sizes")!;
+            var sizes = (IEnumerable<Data.Entities.Size>)cache.Get("sizes")!;
+            var pSizes = db.ProductSizes!.Where(ps => ps.ProductId == product.Id);
+
             foreach (var size in sizes)
-                vm.AdminSizes!.Add(new AdminSizeVm { Id = size.Id, Name = size.Name });
+            {
+                var adminSize = new AdminSizeVm { Id = size.Id, Name = size.Name };
+
+                foreach (var pSize in pSizes)
+                    if (pSize.SizeId == size.Id)
+                        adminSize.Selected = true;
+
+                vm.AdminSizes!.Add(adminSize);
+            }
 
             var imgIds = product.ProductImages!.Where(x => x.ProductId == id && !x.Image!.Main).Select(x => x.ImageId);
             foreach (var imgId in imgIds)
@@ -125,6 +135,15 @@ public static class AdminApis
             product.Description = form["description"];
             var categoryId = int.Parse(form["categoryDd"]!);
             product.CategoryId = categoryId == 0 ? null : categoryId;
+
+            var pSizes = await db.ProductSizes!.Where(ps => ps.ProductId == product.Id).ToListAsync();
+            db.ProductSizes!.RemoveRange(pSizes);
+            await db.SaveChangesAsync();
+
+            var sizes = form["selectedSizes"];
+            if (sizes.Count != 0)
+                foreach (var sizeId in sizes)
+                    await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = int.Parse(sizeId!) });
 
             if (form.TryGetValue("price", out var priceValue) && decimal.TryParse(priceValue, out var price))
                 product.Price = price;
