@@ -26,6 +26,20 @@ public class AdminSizesVm
     public int TotalCount { get; set; }
 }
 
+public class AdminOrdersVm
+{
+    public List<AdminOrderVm> AdminOrders { get; set; } = new();
+    public int FilteredCount { get; set; }
+    public int TotalCount { get; set; }
+}
+
+public class AdminOrderVm
+{
+    public int Id { get; set; }
+    public string? Reference { get; set; }
+    public string? Created { get; set; }
+}
+
 public class AdminProductVm
 {
     public int Id { get; set; }

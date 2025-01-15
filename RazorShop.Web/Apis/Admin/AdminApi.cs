@@ -33,17 +33,6 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<Pages.Admin.Home>();
         }).RequireAuthorization();
 
-        app.MapGet("/admin/orders", (HttpContext http) =>
-        {
-            if (ApiUtil.IsHtmx(http.Request))
-            {
-                //http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Orders>();
-            }
-
-            return Results.Extensions.RazorSlice<Pages.Admin.Orders>();
-        }).RequireAuthorization();
-
         app.MapGet("/admin/products", (HttpContext http) =>
         {
             if (ApiUtil.IsHtmx(http.Request))
@@ -337,6 +326,42 @@ public static class AdminApis
 
             return Results.Redirect("/Login");
         });
+
+        app.MapGet("/admin/orders", (HttpContext http) =>
+        {
+            if (ApiUtil.IsHtmx(http.Request))
+            {
+                //http.Response.Headers.Append("Vary", "HX-Request");
+                return Results.Extensions.RazorSlice<Orders>();
+            }
+
+            return Results.Extensions.RazorSlice<Pages.Admin.Orders>();
+        }).RequireAuthorization();
+
+        app.MapGet("/admin/orders/table", async (RazorShopDbContext db, HttpRequest request) =>
+        {
+            var dtParams = GetDatatableParameters(request);
+
+            var vm = await GetPaginatedOrders(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
+
+            List<object> ordersTableVm = new();
+            foreach (var order in vm.AdminOrders)
+            {
+                ordersTableVm.Add(new {
+                    order.Id,
+                    order.Reference,
+                    order.Created
+                });
+            }
+
+            return Results.Json(new
+            {
+                dtParams.Draw,
+                recordsTotal = vm.TotalCount,
+                recordsFiltered = vm.FilteredCount,
+                data = ordersTableVm
+            });
+        }).RequireAuthorization();
     }
 
     private static async Task<AdminProductsVm> GetPaginatedAdminProducts(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
@@ -357,6 +382,27 @@ public static class AdminApis
 
             FilteredCount = db.Products!.Where(predicate).Count(),
             TotalCount = db.Products!.Where(predicate).Count()
+        };
+    }
+
+    private static async Task<AdminOrdersVm> GetPaginatedOrders(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
+    {
+        var predicate = PredicateBuilder.New<Order>(true);
+
+        if (!string.IsNullOrWhiteSpace(search))
+            predicate = predicate.And(i => i.Reference!.ToLower().Contains(search.ToLower()));
+
+        return new()
+        {
+            AdminOrders = await db.Orders!.AsNoTracking()
+            .Where(predicate)
+            .Select(o => new AdminOrderVm { Id = o.Id, Reference = o.Reference, Created = o.Created.ToString("dd'-'MM'-'yyyy' 'HH':'mm':'ss")/*, StatusId = o.StatusId */})
+            .OrderBy($"{sort} {dir}")
+            .Skip(skip)
+            .Take(take).ToListAsync(),
+
+            FilteredCount = db.Orders!.Where(predicate).Count(),
+            TotalCount = db.Orders!.Where(predicate).Count()
         };
     }
 
