@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Web.Models.ViewModels;
 using RazorShop.Data.Repos;
-using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data.Entities;
 
 namespace RazorShop.Web.Apis;
@@ -31,6 +31,56 @@ public static class SiteApis
             var categories = (IEnumerable<Category>)cache.Get("categories")!;
 
             return Results.Extensions.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
+        });
+
+        app.MapGet("/About", (HttpContext http, IConfiguration config) =>
+        {
+            return Results.Extensions.RazorSlice<Pages.About>();
+        });
+
+        app.MapGet("/CustomerService", (HttpContext http, IConfiguration config) =>
+        {
+            return Results.Extensions.RazorSlice<Pages.CustomerService>();
+        });
+
+        app.MapGet("/DataPolicy", (HttpContext http, IConfiguration config) =>
+        {
+            return Results.Extensions.RazorSlice<Pages.DataPolicy>();
+        });
+
+        app.MapGet("/PayAndDelivery", (HttpContext http, IConfiguration config) =>
+        {
+            return Results.Extensions.RazorSlice<Pages.PayAndDelivery>();
+        });
+
+        app.MapGet("/footer", (HttpContext http, IConfiguration config) =>
+        {
+            if (!ApiUtil.IsHtmx(http.Request))
+                return Results.BadRequest();
+        
+            var vm = new FooterVm();
+            vm.ShopName = config["Shop:Name"];
+            vm.Year = DateTime.Now.Year.ToString();
+            vm.Address = config["Shop:Address"];
+            vm.City = config["Shop:City"];
+            vm.ZipCode = config["Shop:ZipCode"];
+            vm.Email = config["Shop:Email:Contact"];
+
+            return Results.Extensions.RazorSlice<Slices.Footer, FooterVm>(vm);
+        });
+
+        app.MapGet("/terms", (HttpContext http, IConfiguration config) =>
+        {
+            var vm = new TermsVm();
+            vm.ShopName = config["Shop:Name"];
+            vm.Address = config["Shop:Address"];
+            vm.City = config["Shop:City"];
+            vm.ZipCode = config["Shop:ZipCode"];
+            vm.Cvr = config["Shop:Cvr"];
+            vm.PhoneNumber = config["Shop:PhoneNumber"];
+            vm.Email = config["Shop:Email"];
+
+            return Results.Extensions.RazorSlice<Pages.Terms, TermsVm>(vm);
         });
 
         app.MapGet("/Redirects", (int statusCode) =>

@@ -1,0 +1,235 @@
+﻿@inherits RazorSliceHttpResult<TermsVm>
+@implements IUsesLayout<_Layout, LayoutModel>
+
+<section id="section" class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="row">
+            <div class="col">
+                <h1>Betingelser og vilkår</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Generelle oplysninger</h2>
+                <p>
+                    @Model.ShopName<br>
+                    @Model.Address<br>
+                    @Model.ZipCode @Model.City<br>
+                    CVR nr.: @Model.Cvr<br>
+                    Tlf.: @Model.PhoneNumber<br>
+                    E-mail: @Model.Email
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Aftalens parter</h2>
+                <p>"Køber" anvendes om den fysiske person, som hovedsagelig handler uden for sit erhverv, og som ved afgivelse af en bestilling til @Model.ShopName afgiver et tilbud om køb og levering af bestemte varer.</p>
+                <p>@Model.ShopName er din aftalepart, når du handler på @Model.ShopName.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Produktinformation</h2>
+                <p>På @Model.ShopName oplyses varens væsentlige egenskaber, for yderligere oplysninger eller spørgsmål til eksisterende oplysninger kan der sendes en mail til @Model.ShopName via @Model.Email.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Bestilling</h2>
+                <p>Ordrebekræftelsen bliver sendt kort efter at Kunden har gennemført ordren online på vores site. Kunden kan altid få tilsendt en kopi af ordrebekræftelsen ved at skrive til @Model.Email.</p>
+                <p><strong>Sprog:</strong> Når du handler med @Model.ShopName, indgås aftaler på følgende sprog: Dansk.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Priser</h2>
+                <p>Alle priserne er dagspriser og kun gældende på bestillingsdagen. Der kan derfor forekomme prisændringer. Alle angivne priser er inklusive 25% moms.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Hvem sælger vi til?</h2>
+                <p>Vi sælger til privatkunder, erhvervskunder og offentlige institutioner. Bestillinger fra børn under 18 år kan alene indgås af forældre, eller andre der lovligt kan handle på barnets eller den unges vegne.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Betalingsmuligheder</h2>
+                <p>Du kan hos @Model.ShopName betale med følgende betalingskort:</p>
+                <ul>
+                    <li>Dankort</li>
+                    <li>VISA/Dankort</li>
+                    <li>VISA</li>
+                    <li>VISA Electron</li>
+                    <li>Mastercard</li>
+                    <li>Maestrocard</li>
+                    <li>American Express</li>
+                    <li>MobilePay</li>
+                    <li>Apple Pay</li>
+                    <li>G Pay</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Reservation af beløb</h2>
+                <p>Betaler du med et internationalt betalingskort, reserveres beløbet med det samme. Pengene reserveres på dit kort eller konto indtil:</p>
+                <ul>
+                    <li>Vi trækker beløbet, når vi sender varen, eller</li>
+                    <li>pengene frigives ifølge aftale med din kortudsteder.</li>
+                </ul>
+                <p>Du kan læse mere om reglerne for dit specifikke kort hos din kortudsteder. Vi opkræver ikke gebyrer. Beløbet hæves først på dit kort, når varen afsendes.</p>
+                <p>Hos @Model.ShopName anvender vi en sikker betalings-gateway fra Quickpay.dk. Quickpay.dk anvender SSL-kryptering, som er testet og godkendt af pbs. Alt kortdata sendes krypteret og kan kun læses af PBS.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Afhentning</h3>
+                <p>Vi tilbyder desværre ikke afhentning af bestillinger på vores firmaadresse.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Fragt</h3>
+                <p>Hos @Model.ShopName bestræber vi os på en hurtig og effektiv levering af alle vores varer. Læs herunder nærmere om vores leveringstider.</p>
+                <p>Vi benytter PostNord som fragtleverandør, og alle vores forsendelser bliver sendt som pakke. Vi tilbyder følgende leveringsmuligheder:</p>
+                <ul>
+                    @*                     <li>Privatpakke Collect uden omdeling – vælg selv udleveringssted – fra 39 kr.</li> *@
+                    <li>Privatpakke Home med omdeling – fra 49 kr.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Leveringstid</h3>
+                <p><strong>Varen er på lager:</strong> Ordrer vil ved bestilling fra mandag til fredag inden klokken 21.00 blive afsendt samme dag, til levering dagen efter. Vi pakker og afsender også ordrer i weekenden. Ved bestilling inden 15.30 søndag leverer vi allerede mandag.</p>
+                <p><strong>Varen er ikke på lager:</strong> Varer som ikke er på lager vil normalt kunne leveres inden for 5 arbejdsdage.</p>
+                <p>Uafhentede pakker tager vi et gebyr på 39 kr.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Fortrydelsesret</h3>
+                <p>Som forbruger har du 60 dages fortrydelsesret, når du handler hos os.</p>
+                <p>Fortrydelsesfristen udløber 60 dage efter den dag, du har modtaget din vare. Hvis du har bestilt flere forskellige varer i én ordre, men de leveres enkeltvist, løber fristen fra den dag, hvor du modtager den sidste vare.</p>
+                <p>Fristen indebærer, at du har 60 dage fra modtagelsen, til at give os besked om, at du vil fortryde dit køb. Du kan sende en mail til @Model.Email eller benytte standardfortrydelsesformularen ved at klikke på dette link: <a href="#">Standardfortrydelsesformular</a>.</p>
+                <p>Du kan ikke fortryde købet ved at nægte at modtage varen uden samtidig at give os besked.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Fortrydelse af en del af købet</h3>
+                <p>Hvis du har købt flere varer hos os, har du mulighed for at sende én eller flere varer retur, selvom de er købt i én ordre.</p>
+                <p><strong>Bemærk:</strong> Du får ikke fragtomkostningerne retur, hvis du fortryder en del af dit køb.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Returnering</h3>
+                <p>Når du har givet os besked om, at du vil fortryde dit køb, har du 14 dage til at sende varen tilbage til os.</p>
+                <p>Du skal selv betale for, at pakken returneres, og det er dig, der hæfter, hvis der opstår en skade under transporten.</p>
+                <p>Visse varer kan ikke returneres med normal post. Dette gælder for meget store varer. Udgifterne til returnering af disse varer forventes højst at koste 2000 kr.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Ingen fortrydelsesret</h3>
+                <p>Disse aftaler kan ikke fortrydes:</p>
+                <ul>
+                    <li>
+                        Levering af digitalt indhold, som ikke leveres på et fysisk medium, hvis:
+                        <ul>
+                            <li>leveringen af det digitale indhold ikke sker mod betaling, eller</li>
+                            <li>udførelsen er påbegyndt med dit forudgående udtrykkelige samtykke og anerkendelse af, at du dermed mister din fortrydelsesret, når vi har givet en bekræftelse på varigt medium.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Varens stand, når du sender den retur</h3>
+                <p>Udvidet fortrydelsesret fra dag 15 – 60: Fra dag 15-60 har du fuld fortrydelsesret ved fremvisning af kvittering, såfremt varen returneres i original emballage og i samme stand som ved købet.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Fortrydelse fra dag 1 - 14</h3>
+                <p>Du hæfter kun for eventuel forringelse af varens værdi, som skyldes anden håndtering end hvad der er nødvendigt for at fastslå varens art, egenskaber og den måde, den fungerer på.</p>
+                <p>Vi anbefaler, at du sender varen retur i den originale emballage. Hvis den originale emballage mangler, kan det muligvis medføre en værdiforringelse af varen.</p>
+                <p><strong>Bemærk:</strong> Vi har en behandlingstid på 10-14 hverdage fra vi modtager din returpakke på vores lager til, at den er færdigbehandlet hos os.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Tilbagebetaling af købsbeløbet</h3>
+                <p>Hvis du fortryder dit køb, får du dine penge tilbage. Hvis varen er værdiforringet, fratrækker vi det beløb, du hæfter for.</p>
+                <p>Vi refunderer alle betalinger modtaget fra dig, herunder leveringsomkostninger (dog ikke ekstra leveringsomkostninger i de tilfælde, hvor du har valgt en anden leveringsform, end den billigste form for standardlevering, som vi tilbyder), senest 14 dage fra den dag, hvor vi har modtaget din besked om, at du vil fortryde aftalen.</p>
+                <p>Vi tilbagefører pengene med samme betalingsmiddel, som du benyttede ved købet.</p>
+                <p>Vi kan tilbageholde betalingen indtil vi har modtaget varen, med mindre du sender os dokumentation for at have returneret den.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Reklamationsret</h3>
+                <p>Købelovens mangelsregler gælder for varekøb. Når du handler hos os som forbruger, har du reklamationsret i 24 måneder. Hvis din reklamation er berettiget, betyder det, at du enten kan få varen repareret, ombyttet, pengene tilbage eller et afslag i prisen, afhængig af den konkrete situation.</p>
+                <p>Send gerne et billede til os. Skriv til @Model.Email</p>
+                <p>Er reklamationen berettiget, refunderer vi dine (rimelige) fragtomkostninger. Varen skal altid sendes tilbage i forsvarlig emballage, og husk at få en kvittering for afsendelse, så vi kan tilbagebetale dine fragtomkostninger.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Fejlfri vare</h3>
+                <p>Ved indsendelse af varer, hvor fejlen ikke kan konstateres af @Model.ShopName eller vores samarbejdspartnere, kan der blive pålagt et gebyr på minimum Kr. 499,-.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Uberettiget reklamation</h3>
+                <p>Din reklamation vil være uberettiget, hvis varen har lidt overlast i form af fysisk skade, væskeskade, eller ved anden håndtering end producentens forskrifter.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Persondatapolitik</h3>
+                <p>Vi har brug for følgende oplysninger, når du handler hos os:</p>
+                <ul>
+                    <li>Navn, adresse, tlf.nr. og mailadresse.</li>
+                </ul>
+                <p>Vi registrerer og videregiver de personoplysninger, som er nødvendige for at kunne levere varen til dig. Personoplysningerne registreres hos @Model.ShopName og opbevares i fem år, hvorefter oplysningerne slettes.</p>
+                <p>Vi samarbejder herudover med en række andre virksomheder, som opbevarer og behandler data. Virksomhederne behandler udelukkende oplysninger på vores vegne og må ikke bruge dem til egne formål.</p>
+                <p>Vi arbejder kun sammen med databehandlere i EU eller i lande, der kan give dine oplysninger en tilstrækkelig beskyttelse.</p>
+                <p>Den dataansvarlige på @Model.ShopName er @Model.ShopName</p>
+                <p>Du har ret til at få oplyst, hvilke oplysninger vi behandler om dig.</p>
+                <p>Hvis du mener, at oplysningerne er unøjagtige, har du ret til at få dem rettet.</p>
+                <p>I nogle tilfælde har vi pligt til at slette dine persondata, hvis du beder om det.</p>
+                <p>Du kan kontakte os, hvis du mener, at dine persondata bliver behandlet i strid med lovgivningen.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h3>Klageadgang</h3>
+                <p>Hvis du som forbruger vil klage over dit køb, skal du kontakte @Model.Email. Hvis det ikke lykkes os at finde en løsning, kan du sende en klage til:</p>
+                <p>
+                    <strong>
+                        Center for Klageløsning<br>
+                        Nævnenes Hus<br>
+                        Toldboden 2<br>
+                        8800 Viborg<br>
+                        Danmark
+                    </strong>
+                </p>
+                <p>Du kan klage til Center for Klageløsning via <a href="https://www.forbrug.dk">www.forbrug.dk</a>.</p>
+                <p>EU-Kommissionens online klageportal kan også anvendes ved indgivelse af en klage. Det er relevant, hvis du er forbruger med bopæl i et andet EU-land. Klagen indgives her – <a href="http://ec.europa.eu/odr">http://ec.europa.eu/odr</a>. Ved indgivelse af en klage skal du angive vores e-mail adresse @Model.Email.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Betingelser og vilkår",
+            HasHeader = false
+        };
+}

@@ -228,8 +228,8 @@ public static class CheckoutApis
                 var emailLogoPath = $"{env.WebRootPath}/img/logo/logo2.svg";
                 var emailTemplatePath = $"{env.WebRootPath}/templates/email/order-success-email-danish.htm";
 
-                var shopName = config["ShopName"];
-                var shopLink = config["ShopLink"];
+                var shopName = config["Shop:Name"];
+                var shopLink = config["Shop:Link"];
 
                 var content = handler.CreateMessageBody(emailTemplatePath, addressHtml, dateStr, order.Reference!, productsHtml, emailLogoPath, shopName!, shopLink!);
 
@@ -327,7 +327,7 @@ public static class CheckoutApis
             VAT = $"{vat:#.00} kr",
             Delivery = "49.00 kr",
             CheckoutTotal = $"{total:#.00} kr",
-            ShopName = config["ShopName"]
+            ShopName = config["Shop:Name"]
         };
 
         foreach (var item in vm.CheckoutItems)

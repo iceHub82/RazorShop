@@ -5,8 +5,6 @@ namespace RazorShop.Web.Email;
 
 public class EmailHandler(IConfiguration config) : IEmailHandler
 {
-    //private readonly EmailConfig _config = config;
-
     public void SendEmail(Message message)
     {
         var emailMessage = CreateEmailMessage(message);
@@ -18,11 +16,9 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
     {
         var body = string.Empty;
 
-        // Read in the template
         using (var SourceReader = File.OpenText(templatePath))
             body = SourceReader.ReadToEnd();
 
-        // Now add the data
         int i = 0;
         foreach (string arg in args)
         {
@@ -35,8 +31,8 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
 
     private MimeMessage CreateEmailMessage(Message message)
     {
-        var fromName = config["Email:FromName"];
-        var from = config["Email:From"];
+        var fromName = config["Shop:Name"];
+        var from = config["Shop:Email:From"];
 
         var emailMessage = new MimeMessage();
         emailMessage.From.Add(new MailboxAddress(fromName, from));
@@ -53,10 +49,10 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
         {
             try
             {
-                var host = config["Email:Host"];
-                var port = config["Email:Port"];
-                var user = config["Email:User"];
-                var password = config["Email:Password"];
+                var host = config["EmailProvider:Host"];
+                var port = config["EmailProvider:Port"];
+                var user = config["EmailProvider:User"];
+                var password = config["EmailProvider:Password"];
 
                 client.Connect(host, int.Parse(port!), true);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");

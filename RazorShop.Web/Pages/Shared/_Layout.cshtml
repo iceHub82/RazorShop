@@ -28,7 +28,9 @@
     
     @await RenderBodyAsync()
 
-    @(await RenderPartialAsync<Footer>())
+    <div class="divider"></div>
+
+    <footer hx-get="/footer" hx-trigger="load" class="py-5"></footer>
 
     <script src="/lib/jquery/dist/jquery.min.js"></script>
     <script src="/js/shop.js"></script>

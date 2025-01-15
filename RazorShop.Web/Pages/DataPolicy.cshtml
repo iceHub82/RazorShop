@@ -1,0 +1,19 @@
+﻿@inherits RazorSliceHttpResult
+@implements IUsesLayout<_Layout, LayoutModel>
+
+<section id="section" class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="row">
+            <div class="col">
+               Data Policy
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Om os",
+            HasHeader = false
+        };
+}
