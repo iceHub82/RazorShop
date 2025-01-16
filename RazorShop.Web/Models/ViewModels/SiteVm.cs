@@ -2,35 +2,31 @@
 
 public class SiteVm
 {
-
-}
-
-public class FooterVm
-{
     public string? ShopName { get; set; }
     public string? Year { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? ZipCode { get; set; }
-    public string? Email { get; set; }
-}
-
-public class TermsVm
-{
-    public string? ShopName { get; set; }
-    public string? Address { get; set; }
-    public string? City { get; set; }
-    public string? ZipCode { get; set; }
     public string? Cvr { get; set; }
     public string? Email { get; set; }
 }
 
-public class DataPolicyVm
+public class FooterVm : SiteVm
 {
-    public string? ShopName { get; set; }
-    public string? Address { get; set; }
-    public string? City { get; set; }
-    public string? ZipCode { get; set; }
-    public string? Cvr { get; set; }
-    public string? Email { get; set; }
+}
+
+public class TermsVm : SiteVm
+{
+}
+
+public class DataPolicyVm : SiteVm
+{
+}
+
+public class CustomerServiceVm : SiteVm
+{
+}
+
+public class PayAndDeliveryVm : SiteVm
+{
 }

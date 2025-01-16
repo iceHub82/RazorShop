@@ -1,11 +1,83 @@
-﻿@inherits RazorSliceHttpResult
+﻿@inherits RazorSliceHttpResult<CustomerServiceVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
     <div class="container px-4 px-lg-5 my-5">
-        <div class="row">
+        <h2>Kundeservice</h2>
+        <div class="row my-4">
             <div class="col">
-               Service
+                <h3>Kontakt</h3>
+                <p><strong>E-mail:</strong> @Model.Email</p>
+                <p><strong>Åbningstider:</strong></p>
+                <p>Mandag til Torsdag: 8.00 - 16.30</p>
+                <p>Fredag: 8.00 - 15.30</p>
+                <p>Vi besvarer inden for 1-2 dage.</p>
+            </div>
+        </div>
+@*         <div class="row my-4">
+            <div class="col">
+                <h3>E-mærket</h3>
+                <p>Vi er godkendt. Når du handler på e-mærkede netbutikker, har du altid adgang til e-handelsfondens forbrugerhotline.</p>
+            </div>
+        </div> *@
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Spørgsmål og svar</h3>
+                <p>Her finder du svar på de mest almindelige spørgsmål fra vores kunder.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Forsendelse</h3>
+                <p><strong>Hvor lang tid tager det, før jeg modtager min bestilling?</strong></p>
+                <p>Hvis du bestiller en vare, der er på lager, leverer vi normalt inden for 1-2 hverdage fra mandag til fredag.</p>
+                <p>Vi pakker og sender også bestillinger i weekenden, men vi kan ikke garantere levering i weekenden. Alle bestillinger sendes med Postnord som pakke. Pakkeboks, afhentningssted eller hjemmelevering er de muligheder, vi tilbyder.</p>
+
+                <p><strong>Hvad hvis jeg ikke er hjemme ved leveringstidspunktet?</strong></p>
+                <p>Hvis du ikke er hjemme ved leveringstidspunktet, og forsendelsen ikke kan leveres som aftalt, vil posten tage forsendelsen med tilbage til dit lokale afhentningssted, hvor den kan afhentes inden for 7 dage. Du vil modtage besked via SMS med yderligere information om, hvornår og hvor du kan hente din pakke.</p>
+
+                <p><strong>Levering til en anden adresse?</strong></p>
+                <p>Det kan være en god idé at få varen leveret til en anden adresse, hvis du på forhånd ved, at du ikke vil være hjemme. Udfyld den adresse, hvor du vil befinde dig, og vælg det relevante afhentningssted ved bestillingen. Vær opmærksom på, at dette kan påvirke muligheden for at anvende visse betalingsmetoder, såsom Klarna.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Afbestilling og returnering</h3>
+                <p><strong>Hvordan returnerer jeg en vare?</strong></p>
+                <p>Du har 60 dages returret, forudsat at varen returneres i originalemballagen og i samme stand som ved købet.</p>
+
+                <p><strong>Returvarer sendes til:</strong></p>
+                <p>@Model.ShopName<br>@Model.Address<br>@Model.ZipCode @Model.City</p>
+                <p>Husk at vedlægge en kvittering/fakturakopi samt at udskrive og udfylde vores returformular. VIGTIGT: Pak din returforsendelse omhyggeligt. Uanset returårsag skal varen pakkes, så hverken varen eller emballagen beskadiges. Send gerne varen som "anbefalet pakke" og gem sporingsnummeret. Som kunde har du ansvaret for forsendelsen, indtil den når vores returadresse. BEMÆRK: Varen skal leveres til returadressen, da vi ikke har mulighed for at afhente forsendelser hos afhentningssteder.</p>
+
+                <p>Ved modtagelse vil vi tilbagebetale købsbeløbet via samme betalingsmetode, der blev anvendt ved købet. Normalt inden for 5-6 arbejdsdage, og maksimalt 14 arbejdsdage, hvis betingelserne for vores returpolitik er opfyldt. Fortrydelsesretten bortfalder, hvis varen anvendes på en måde, der tydeligt reducerer dens salgsværdi. Da originalemballagen i visse tilfælde udgør en væsentlig del af varens værdi, kan det betyde, at varen ikke anses for at være returneret i samme stand og mængde, hvis originalemballagen ikke medfølger.</p>
+
+                <p>Returretten gælder naturligvis stadig for produkter i blisterpakninger, som ikke kan åbnes uden at beskadige emballagen. Varer, der returneres uden porto eller med efterkrav, vil blive afvist. Disse returregler gælder alle varer, der sælges på afstand (til private forbrugere) og ikke for varer, der sælges til virksomheder.</p>
+
+                <p><strong>Bemærk:</strong> Vi kan desværre ikke tilbyde detailhandel direkte fra vores firmadresse. Det er derfor ikke muligt at hente eller returnere varer til vores adresse.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Betaling</h3>
+                <p><strong>Hvilke betalingsmuligheder har jeg?</strong></p>
+                <p>Hos @Model.ShopName kan du betale på følgende måder: VISA, VISA Electron, Mastercard, Maestrocard, Viabill og MobilePay. Hos @Model.ShopName opkræves der ingen kortgebyr. Når du betaler med kort, trækkes beløbet fra din konto, når dine varer sendes fra os. Du vil modtage en kvittering for betalingen sammen med dine varer.</p>
+
+                <p><strong>Kan jeg betale med efterkrav?</strong></p>
+                <p>Desværre tilbyder vi ikke betaling med efterkrav.</p>
+
+                <p><strong>Hvornår trækkes pengene fra min konto?</strong></p>
+                <p>Vi godkender og registrerer betalingen først, når pakken er sendt fra vores lager.</p>
+
+                <p><strong>Mit betalingskort bliver afvist?</strong></p>
+                <p>Der kan være flere årsager til, at dit betalingskort bliver afvist. Den mest almindelige årsag er indtastningsfejl. Læs instruktionerne grundigt under betalingsprocessen. Hvis du er i tvivl, kan du kontakte os på: @Model.Email</p>
+
+                <p><strong>Er priserne inklusive moms?</strong></p>
+                <p>Ja, alle priser på @Model.ShopName er inklusive moms.</p>
             </div>
         </div>
     </div>

@@ -1,11 +1,64 @@
-﻿@inherits RazorSliceHttpResult
+﻿@inherits RazorSliceHttpResult<PayAndDeliveryVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
     <div class="container px-4 px-lg-5 my-5">
         <div class="row">
             <div class="col">
-                Pay and delivery
+                <h2>Betaling & levering</h2>
+                <p>
+                    Hos @Model.ShopName bestræber vi os på en hurtig og effektiv levering af alle vores varer. Læs herunder nærmere om vores leveringstider.
+                </p>
+                <h3>Leveringstider</h3>
+                <p>
+                    Vi benytter Postnord som fragtleverandør, og alle vores forsendelser bliver sendt som pakke.
+                </p>
+                <p>
+                    <strong>Varen er på lager:</strong><br>
+                    Ordrer vil ved bestilling fra mandag til fredag inden klokken 21.00 blive afsendt samme dag, til levering dagen efter.
+                </p>
+                <p>
+                    Vi pakker og afsender også ordrer i weekenden. Ved bestilling inden 15.30 søndag leverer vi allerede mandag.
+                </p>
+                <p>
+                    <strong>Varen er ikke på lager:</strong><br>
+                    Varer som ikke er på lager vil normalvis kunne leveres inden for 5 arbejdsdage.
+                </p>
+                <h3>Hvem sælger vi til</h3>
+                <p>
+                    Vi sælger både til privat kunder, erhvervskunder og offentlig institutioner.
+                </p>
+                <h3>Fragtpriser</h3>
+               @*  <p>
+                    <strong>Privat:</strong> Fragtpriserne starter fra 39 kr. (For billigste private fragtmetode i Danmark.)
+                </p>
+                <p>
+                    <strong>Erhverv:</strong> Fragtpriserne starter fra 49 kr. og er aldrig højere end 59 kr. (For billigste erhvervs fragtmetode i Danmark.)
+                </p> *@
+                <p>
+                    Du vil kunne se fragtprisen på vores website så snart du har tilføjet et enkelt produkt til indkøbskurven.
+                </p>
+                <h3>Betalingsmuligheder</h3>
+                <p>
+                    Du kan hos @Model.ShopName betale med følgende betalingskort: VISA, VISA Electron, Mastercard, Maestrocard, JCB, American Express, MobilePay, Apple Pay og Google Pay.
+                </p>
+                <h3>Reservation af beløb</h3>
+                <p>
+                    Betaler du med et internationalt betalingskort, reserveres beløbet med det samme. Pengene reserveres på dit kort eller konto indtil:
+                </p>
+                <ul>
+                    <li>Vi trækker beløbet, når vi sender varen, eller</li>
+                    <li>pengene frigives ifølge aftale med din kortudsteder.</li>
+                </ul>
+                <p>
+                    Du kan læse mere om reglerne for dit specifikke kort hos din kortudsteder.
+                </p>
+                <p>
+                    Vi opkræver ikke gebyrer. Beløbet hæves først på dit kort, når varen afsendes.
+                </p>
+                <p>
+                    Hos @Model.ShopName anvender vi en sikker betalings-gateway fra Quickpay.dk. Quickpay.dk anvender SSL kryptering som er testet og godkendt af PBS. Alt kortdata sendes krypteret, og kan kun læses af PBS. Når du betaler med betalingskort er du altid sikret imod misbrug, du kan nemlig altid afvise en betaling når du modtager din betalingsoversigt. Du har ingen selvrisiko, i tilfælde af at dit betalingskort bliver misbrugt i online butikker som benytter SSL. Det vil sige at du online faktisk er bedre sikret end i den fysiske verden, hvor du har en selvrisiko på 1200 kr. hvis dit dankort fx misbruges ved brug af pinkode.
+                </p>
             </div>
         </div>
     </div>

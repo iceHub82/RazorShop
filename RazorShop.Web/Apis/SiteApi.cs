@@ -5,6 +5,7 @@ using RazorShop.Data;
 using RazorShop.Web.Models.ViewModels;
 using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
+using RazorShop.Web.Pages;
 
 namespace RazorShop.Web.Apis;
 
@@ -26,8 +27,11 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
         });
 
-        app.MapGet("/categories", (IMemoryCache cache) =>
+        app.MapGet("/categories", (HttpContext http, IMemoryCache cache) =>
         {
+            if (!ApiUtil.IsHtmx(http.Request))
+                return Results.BadRequest();
+
             var categories = (IEnumerable<Category>)cache.Get("categories")!;
 
             return Results.Extensions.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
@@ -38,18 +42,11 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Pages.About>();
         });
 
-        app.MapGet("/CustomerService", (HttpContext http, IConfiguration config) =>
-        {
-            return Results.Extensions.RazorSlice<Pages.CustomerService>();
-        });
-
-        app.MapGet("/PayAndDelivery", (HttpContext http, IConfiguration config) =>
-        {
-            return Results.Extensions.RazorSlice<Pages.PayAndDelivery>();
-        });
-
         app.MapPost("/newsletter", async (HttpContext http, RazorShopDbContext db) =>
         {
+            if (!ApiUtil.IsHtmx(http.Request))
+                return Results.BadRequest();
+
             var form = await http.Request.ReadFormAsync();
 
             var email = form["newsletter"];
@@ -85,7 +82,7 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Slices.Footer, FooterVm>(vm);
         });
 
-        app.MapGet("/terms", (HttpContext http, IConfiguration config) =>
+        app.MapGet("/terms", (IConfiguration config) =>
         {
             var vm = new TermsVm();
             vm.ShopName = config["Shop:Name"];
@@ -93,24 +90,43 @@ public static class SiteApis
             vm.City = config["Shop:City"];
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Cvr = config["Shop:Cvr"];
-            vm.Email = config["Shop:Email"];
+            vm.Email = config["Shop:Email:Contact"];
 
             return Results.Extensions.RazorSlice<Pages.Terms, TermsVm>(vm);
         });
 
-        app.MapGet("/datapolicy", (HttpContext http, IConfiguration config) =>
+        app.MapGet("/datapolicy", (IConfiguration config) =>
         {
             var vm = new DataPolicyVm();
             vm.ShopName = config["Shop:Name"];
             vm.Address = config["Shop:Address"];
             vm.City = config["Shop:City"];
             vm.ZipCode = config["Shop:ZipCode"];
-            vm.Cvr = config["Shop:Cvr"];
-            vm.Email = config["Shop:Email"];
+            vm.Email = config["Shop:Email:Contact"];
 
-            return Results.Extensions.RazorSlice<Pages.DataPolicy, DataPolicyVm>(vm);
+            return Results.Extensions.RazorSlice<DataPolicy, DataPolicyVm>(vm);
         });
-        
+
+        app.MapGet("/customerservice", (IConfiguration config) =>
+        {
+            var vm = new CustomerServiceVm();
+            vm.ShopName = config["Shop:Name"];
+            vm.Address = config["Shop:Address"];
+            vm.City = config["Shop:City"];
+            vm.ZipCode = config["Shop:ZipCode"];
+            vm.Email = config["Shop:Email:Contact"];
+
+            return Results.Extensions.RazorSlice<CustomerService, CustomerServiceVm>(vm);
+        });
+
+        app.MapGet("/PayAndDelivery", (IConfiguration config) =>
+        {
+            var vm = new PayAndDeliveryVm();
+            vm.ShopName = config["Shop:Name"];
+
+            return Results.Extensions.RazorSlice<PayAndDelivery, PayAndDeliveryVm>(vm);
+        });
+
         app.MapGet("/Redirects", (int statusCode) =>
         {
 
