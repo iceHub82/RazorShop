@@ -1,11 +1,97 @@
-﻿@inherits RazorSliceHttpResult
+﻿@inherits RazorSliceHttpResult<DataPolicyVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
     <div class="container px-4 px-lg-5 my-5">
-        <div class="row">
+        <h2>Persondatapolitik</h2>
+
+        <div class="row my-4">
             <div class="col">
-               Data Policy
+                <h3>Generelt om persondatapolitik</h3>
+                <p>Denne politik om behandling af personoplysninger (Persondatapolitik) beskriver, hvordan @Model.ShopName indsamler og behandler oplysninger om dig som kunde.</p>
+                <p>Persondatapolitikken gælder for personoplysninger, som du afgiver til os, eller som vi indsamler via vores webshop @Model.ShopName.</p>
+                <p>@Model.ShopName er dataansvarlig for dine personoplysninger, og alt henvendelse til @Model.ShopName kan ske via vores kontaktoplysninger, som du kan finde nederst på denne side.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Hvilke personoplysninger indsamler vi, og til hvilke formål bruges de?</h3>
+                <p>Når du besøger webshoppen, indsamler vi automatisk oplysninger om dig og din brug af vores webshop. For eksempel indsamler vi oplysninger om, hvilken type browser du benytter, hvilke søgetermer du bruger på webshoppen, samt din IP-adresse, herunder din netværkslokation og informationer om din computer.</p>
+                <p>Formålet er at optimere brugeroplevelsen for dig som kunde/bruger, forbedre webshoppens tekniske funktioner, og foretage målrettede markedsføringstiltag, herunder f.eks. Retargeting gennem Google og Facebook. Denne databehandling af oplysninger er nødvendig for, at vi kan varetage vores interesser i at forbedre vores webshop og systemer, samt vise dig relevante tilbud og nyheder.</p>
+                <p>Grundlaget for behandlingen: EU Persondataforordningens artikel 6, stk. 1, litra f (Behandling af ikke-følsomme oplysninger - Almindelige personoplysninger).</p>
+                <p>Når du handler hos os, køber et produkt via vores webshop, eller kommunikerer med os via vores webshop, indsamler vi de oplysninger, som du selv afgiver, f.eks. dit navn, adresse, tlf. nr., e-mailadresse, betalingsmetode, oplysninger om hvilke vare(r) du køber og evt. har returneret, leveringsønsker, samt oplysning om den IP-adresse, hvorfra bestilling er foretaget.</p>
+                <p>Formålet er at kunne levere de produkter, du har bestilt hos os, og i øvrigt opfylde vores aftale med dig som kunde, herunder for at kunne administrere dine rettigheder til at returnere og reklamere over dine produkter og generelt købet. Oplysninger om dine køb kan vi også behandle for at overholde gældende lovkrav, herunder til vores bogføring og regnskab. Ved købet indsamles IP-adressen med det formål at forhindre svig.</p>
+                <p>Retsgrundlaget for behandlingen: EU Persondataforordningens artikel 6, stk. 1, litra b, c og f.</p>
+                <p>Når du tilmelder dig vores nyhedsbrev via webshoppen, som du selv aktivt vælger, indsamler vi oplysninger om dit navn og din e-mailadresse.</p>
+                <p>Formålet er at kunne levere nyhedsbreve til dig, som kan indeholde tilbud, nyheder og anden relevant information.</p>
+                <p>Grundlaget for behandlingen: EU Persondataforordningens artikel 6, stk. 1, litra f (interesseafvejning).</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Modtagere af personoplysninger</h3>
+                <p>Oplysninger om dit navn, din adresse, e-mailadresse, telefonnummer, ordrenummer samt specifikke leveringsønsker videregives til PostNord, der står for leveringen af de købte varer til dig som kunde. Ved køb af ikke-lagerførte varer kan de nævnte oplysninger videregives til producenten eller sælgeren af den pågældende vare, som i så fald vil forestå leverancen.</p>
+                <p>Oplysninger kan overlades til eksterne samarbejdspartnere, der behandler oplysningerne på @Model.ShopName’s vegne.</p>
+                <p>Vi anvender eksterne samarbejdspartnere til bl.a. teknisk drift samt forbedringer af vores systemer, udsendelse af nyhedsbreve, samt målrettet markedsføringstiltag, herunder Retargeting-markedsføring via Google og Facebook. Derudover kan oplysninger videregives til vurdering af vores webshop og produkter hos Trustpilot.</p>
+                <p>Dine oplysninger videregives kun, når det er nødvendigt, og vi har databehandleraftaler med alle relevante samarbejdspartnere.</p>
+                <p>To af disse databehandlere, Google LLC og Facebook Inc., er etableret i USA. De fornødne garantier for overførsel af oplysninger til USA er sikret gennem databehandlerens certificering under EU-U.S. Privacy Shield, jfr. EU Persondataforordningens artikel 45.</p>
+                <p>Google LLC's certificering kan findes her: Google LLC Privacy Shield</p>
+                <p>Facebook Inc.'s certificering kan findes her: Facebook Inc. Privacy Shield</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Dine rettigheder</h3>
+                <p>Som kunde har du ret til at få indsigt i de oplysninger, vi gemmer om dig, samt til berigtigelse, sletning, begrænsning af behandlingen, dataportabilitet, indsigelse og til at klage. Hvis behandlingen af personoplysningerne er baseret på et samtykke, kan dette samtykke altid trækkes tilbage.</p>
+                <p>Ønsker du at gøre brug af en eller flere af dine rettigheder, eller ønsker du at høre mere om dine rettigheder, kan du kontakte os via e-mail på @Model.Email</p>
+                <p>Hvis du vil klage over dit køb, skal du rette henvendelse til vores kundeserviceafdeling. Hvis det ikke lykkes os at finde en løsning, kan du indgive en klage til:</p>
+                <p>
+                    Konkurrence- og Forbrugerstyrelsens Center for Klageløsning<br>
+                    Toldboden 2<br>
+                    8800 Viborg<br>
+                    www.forbrug.dk
+                </p>
+                <p>Du kan også anvende EU-Kommissionens online klageportal. Dette vil hovedsageligt være relevant, hvis du er forbruger med bopæl uden for Danmark. Find klageportalen her: EU-Kommissionens klageportal.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Sletning af persondata</h3>
+                <p>Personoplysningerne opbevares kun, så længe det er nødvendigt i forhold til de formål, hvortil oplysningerne behandles. Ønsker du sletning af dine kundeoplysninger, bedes du kontakte os, og så vil vi være behjælpelige.</p>
+                <p>Har du spørgsmål i den forbindelse, kan vi til enhver tid kontaktes. Du finder vores kontaktoplysninger nederst på denne side.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Sikkerhed</h3>
+                <p>Vi har gennemført tekniske og organisatoriske sikkerhedsforanstaltninger mod, at personoplysninger hændeligt eller ulovligt tilintetgøres, fortabes, ændres eller forringes, samt mod, at de kommer til uvedkommendes kendskab eller misbruges.</p>
+                <p>Kun medarbejdere, der har et reelt behov for at få adgang til dine personoplysninger for at udføre deres arbejde, har adgang til disse personoplysninger igennem vores systemer.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Ændringer i Persondatapolitikken</h3>
+                <p>Du har altid som kunde/bruger mulighed for at se den gældende version af vores persondatapolitik via vores webshop på denne side.</p>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col">
+                <h3>Kontaktoplysninger / Dataansvarlig</h3>
+                <p>@Model.ShopName er dataansvarlig for de persondata, som indsamles via webshoppen.</p>
+                <p>Hvis du har spørgsmål eller bemærkninger til denne persondatapolitik, eller ønsker du at gøre brug af en eller flere af dine rettigheder beskrevet på denne side, kan du kontakte os via følgende oplysninger:</p>
+                <p>
+                    @Model.ShopName<br>
+                    @Model.Address<br>
+                    @Model.ZipCode @Model.City<br>
+                    E-mail: @Model.Email
+                </p>
             </div>
         </div>
     </div>
@@ -13,7 +99,7 @@
 
 @functions {
     public LayoutModel LayoutModel => new() {
-            Title = "Om os",
+            Title = "Persondatapolitik",
             HasHeader = false
         };
 }

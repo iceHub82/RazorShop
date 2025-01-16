@@ -43,11 +43,6 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Pages.CustomerService>();
         });
 
-        app.MapGet("/DataPolicy", (HttpContext http, IConfiguration config) =>
-        {
-            return Results.Extensions.RazorSlice<Pages.DataPolicy>();
-        });
-
         app.MapGet("/PayAndDelivery", (HttpContext http, IConfiguration config) =>
         {
             return Results.Extensions.RazorSlice<Pages.PayAndDelivery>();
@@ -98,12 +93,24 @@ public static class SiteApis
             vm.City = config["Shop:City"];
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Cvr = config["Shop:Cvr"];
-            vm.PhoneNumber = config["Shop:PhoneNumber"];
             vm.Email = config["Shop:Email"];
 
             return Results.Extensions.RazorSlice<Pages.Terms, TermsVm>(vm);
         });
 
+        app.MapGet("/datapolicy", (HttpContext http, IConfiguration config) =>
+        {
+            var vm = new DataPolicyVm();
+            vm.ShopName = config["Shop:Name"];
+            vm.Address = config["Shop:Address"];
+            vm.City = config["Shop:City"];
+            vm.ZipCode = config["Shop:ZipCode"];
+            vm.Cvr = config["Shop:Cvr"];
+            vm.Email = config["Shop:Email"];
+
+            return Results.Extensions.RazorSlice<Pages.DataPolicy, DataPolicyVm>(vm);
+        });
+        
         app.MapGet("/Redirects", (int statusCode) =>
         {
 
