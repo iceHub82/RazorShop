@@ -62,7 +62,16 @@ public static class SiteApis
             await db.Contacts!.AddAsync(new Contact { Email = email, Newsletter = true });
             await db.SaveChangesAsync();
 
-            return Results.Content("Tak for din tilmelding");
+            var result = """
+                <h5>Tilmeld dig vores nyhedsbrev</h5>
+                <div class="d-flex flex-column flex-sm-row w-100 gap-2">
+                    <input id="newsletter" type="email" class="form-control" placeholder="Email" maxlength="100" pattern="^[a-zA-Z0-9.!#$%&’*+\/=?^_`\{\|\}~\-]+@@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$" required>
+                    <button type="submit" class="btn btn-primary">Tilmeld</button>
+                </div>
+                <small>Tak for din tilmelding</small>
+            """;
+
+            return Results.Content(result);
         });
 
         app.MapGet("/footer", (HttpContext http, IConfiguration config) =>
