@@ -46,14 +46,13 @@
             </div>
 
             <div class="col-md-5 offset-md-1 mb-3">
-                <form>
+                <form id="newsletter-form" hx-post="/newsletter" hx-target="#newsletter-result" novalidate>
                     <h5>Tilmeld dig vores nyhedsbrev</h5>
-@*                     <p>Monthly digest of what's new and exciting from us.</p> *@
                     <div class="d-flex flex-column flex-sm-row w-100 gap-2">
-                        <label for="newsletter" class="visually-hidden">Email address</label>
-                        <input id="newsletter" type="text" class="form-control" placeholder="Email">
-                        <button class="btn btn-primary" type="button">Tilmeld</button>
+                        <input id="newsletter" type="email" class="form-control" placeholder="Email" maxlength="100" pattern="^[a-zA-Z0-9.!#$%&’*+\/=?^_`\{\|\}~\-]+@@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$" required>
+                        <button type="submit" class="btn btn-primary">Tilmeld</button>
                     </div>
+                    <small id="newsletter-result"></small>
                 </form>
             </div>
         </div>

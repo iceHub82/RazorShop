@@ -53,6 +53,18 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<Pages.PayAndDelivery>();
         });
 
+        app.MapPost("/newsletter", async (HttpContext http, RazorShopDbContext db) =>
+        {
+            var form = await http.Request.ReadFormAsync();
+
+            var email = form["newsletter"];
+
+            await db.Contacts!.AddAsync(new Contact { Email = email, Newsletter = true });
+            await db.SaveChangesAsync();
+
+            return Results.Content("Tak for din tilmelding");
+        });
+
         app.MapGet("/footer", (HttpContext http, IConfiguration config) =>
         {
             if (!ApiUtil.IsHtmx(http.Request))
