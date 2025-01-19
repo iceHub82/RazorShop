@@ -2,7 +2,7 @@
 <div class="container px-4 px-lg-5">
     <footer class="py-5">
         <div class="row">
-            <div class="col-6 col-md-2 mb-3">
+            <div class="col-6 col-md-4 col-lg-2 mb-3">
                 <h5>Kontakt</h5>
                 <ul class="nav flex-column">
                     <li class="nav-item"><span class="nav-link p-0 text-body-secondary">@Model.ShopName</span></li>
@@ -11,7 +11,8 @@
                     <li class="nav-item"><span class="nav-link p-0 text-body-secondary">@Model.Email</span></li>
                 </ul>
             </div>
-            <div class="col-6 col-md-2 mb-3">
+
+            <div class="col-6 col-md-4 col-lg-2 mb-3">
                 <h5>Info</h5>
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2"><a href="/About" class="nav-link p-0 text-body-secondary">Om os</a></li>
@@ -22,7 +23,7 @@
                 </ul>
             </div>
 
-            <div class="col-6 col-md-2 mb-3">
+            <div class="col-6 col-md-4 col-lg-2 mb-3">
                 <h5>Betalingsmuligheder</h5>
                 <div class="row">
                     <div class="col-4">
@@ -45,10 +46,8 @@
                 </div>
             </div>
 
-            <div class="col-md-5 offset-md-1 mb-3">
-                <form id="newsletter-form" 
-                        hx-post="/newsletter"
-                         novalidate>
+            <div class="col-12 col-md-12 col-lg-5 offset-lg-1 mb-3">
+                <form id="newsletter-form" hx-post="/newsletter" novalidate>
                     <h5>Tilmeld dig vores nyhedsbrev</h5>
                     <div class="d-flex flex-column flex-sm-row w-100 gap-2">
                         <input id="newsletter" type="email" class="form-control" placeholder="Email" maxlength="100" pattern="^[a-zA-Z0-9.!#$%&’*+\/=?^_`\{\|\}~\-]+@@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$" required>
