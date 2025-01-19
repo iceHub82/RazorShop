@@ -27,9 +27,9 @@
         (() => {
             'use strict'
 
-            const consentCb = document.getElementById('consentCb');
-            const submitCard = document.getElementById('submit-card');
-            const consentLbl = document.getElementById('consent-lbl');
+            const consentCb = document.getElementById('consentCb')
+            const submitCard = document.getElementById('submit-card')
+            const consentLbl = document.getElementById('consent-lbl')
             const form = document.getElementById('submit-form')
 
             if(form){
@@ -37,8 +37,11 @@
                     if (!form.checkValidity()) {
                         e.preventDefault()
                         e.stopPropagation()
-                        submitCard.classList.toggle('bg-danger', !consentCb.checked);
-                        consentLbl.classList.toggle('consent', !consentCb.checked);
+                        submitCard.classList.toggle('bg-danger', !consentCb.checked)
+                        consentLbl.classList.toggle('consent', !consentCb.checked)
+                    }
+                    else {
+                        $('#checkout-submit-btn').attr('disabled', true)
                     }
                     form.classList.add('was-validated')
                 }, false)

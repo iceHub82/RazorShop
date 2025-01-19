@@ -1,5 +1,6 @@
 ﻿using MimeKit;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 
 namespace RazorShop.Web.Email;
 
@@ -32,7 +33,7 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
     private MimeMessage CreateEmailMessage(Message message)
     {
         var fromName = config["Shop:Name"];
-        var from = config["Shop:Email:From"];
+        var from = config["EmailProvider:User"];
 
         var emailMessage = new MimeMessage();
         emailMessage.From.Add(new MailboxAddress(fromName, from));
@@ -54,7 +55,7 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
                 var user = config["EmailProvider:User"];
                 var password = config["EmailProvider:Password"];
 
-                client.Connect(host, int.Parse(port!), true);
+                client.Connect(host, int.Parse(port!), SecureSocketOptions.StartTls);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
                 client.Authenticate(user, password);
 
