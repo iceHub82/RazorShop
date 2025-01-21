@@ -1,7 +1,19 @@
 ﻿@inherits RazorSlice
 
-<div>Sizes</div>
-
+<div class="row">
+    <div class="col">
+        <div>Sizes</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <button hx-get="/admin/settings/sizes/modal/new"
+                hx-target="#new-size-modal-content"
+                data-bs-toggle="modal" data-bs-target="#new-size-modal">
+            Create Size
+        </button>
+    </div>
+</div>
 <div class="row">
     <div class="col">
         <table id="sizes-datatable" class="table table-striped" style="width:100%">
@@ -13,7 +25,18 @@
         </table>
     </div>
 </div>
-
+<div class="modal fade" id="sizes-modal">
+    <div class="modal-dialog">
+        <div id="content" class="modal-content">
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="new-size-modal">
+    <div class="modal-dialog">
+        <div id="new-size-modal-content" class="modal-content">
+        </div>
+    </div>
+</div>
 <script>
     $(function() {
         $('#sizes-datatable').DataTable({
@@ -33,10 +56,3 @@
         });
     });
 </script>
-
-<div class="modal fade" id="sizes-modal">
-    <div class="modal-dialog">
-        <div id="content" class="modal-content">
-        </div>
-    </div>
-</div>

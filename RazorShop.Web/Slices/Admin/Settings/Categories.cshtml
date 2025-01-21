@@ -7,6 +7,15 @@
 </div>
 <div class="row">
     <div class="col">
+        <button hx-get="/admin/settings/categories/modal/new"
+                hx-target="#new-category-modal-content"
+                data-bs-toggle="modal" data-bs-target="#new-category-modal">
+            Create Category
+        </button>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
         <table id="categories-datatable" class="table table-striped" style="width:100%">
             <thead>
                 <tr>
@@ -19,6 +28,12 @@
 <div class="modal fade" id="category-modal">
     <div class="modal-dialog">
         <div id="content" class="modal-content">
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="new-category-modal">
+    <div class="modal-dialog">
+        <div id="new-category-modal-content" class="modal-content">
         </div>
     </div>
 </div>

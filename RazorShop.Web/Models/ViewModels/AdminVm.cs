@@ -78,8 +78,17 @@ public class AdminSizeVm
 {
     public int Id { get; set; }
     public string? Name { get; set; }
+    public int? SizeTypeId { get; set; }
     public bool Selected { get; set; }
     public string? AdminSizeFormAntiForgeryToken { get; internal set; }
+    public List<AdminSizeTypeVm>? AdminSizeTypes { get; set; } = new();
+}
+
+public class AdminSizeTypeVm
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public bool Selected { get; set; }
 }
 
 public class AdminCategoryVm

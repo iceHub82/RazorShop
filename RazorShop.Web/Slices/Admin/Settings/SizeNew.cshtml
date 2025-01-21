@@ -9,15 +9,27 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    <form hx-post="/admin/product/create" hx-target="#content" hx-swap="outerHTML" novalidate>
+                    <form id="new-size-form"
+                        hx-post="/admin/settings/sizes/modal/new" 
+                        hx-target="#new-size-modal-content" 
+                        hx-swap="none" novalidate>
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" maxlength="255" required>
-                            <div class="invalid-feedback">Please enter the product name.</div>
+                            <div class="invalid-feedback">Please enter size name.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+                            <label for="sizeTypeId" class="form-label">Size Type</label>
+                            <select class="form-select" id="sizeTypeId" name="sizeTypeDd" required>
+                                <option value="0" selected>Select size type</option>
+
+                                @foreach (var sizeType in Model.AdminSizeTypes!)
+                                {
+                                    <option value="@sizeType.Id">@sizeType.Name</option>
+                                }
+
+                            </select>
+                            <div class="invalid-feedback">Please select a Size Type.</div>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -27,8 +39,5 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
     </div>
 </div>

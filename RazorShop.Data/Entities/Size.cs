@@ -9,7 +9,7 @@ public class Size
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public string? Name { get; set; }
-    public int SizeTypeId { get; set; }
+    public int? SizeTypeId { get; set; }
     public SizeType? SizeType { get; set; }
 
     public ICollection<ProductSize>? ProductSizes { get; set; }

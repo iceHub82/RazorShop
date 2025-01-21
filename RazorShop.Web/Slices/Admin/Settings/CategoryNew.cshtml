@@ -9,11 +9,14 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    <form hx-post="/admin/settings/category/create" hx-target="#content" hx-swap="outerHTML" novalidate>
+                    <form id="new-category-form"
+                          hx-post="/admin/settings/categories/modal/new" 
+                          hx-target="#new-category-modal-content"
+                          hx-swap="none" novalidate>
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" maxlength="255" required>
-                            <div class="invalid-feedback">Please enter the product name.</div>
+                            <div class="invalid-feedback">Please enter category name.</div>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Create</button>

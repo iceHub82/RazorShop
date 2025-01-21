@@ -55,11 +55,23 @@ public static class SettingsApis
 
         app.MapGet($"{_apiCategories}/modal/new", (HttpContext http, IAntiforgery antiforgery) =>
         {
-            var vm = new AdminSizeVm();
+            var vm = new AdminCategoryVm();
             var token = antiforgery.GetAndStoreTokens(http);
-            vm!.AdminSizeFormAntiForgeryToken = token.RequestToken!;
+            vm!.AdminCategoryFormAntiForgeryToken = token.RequestToken!;
 
-            return Results.Extensions.RazorSlice<SizeNew, AdminSizeVm>(vm);
+            return Results.Extensions.RazorSlice<CategoryNew, AdminCategoryVm>(vm);
+        }).RequireAuthorization();
+
+        app.MapPost($"{_apiCategories}/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var form = await http.Request.ReadFormAsync();
+
+            await db.Categories!.AddAsync(new Category { Name = form["name"] });
+            await db.SaveChangesAsync();
+
+            return Results.Ok();
         }).RequireAuthorization();
 
         app.MapGet($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
@@ -92,9 +104,6 @@ public static class SettingsApis
 
             return Results.Ok();
         }).RequireAuthorization();
-
-
-
 
         app.MapGet($"{_apiSizes}", (HttpContext http) =>
         {
@@ -131,25 +140,50 @@ public static class SettingsApis
             });
         }).RequireAuthorization();
 
-        app.MapGet($"{_apiSizes}/modal/new", (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
+        app.MapGet($"{_apiSizes}/modal/new", (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery) =>
         {
             var vm = new AdminSizeVm();
             var token = antiforgery.GetAndStoreTokens(http);
             vm!.AdminSizeFormAntiForgeryToken = token.RequestToken!;
 
+            var sizeTypes = (IEnumerable<SizeType>)cache.Get("sizeTypes")!;
+            foreach (var type in sizeTypes)
+                vm.AdminSizeTypes!.Add(new AdminSizeTypeVm { Id = type.Id, Name = type.Name });
+
             return Results.Extensions.RazorSlice<SizeNew, AdminSizeVm>(vm);
         }).RequireAuthorization();
 
-        app.MapGet($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
+        app.MapPost($"{_apiSizes}/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var form = await http.Request.ReadFormAsync();
+
+            var size = new Size();
+            size.Name = form["name"];
+            var sizeTypeId = int.Parse(form["sizeTypeDd"]!);
+            size.SizeTypeId = sizeTypeId == 0 ? null : sizeTypeId;
+            await db.Sizes!.AddAsync(size);
+            await db.SaveChangesAsync();
+
+            return Results.Ok();
+        }).RequireAuthorization();
+
+        app.MapGet($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, int id) =>
         {
             var size = await db.Sizes!.FirstAsync(p => p.Id == id);
 
             var vm = new AdminSizeVm();
             vm.Id = size.Id;
             vm.Name = size.Name;
+            vm.SizeTypeId = size.SizeTypeId;
 
             var token = antiforgery.GetAndStoreTokens(http);
             vm!.AdminSizeFormAntiForgeryToken = token.RequestToken!;
+
+            var sizeTypes = (IEnumerable<SizeType>)cache.Get("sizeTypes")!;
+            foreach (var type in sizeTypes)
+                vm.AdminSizeTypes!.Add(new AdminSizeTypeVm { Id = type.Id, Name = type.Name });
 
             return Results.Extensions.RazorSlice<SizeEdit, AdminSizeVm>(vm);
         }).RequireAuthorization();
@@ -162,6 +196,7 @@ public static class SettingsApis
 
             var size = await db.Sizes!.FindAsync(id);
             size!.Name = form["name"];
+            size!.SizeTypeId = int.Parse(form["sizeTypeDd"]!);
             await db.SaveChangesAsync();
 
             var sizes = await db.Sizes!.ToListAsync();
@@ -170,17 +205,6 @@ public static class SettingsApis
 
             return Results.Ok();
         }).RequireAuthorization();
-
-
-
-
-
-
-
-
-
-
-
     }
 
     private static async Task<AdminCategoriesVm> GetPaginatedAdminCategories(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
