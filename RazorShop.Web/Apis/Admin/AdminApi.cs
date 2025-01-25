@@ -225,7 +225,6 @@ public static class AdminApis
                 ("thumbnail", 80, 100, 65),
                 ("listing", 260, 330, 75),
                 ("product", 600, 740, 80),
-                //("zoom", 1024, 1200)
             };
 
             foreach (var (type, width, height, quality) in sizes)
@@ -259,7 +258,6 @@ public static class AdminApis
 
             var sizes = new List<(string type, int width, int height, int quality)> {
                 ("thumbnail", 80, 100, 65),
-                //("listing", 260, 330, 75),
                 ("product", 600, 740, 80),
                 //("zoom", 1024, 1200)
             };
