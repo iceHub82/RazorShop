@@ -361,7 +361,7 @@ public static class CheckoutApis
         {
             var productId = item.Product!.Id;
 
-            var mainImgPath = $"{baseUrl}/products/{productId}/{productId}_thumbnail.webp";
+            var mainImgPath = $"{baseUrl}/products/{productId}/main/{productId}_thumbnail.webp";
 
             var price = item.Product!.Price;
             var quantity = item.Quantity;
