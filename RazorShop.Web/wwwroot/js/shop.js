@@ -1,28 +1,34 @@
-﻿$(document).on('change', '#productSize', function () {
-    $('#checkedSize').val($(this).val())
-});
-
-(() => {
-    'use strict'
-
-    const form = document.getElementById('newsletter-form')
-
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            if (!form.checkValidity()) {
-                e.preventDefault()
-                e.stopPropagation()
+﻿document.addEventListener('DOMContentLoaded', function() {
+    const productSize = document.getElementById('productSize');
+    if (productSize) {
+        productSize.addEventListener('change', function () {
+            const checkedSize = document.getElementById('checkedSize');
+            if (checkedSize) {
+                checkedSize.value = productSize.value;
             }
-            form.classList.add('was-validated')
-        }, false)
+        });
     }
 
-    document.addEventListener('htmx:configRequest', (e) => {
-        let form = e.target;
-        if (form && form.id == 'newsletter-form' && !form.checkValidity()) {
-            e.preventDefault()
-            e.stopPropagation()
-            form.classList.add('was-validated')
+    // Use strict mode
+    'use strict';
+
+    const form = document.getElementById('newsletter-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    }
+
+    document.addEventListener('htmx:configRequest', function(e) {
+        const targetForm = e.target;
+        if (targetForm && targetForm.id === 'newsletter-form' && !targetForm.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+            targetForm.classList.add('was-validated');
         }
-    })
-})()
+    });
+});
