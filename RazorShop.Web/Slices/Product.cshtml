@@ -6,7 +6,7 @@
             <div class="col-md-6">
                 <div class="row pb-2">
                     <div class="col">
-                        <img id="main-img" width="600" height="740" class="card-img-top mb-5 mb-md-0" src="/products/@Model.Id/main/@($"{Model.Id}_product.webp?v={Model.TicksStamp}")" alt="..." />
+                        <img id="main-img" class="card-img-top mb-5 mb-md-0" src="/products/@Model.Id/main/@($"{Model.Id}_product.webp?v={Model.TicksStamp}")" alt="..." />
                     </div>
                 </div>
                 <div class="row">
@@ -14,7 +14,7 @@
                         <img src="/products/@Model.Id/main/@($"{Model.Id}_thumbnail.webp?v={Model.TicksStamp}")" class="img-fluid" role="button" onclick="changeImg(this)" />
                         @foreach (var img in Model.ProductImages!)
                         {
-                            <img src="/products/@Model.Id/gallery/@($"{img.Id}_thumbnail.webp?v={img.TicksStamp}")" class="img-fluid" role="button" onclick="changeImg(this)" />
+                            <img width="80" height="100" src="/products/@Model.Id/gallery/@($"{img.Id}_thumbnail.webp?v={img.TicksStamp}")" class="img-fluid" role="button" onclick="changeImg(this)" />
                         }
                     </div>
                 </div>
