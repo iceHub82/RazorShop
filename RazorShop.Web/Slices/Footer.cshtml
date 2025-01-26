@@ -1,4 +1,5 @@
 ﻿@inherits RazorSliceHttpResult<FooterVm>
+
 <div class="container px-4 px-lg-5">
     <footer class="py-5">
         <div class="row">
@@ -57,12 +58,19 @@
             </div>
         </div>
 
-        <div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
+        <div class="d-flex flex-sm-row justify-content-between py-4 my-4 border-top">
             <p>@Model.Year @Model.ShopName</p>
             <ul class="list-unstyled d-flex">
-@*                 <li class="ms-3"><a class="link-body-emphasis" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#twitter"></use></svg></a></li> *@
-                <li class="ms-3"><a class="link-body-emphasis" aria-label="Visit our instagram page" href="https://www.instagram.com/artform.dk"><svg class="bi" width="24" height="24"><use xlink:href="#instagram"></use></svg></a></li>
-                <li class="ms-3"><a class="link-body-emphasis" aria-label="Visit our facebook page" href="https://www.facebook.com/artform.dk"><svg class="bi" width="24" height="24"><use xlink:href="#facebook"></use></svg></a></li>
+                <li class="ms-3">
+                    <a class="link-body-emphasis" aria-label="Visit our instagram page" href="https://www.instagram.com/artform.dk" target="_blank">
+                        <svg class="bi" width="24" height="24"><use xlink:href="#instagram"></use></svg>
+                    </a>
+                </li>
+                <li class="ms-3">
+                    <a class="link-body-emphasis" aria-label="Visit our facebook page" href="https://www.facebook.com/artform.dk" target="_blank">
+                        <svg class="bi" width="24" height="24"><use xlink:href="#facebook"></use></svg>
+                    </a>
+                </li>
             </ul>
         </div>
     </footer>

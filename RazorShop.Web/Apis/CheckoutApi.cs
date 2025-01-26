@@ -258,7 +258,7 @@ public static class CheckoutApis
                 log.LogWarning($"Unsuccessful order page called with unknown reference Id: {referenceId}");
             }
 
-            return Results.Content(string.Empty);
+            return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
         });
     }
 

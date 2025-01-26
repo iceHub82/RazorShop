@@ -5,8 +5,12 @@ public class OrderVm
 
 }
 
-
 public class OrderSuccessVm
+{
+
+}
+
+public class OrderFailureVm
 {
 
 }
