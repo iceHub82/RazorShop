@@ -24,7 +24,7 @@ public static class SiteApis
             foreach (var product in vm.Products)
                 product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
 
-            return Results.Extensions.RazorSlice<Pages.Home, ProductsVm>(vm);
+            return Results.Extensions.RazorSlice<Home, ProductsVm>(vm);
         });
 
         app.MapGet("/categories", (HttpContext http, IMemoryCache cache) =>
@@ -39,7 +39,7 @@ public static class SiteApis
 
         app.MapGet("/About", (HttpContext http, IConfiguration config) =>
         {
-            return Results.Extensions.RazorSlice<Pages.About>();
+            return Results.Extensions.RazorSlice<About>();
         });
 
         app.MapPost("/newsletter", async (HttpContext http, RazorShopDbContext db) =>

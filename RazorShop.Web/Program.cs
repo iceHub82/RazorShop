@@ -4,9 +4,9 @@ using RazorShop.Data;
 using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Apis;
-using Serilog;
 using RazorShop.Web.Apis.Admin;
 using RazorShop.Web.Apis.Settings;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,7 +99,16 @@ app.UseAuthorization();
 app.UseAntiforgery();
 app.UseSession();
 app.UseStatusCodePages();
-app.UseStaticFiles();   
+
+app.UseStaticFiles(new StaticFileOptions {
+    OnPrepareResponse = context => {
+        var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".css", ".js", ".webp", ".svg" };
+        var fileExtension = Path.GetExtension(context.File.Name);
+        if (extensions.Contains(fileExtension))
+            context.Context.Response.Headers.CacheControl = "public, max-age=31536000"; // Cache for 1 year
+    }
+});
+
 app.SiteApi();
 app.CartApi();
 app.CheckoutApi();
