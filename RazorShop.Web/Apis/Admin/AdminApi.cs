@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNet.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
@@ -302,17 +303,34 @@ public static class AdminApis
             return Results.Extensions.RazorSlice<Pages.Admin.Login>();
         });
 
-        app.MapPost("/Login", async (HttpContext context) =>
+        app.MapPost("/Login", async (HttpContext context, IConfiguration config, ILogger<object> log) =>
         {
-            var username = context.Request.Form["username"];
-            var password = context.Request.Form["password"];
-
-            if (username == "admin" && password == "password")
+            try
             {
-                var claims = new List<Claim> {
-                    new(ClaimTypes.Name, username!),
-                    new(ClaimTypes.Role, "Admin")
-                };
+                var userName = context.Request.Form["username"];
+
+                if (userName != config["AdminUser"])
+                {
+                    log.LogWarning("Unknown username:{@username}", userName!);
+
+                    return Results.Redirect("/Login");
+                }
+
+                log.LogInformation("Known username:{@username}", userName!);
+
+                var password = context.Request.Form["password"];
+
+                var pHasher = new PasswordHasher();
+                var result = pHasher.VerifyHashedPassword(config["AdminHash"], password);
+
+                if (result == PasswordVerificationResult.Failed)
+                {
+                    log.LogWarning("Wrong user password:{@password}", password!);
+
+                    return Results.Redirect("/Login");
+                }
+
+                var claims = new List<Claim> { new(ClaimTypes.Name, userName!), new(ClaimTypes.Role, "Admin") };
 
                 var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
@@ -321,8 +339,12 @@ public static class AdminApis
 
                 return Results.Extensions.RazorSlice<Pages.Admin.Home>();
             }
+            catch (Exception ex)
+            {
+                log.LogError(ex, ex.Message);
 
-            return Results.Redirect("/Login");
+                return Results.Redirect("/Login");
+            }
         });
 
         app.MapGet("/admin/orders", (HttpContext http) =>
