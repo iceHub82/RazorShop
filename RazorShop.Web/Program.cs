@@ -39,9 +39,9 @@ builder.Services.AddSession(options => {
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddAuthentication("MyCookieAuth")
-    .AddCookie("MyCookieAuth", options => {
-        options.Cookie.Name = "MyAppCookie";
+builder.Services.AddAuthentication("App_Auth")
+    .AddCookie("App_Auth", options => {
+        options.Cookie.Name = "App_Auth";
         options.LoginPath = "/Login";
         options.ExpireTimeSpan = TimeSpan.FromDays(90);
         options.SlidingExpiration = false;
@@ -105,7 +105,7 @@ app.UseStaticFiles(new StaticFileOptions {
         var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".css", ".js", ".webp", ".svg" };
         var fileExtension = Path.GetExtension(context.File.Name);
         if (extensions.Contains(fileExtension))
-            context.Context.Response.Headers.CacheControl = "public, max-age=31536000"; // Cache for 1 year
+            context.Context.Response.Headers.CacheControl = "public, max-age=31536000";
     }
 });
 

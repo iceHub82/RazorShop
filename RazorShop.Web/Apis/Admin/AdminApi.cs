@@ -332,10 +332,10 @@ public static class AdminApis
 
                 var claims = new List<Claim> { new(ClaimTypes.Name, userName!), new(ClaimTypes.Role, "Admin") };
 
-                var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
+                var claimsIdentity = new ClaimsIdentity(claims, "App_Auth");
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-                await context.SignInAsync("MyCookieAuth", claimsPrincipal);
+                await context.SignInAsync("App_Auth", claimsPrincipal);
 
                 return Results.Extensions.RazorSlice<Pages.Admin.Home>();
             }
