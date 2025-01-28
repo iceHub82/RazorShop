@@ -9,6 +9,10 @@ public class Category
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public string? Name { get; set; }
+    public DateTime Created { get; set; }
+    public DateTime? Updated { get; set; }
+    public int StatusId { get; set; }
+    public Status? Status { get; set; }
     public ICollection<Product>? Products { get; set; }
 
     // Optional self-referencing property for nested categories

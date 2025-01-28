@@ -68,19 +68,24 @@ public static class SettingsApis
 
             var form = await http.Request.ReadFormAsync();
 
-            await db.Categories!.AddAsync(new Category { Name = form["name"] });
+            await db.Categories!.AddAsync(new Category { Name = form["name"], StatusId = 1, Created = DateTime.Now });
             await db.SaveChangesAsync();
 
             return Results.Ok();
         }).RequireAuthorization();
 
-        app.MapGet($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
+        app.MapGet($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, int id) =>
         {
             var category = await db.Categories!.FirstAsync(p => p.Id == id);
 
             var vm = new AdminCategoryVm();
             vm.Id = category.Id;
             vm.Name = category.Name;
+            vm.StatusId = category.StatusId;
+
+            var statuses = (IEnumerable<Status>)cache.Get("statuses")!;
+            foreach (var status in statuses)
+                vm.AdminStatuses!.Add(new AdminStatusVm { Id = status.Id, Name = status.Name });
 
             var token = antiforgery.GetAndStoreTokens(http);
             vm!.AdminCategoryFormAntiForgeryToken = token.RequestToken!;
@@ -96,6 +101,9 @@ public static class SettingsApis
 
             var category = await db.Categories!.FindAsync(id);
             category!.Name = form["name"];
+            category!.StatusId = int.Parse(form["statusDd"]!);
+            category!.Updated = DateTime.UtcNow;
+
             await db.SaveChangesAsync();
 
             var categories = await db.Categories.ToListAsync();

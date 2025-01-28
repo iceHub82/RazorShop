@@ -54,6 +54,8 @@ public class AdminProductVm
     public List<AdminSizeVm>? AdminSizes { get; set; } = new();
     public List<AdminImageVm>? AdminImageVms { get; set; } = new();
     public List<AdminCategoryVm>? AdminCategories { get; set; } = new();
+    public List<AdminStatusVm>? AdminStatuses { get; set; } = new();
+    public int StatusId { get; internal set; }
 }
 
 public class AdminNewProductVm
@@ -95,5 +97,14 @@ public class AdminCategoryVm
 {
     public int Id { get; set; }
     public string? Name { get; set; }
+    public List<AdminStatusVm>? AdminStatuses { get; set; } = new();
+
     public string? AdminCategoryFormAntiForgeryToken { get; internal set; }
+    public int StatusId { get; internal set; }
+}
+
+public class AdminStatusVm
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
 }

@@ -17,6 +17,16 @@
                             <input type="text" class="form-control" id="name" name="name" value="@Model.Name" maxlength="255" required>
                             <div class="invalid-feedback">Please enter category name</div>
                         </div>
+                        <div class="mb-3">
+                            <label for="statusId" class="form-label">Status</label>
+                            <select class="form-select" id="statusId" name="statusDd" required>
+                                @foreach (var status in Model.AdminStatuses!)
+                                {
+                                    <option value="@status.Id" @(Model.StatusId == status.Id ? "selected" : "")>@status.Name</option>
+                                }
+                            </select>
+                            <div class="invalid-feedback">Please select a status</div>
+                        </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Save</button>
                         </div>

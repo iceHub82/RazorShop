@@ -36,6 +36,17 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="statusId" class="form-label">Status</label>
+                            <select class="form-select" id="statusId" name="StatusDd" required>
+                                @foreach (var status in Model.AdminStatuses!)
+                                {
+                                    <option value="@status.Id" @(Model.StatusId == status.Id ? "selected" : "")>@status.Name</option>
+                                }
+                            </select>
+                            <div class="invalid-feedback">Please select a status</div>
+                        </div>
+
+                        <div class="mb-3">
                             <label for="categoryId" class="form-label">Category</label>
                             <select class="form-select" id="categoryId" name="categoryDd" required>
                                 <option value="0" selected>Select a category</option>

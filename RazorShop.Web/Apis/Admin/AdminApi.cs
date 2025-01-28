@@ -81,6 +81,7 @@ public static class AdminApis
             vm.ShortDescription = product.ShortDescription;
             vm.TicksStamp = await imgRepo.GetMainProductImageTickStamp(id);
             vm.CategoryId = product.CategoryId;
+            vm.StatusId = product.StatusId;
 
             var token1 = antiforgery.GetAndStoreTokens(http);
             vm!.AdminProductFormAntiForgeryToken = token1.RequestToken;
@@ -90,6 +91,10 @@ public static class AdminApis
             var categories = (IEnumerable<Category>)cache.Get("categories")!;
             foreach (var category in categories)
                 vm.AdminCategories!.Add(new AdminCategoryVm { Id = category.Id, Name = category.Name });
+
+            var statuses = (IEnumerable<Status>)cache.Get("statuses")!;
+            foreach (var status in statuses)
+                vm.AdminStatuses!.Add(new AdminStatusVm { Id = status.Id, Name = status.Name });
 
             var sizes = (IEnumerable<Data.Entities.Size>)cache.Get("sizes")!;
             var pSizes = db.ProductSizes!.Where(ps => ps.ProductId == product.Id);
@@ -125,6 +130,7 @@ public static class AdminApis
             product.Description = form["description"];
             var categoryId = int.Parse(form["categoryDd"]!);
             product.CategoryId = categoryId == 0 ? null : categoryId;
+            product.StatusId = int.Parse(form["statusDd"]!);
 
             var pSizes = await db.ProductSizes!.Where(ps => ps.ProductId == product.Id).ToListAsync();
             db.ProductSizes!.RemoveRange(pSizes);
@@ -174,6 +180,7 @@ public static class AdminApis
             product.Description = form["description"];
             var categoryId = int.Parse(form["categoryDd"]!);
             product.CategoryId = categoryId == 0 ? null : categoryId;
+            product.StatusId = 1;
 
             if (form.TryGetValue("price", out var priceValue) && decimal.TryParse(priceValue, out var price))
                 product.Price = price;

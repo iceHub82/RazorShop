@@ -55,12 +55,14 @@ using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<RazorShopDbContext>();
     db.Database.EnsureCreated();
 
+    var statuses = await db.Statuses!.ToListAsync();
     var sizes = await db.Sizes!.ToListAsync();
     var sizeTypes = await db.SizeTypes!.ToListAsync();
     var categories = await db.Categories!.ToListAsync();
 
     var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
     var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+    cache.Set("statuses", statuses, options);
     cache.Set("sizes", sizes, options);
     cache.Set("sizeTypes", sizeTypes, options);
     cache.Set("categories", categories, options);

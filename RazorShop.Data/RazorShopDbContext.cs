@@ -8,6 +8,7 @@ public class RazorShopDbContext : DbContext
     public RazorShopDbContext(DbContextOptions<RazorShopDbContext> options) : base(options)
     { }
 
+    public DbSet<Status>? Statuses { get; set; }
     public DbSet<Product>? Products { get; set; }
     public DbSet<ProductImage>? ProductImages { get; set; }
     public DbSet<Image>? Images { get; set; }
