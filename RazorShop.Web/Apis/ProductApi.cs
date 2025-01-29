@@ -77,9 +77,10 @@ public static class ProductApis
     private static async Task<List<ProductVm>> GetProducts(RazorShopDbContext db, ImagesRepo imgRepo)
     {
         var products =  await db.Products!
-                .AsNoTracking()
-                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
-                .ToListAsync();
+            .AsNoTracking()
+            .Where(p => p.StatusId == 2)
+            .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
+            .ToListAsync();
 
         foreach (var product in products)
             product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
@@ -90,10 +91,10 @@ public static class ProductApis
     private static async Task<List<ProductVm>> GetProductsByCategoryName(RazorShopDbContext db, ImagesRepo imgRepo, string name)
     {
         var products = await db.Products!
-                .AsNoTracking()
-                .Where(p => p.Category!.Name == name)
-                .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
-                .ToListAsync();
+            .AsNoTracking()
+            .Where(p => p.StatusId == 2 && p.Category!.Name == name)
+            .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
+            .ToListAsync();
 
         foreach (var product in products)
             product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);

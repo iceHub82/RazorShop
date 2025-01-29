@@ -18,6 +18,7 @@ public static class SiteApis
             ProductsVm vm = new();
             vm.Products = await db.Products!
                 .AsNoTracking()
+                .Where(p => p.StatusId == 2)
                 .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
 
@@ -32,7 +33,7 @@ public static class SiteApis
             if (!ApiUtil.IsHtmx(http.Request))
                 return Results.BadRequest();
 
-            var categories = (IEnumerable<Category>)cache.Get("categories")!;
+            var categories = ((IEnumerable<Category>)cache.Get("categories")!).Where(c => c.StatusId == 2);
 
             return Results.Extensions.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
         });
