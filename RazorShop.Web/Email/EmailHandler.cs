@@ -4,7 +4,7 @@ using MailKit.Security;
 
 namespace RazorShop.Web.Email;
 
-public class EmailHandler(IConfiguration config) : IEmailHandler
+public class EmailHandler(IConfiguration config, ILogger logger) : IEmailHandler
 {
     public void SendEmail(Message message)
     {
@@ -55,7 +55,13 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
                 var user = config["EmailProvider:User"];
                 var password = config["EmailProvider:Password"];
 
-                client.Connect(host, int.Parse(port!), SecureSocketOptions.StartTls);
+                if (string.IsNullOrEmpty(host) || !int.TryParse(port, out var portNum))
+                {
+                    logger.LogError("EmailProvider host or port is not configured; skipping send");
+                    return;
+                }
+
+                client.Connect(host, portNum, SecureSocketOptions.StartTls);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
                 client.Authenticate(user, password);
 
@@ -63,7 +69,7 @@ public class EmailHandler(IConfiguration config) : IEmailHandler
             }
             catch (Exception ex)
             {
-                //log.LogError($"Error sending email: {ex.Message}");
+                logger.LogError(ex, "Failed to send email to {Recipients}", string.Join(",", mailMessage.To));
             }
             finally
             {

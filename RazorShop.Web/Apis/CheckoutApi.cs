@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Net;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -37,9 +38,10 @@ public static class CheckoutApis
 
         app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo, IConfiguration config) =>
         {
-            var result = await UpdateCartItemQuantity(db, itemId, quantity);
-
             var cart = await GetCart(http, db);
+
+            await UpdateCartItemQuantity(db, cart.Id, itemId, quantity);
+
             var items = await GetCartItems(cart.Id, db)!;
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
@@ -51,9 +53,12 @@ public static class CheckoutApis
         {
             var cart = await GetCart(http, db);
 
-            var item = db.CartItems!.Find(id);
-            item!.Deleted = true;
-            item!.Updated = DateTime.UtcNow;
+            var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == id && c.CartId == cart.Id);
+            if (item == null)
+                return Results.NotFound();
+
+            item.Deleted = true;
+            item.Updated = DateTime.UtcNow;
             await db.SaveChangesAsync();
 
             var items = await GetCartItems(cart.Id, db)!;
@@ -75,21 +80,23 @@ public static class CheckoutApis
 
         app.MapPost("/checkout/submit", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IConfiguration config, ILogger<object> log) =>
         {
-            using var transaction = db.Database.BeginTransaction();
-
             try
             {
                 await antiforgery.ValidateRequestAsync(http); // Validate token
 
                 var form = await http.Request.ReadFormAsync();
 
+                var paymentKey = config["PaymentApiKey"];
+                if (string.IsNullOrEmpty(paymentKey))
+                {
+                    log.LogError("PaymentApiKey is not configured");
+                    return Results.Content(string.Empty);
+                }
+
                 var contact = new Contact();
-                contact.Email = form["email"]; ;
+                contact.Email = form["email"];
                 contact.PhoneNumber = form["phone"];
                 contact.Newsletter = form["newsletter"] == "on";
-
-                await db.Contacts!.AddAsync(contact);
-                await db.SaveChangesAsync();
 
                 var address = new Address();
                 address.FirstName = form["first-name"];
@@ -97,53 +104,34 @@ public static class CheckoutApis
                 address.StreetName = form["address"];
                 address.ZipCode = form["zip-code"];
                 address.City = form["city"];
-                address.CountryId = int.Parse(form["country-id"]!);
-
-                await db.Addresses!.AddAsync(address);
-                await db.SaveChangesAsync();
+                if (!int.TryParse(form["country-id"], out var countryId))
+                {
+                    log.LogWarning("Checkout submit with invalid country-id");
+                    return Results.Content(string.Empty);
+                }
+                address.CountryId = countryId;
 
                 Address? addressBill = null;
                 if (form["addressbillCb"] == "on")
-{
+                {
                     addressBill = new();
                     addressBill.FirstName = form["bill-first-name"];
                     addressBill.LastName = form["bill-last-name"];
                     addressBill.StreetName = form["bill-address"];
                     addressBill.ZipCode = form["bill-zip-code"];
                     addressBill.City = form["bill-city"];
-
-                    await db.Addresses!.AddAsync(addressBill);
-                    await db.SaveChangesAsync();
                 }
 
                 var cart = await GetCart(http, db) ?? throw new Exception("Cart not found");
+                var items = await GetCartItems(cart.Id, db)!;
+                if (items.Count == 0)
+                    return Results.Content(string.Empty);
 
                 var reference = GenerateReference();
 
-                var order = new Order();
-                order.Reference = reference;
-                order.CartId = cart.Id;
-                order.Created = DateTime.UtcNow;
-                order.AddressId = address.Id;
-                order.AddressBillId = addressBill == null ? null : addressBill!.Id;
-                order.ContactId = contact.Id;
-                order.StatusId = 1;
-
-                await db.Orders!.AddAsync(order);
-                await db.SaveChangesAsync();
-
-                transaction.Commit();
-
-                var paymentKey = config["PaymentApiKey"];
-
-                if (string.IsNullOrEmpty(paymentKey))
-                    throw new Exception("No PaymentKey has been provided");
-
-                var items = await GetCartItems(cart.Id, db)!;
-
                 var ps = new PaymentsService(paymentKey);
 
-                // First we must create a payment and for this we need a CreatePaymentRequestParams object
+                // Create the QuickPay payment first; if it fails we don't persist any order rows.
                 var createPaymentParams = new CreatePaymentRequestParams("DKK", reference);
                 createPaymentParams.text_on_statement = "QuickPay .NET Example";
 
@@ -157,7 +145,6 @@ public static class CheckoutApis
                 createPaymentParams.basket = basket;
                 var payment = await ps.CreatePayment(createPaymentParams);
 
-                // Second we must create a payment link for the payment. This payment link can be opened in a browser to show the payment window from QuickPay.
                 var paymentLinkAmount = (int)(items.Sum(c => c.Product!.Price * c.Quantity)) + 49;
 
                 var createPaymentLinkParams = new CreatePaymentLinkRequestParams(paymentLinkAmount * 100);
@@ -166,25 +153,51 @@ public static class CheckoutApis
                 var domain = $"{http.Request.Scheme}://{http.Request.Host}";
                 createPaymentLinkParams.continue_url = $"{domain}/Success/{reference}";
                 createPaymentLinkParams.cancel_url = $"{domain}/Unsuccessful/{reference}";
-                createPaymentLinkParams.auto_capture = true; //This will automatically capture the payment right after it has been authorized.
+                createPaymentLinkParams.auto_capture = true;
 
                 var paymentLink = await ps.CreateOrUpdatePaymentLink(payment.id, createPaymentLinkParams);
 
-                var redirectToPaymentScreenScript = $"""
-                    <script>
-                        window.location.href = '{paymentLink.url}';
-                    </script>
-                """;
+                // Persist order rows in a single transaction only after we have a payment id to bind to.
+                using var transaction = await db.Database.BeginTransactionAsync();
 
-                return Results.Content(redirectToPaymentScreenScript);
+                await db.Contacts!.AddAsync(contact);
+                await db.SaveChangesAsync();
+
+                await db.Addresses!.AddAsync(address);
+                if (addressBill != null)
+                    await db.Addresses!.AddAsync(addressBill);
+                await db.SaveChangesAsync();
+
+                var order = new Order();
+                order.Reference = reference;
+                order.CartId = cart.Id;
+                order.Created = DateTime.UtcNow;
+                order.AddressId = address.Id;
+                order.AddressBillId = addressBill?.Id;
+                order.ContactId = contact.Id;
+                order.StatusId = 1;
+                order.QuickPayPaymentId = payment.id;
+
+                await db.Orders!.AddAsync(order);
+                await db.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                if (ApiUtil.IsHtmx(http.Request))
+                {
+                    http.Response.Headers["HX-Redirect"] = paymentLink.url;
+                    return Results.Ok();
+                }
+
+                return Results.Redirect(paymentLink.url);
             }
-            catch (AntiforgeryValidationException ex)
+            catch (AntiforgeryValidationException)
             {
                 log.LogError("AntiforgeryValidationException was thrown");
             }
             catch (Exception ex)
             {
-                log.LogError("Processing is cancelled.");
+                log.LogError(ex, "Checkout submit failed");
             }
 
             return Results.Content(string.Empty);
@@ -198,11 +211,44 @@ public static class CheckoutApis
             {
                 var order = await db.Orders!.Include(o => o.Cart)!.Include(o => o.Address).ThenInclude(o => o!.Country!).Include(o => o.AddressBill).FirstOrDefaultAsync(o => o.Reference == reference);
 
-                if (order == null || order!.StatusId == 2) {
+                if (order == null) {
+                    log.LogWarning("Order success page called with unknown reference");
+                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                }
 
-                    log.LogWarning($"Order success page called with unknown reference Id: {reference}");
+                if (order.StatusId == 2)
+                {
+                    // Already processed; show the success view without re-sending email.
+                    return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                }
 
-                    return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm); // Change this to error or not found
+                if (order.QuickPayPaymentId is null)
+                {
+                    log.LogWarning("Order {Reference} has no QuickPayPaymentId; cannot verify payment", reference);
+                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                }
+
+                var paymentKey = config["PaymentApiKey"];
+                if (string.IsNullOrEmpty(paymentKey))
+                {
+                    log.LogError("PaymentApiKey is not configured; cannot verify payment for {Reference}", reference);
+                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                }
+
+                var ps = new PaymentsService(paymentKey);
+                var payment = await ps.GetPayment(order.QuickPayPaymentId.Value, null);
+
+                var paymentOk =
+                    payment != null
+                    && payment.accepted
+                    && string.Equals(payment.order_id, reference, StringComparison.Ordinal)
+                    && (string.Equals(payment.state, "processed", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(payment.state, "captured", StringComparison.OrdinalIgnoreCase));
+
+                if (!paymentOk)
+                {
+                    log.LogWarning("Payment verification failed for {Reference}: accepted={Accepted} state={State}", reference, payment?.accepted, payment?.state);
+                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
                 }
 
                 order.StatusId = 2; // Paid
@@ -221,7 +267,7 @@ public static class CheckoutApis
 
                 var productsHtml = GenerateProductsHtmlStringInDanish(baseUrl, items, sizes, "DKK", 49);
 
-                var handler = new EmailHandler(config);
+                var handler = new EmailHandler(config, log);
 
                 var dateStr = DateTime.Now.ToString("dd. MMMM yyyy", new CultureInfo("da-DK"));
 
@@ -279,7 +325,7 @@ public static class CheckoutApis
 
         var guid = Guid.NewGuid();
         cartSessionGuid = guid.ToString();
-        http.Response.Cookies.Append("CartSessionId", cartSessionGuid);
+        http.Response.Cookies.Append("CartSessionId", cartSessionGuid, ApiUtil.CartCookieOptions(http.Request));
 
         var newCart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
         db.Carts!.Add(newCart);
@@ -288,11 +334,14 @@ public static class CheckoutApis
         return newCart;
     }
 
-    private static async Task<bool> UpdateCartItemQuantity(RazorShopDbContext db, int itemId, int quantity)
+    private static async Task<bool> UpdateCartItemQuantity(RazorShopDbContext db, int cartId, int itemId, int quantity)
     {
-        var item = db.CartItems!.Find(itemId);
-        item!.Quantity = quantity;
-        item!.Updated = DateTime.UtcNow;
+        var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == itemId && c.CartId == cartId);
+        if (item == null)
+            return false;
+
+        item.Quantity = quantity;
+        item.Updated = DateTime.UtcNow;
 
         return await db.SaveChangesAsync() > 0;
     }
@@ -340,15 +389,17 @@ public static class CheckoutApis
     {
         var addressStr = string.Empty;
 
-        addressStr += $"{address.FirstName} {address.LastName}<br>";
-        addressStr += $"{address.StreetName}<br>";
-        addressStr += $"{address.ZipCode} {address.City}<br>";
+        addressStr += $"{H(address.FirstName)} {H(address.LastName)}<br>";
+        addressStr += $"{H(address.StreetName)}<br>";
+        addressStr += $"{H(address.ZipCode)} {H(address.City)}<br>";
 
         if (address.Country != null)
-            addressStr += $"{address.Country!.Name}<br>";
+            addressStr += $"{H(address.Country.Name)}<br>";
 
         return addressStr;
     }
+
+    private static string H(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
 
     private static string GenerateProductsHtmlStringInDanish(string baseUrl, List<CartItem> items, IEnumerable<Data.Entities.Size> sizes, string countryCode, decimal delivery)
     {
@@ -377,7 +428,7 @@ public static class CheckoutApis
             mailStr += $"<img src='{mainImgPath}' alt='&nbsp;' width='77' style='display: block; background-color: rgb(55, 55, 55) !important; line-height: 111px; font-size: 1px;'>";
             mailStr += "</a>";
             mailStr += "</td>";
-            mailStr += $"<td align='left' valign='top'><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%'><tbody><tr><td style='font-family:Tiempos,Times New Roman,serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{item.Product.Name}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>Antal: {item.Quantity}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#66676E'>Størrelse: {size} </td></tr></tbody></table></td><td align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{price:#.00} kr </td></tr></tbody></table><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td aria-hidden='true' height='8' style='font-size:0px; line-height:0px'>&nbsp;</td></tr><tr><td align='left'></td></tr></tbody></table></td>";
+            mailStr += $"<td align='left' valign='top'><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%'><tbody><tr><td style='font-family:Tiempos,Times New Roman,serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{H(item.Product.Name)}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>Antal: {item.Quantity}</td></tr><tr><td style='font-family:HelveticaNow,Helvetica,sans-serif; font-size:14px; line-height:20px; letter-spacing:0px; color:#66676E'>Størrelse: {H(size)} </td></tr></tbody></table></td><td align='right' valign='top' style='font-family:HelveticaNow,Helvetica,sans-serif; color:#1A1A1A; font-size:14px; line-height:20px; letter-spacing:0px'>{price:#.00} kr </td></tr></tbody></table><table border='0' cellpadding='0' cellspacing='0' width='100%' role='presentation'><tbody><tr><td aria-hidden='true' height='8' style='font-size:0px; line-height:0px'>&nbsp;</td></tr><tr><td align='left'></td></tr></tbody></table></td>";
             mailStr += "";
             mailStr += "</tr>";
             mailStr += "</tbody>";

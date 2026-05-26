@@ -56,9 +56,12 @@ public static class CartApis
         {
             var cart = await GetCart(http, db);
 
-            var item = db.CartItems!.Find(id);
-            item!.Deleted = true;
-            item!.Updated = DateTime.UtcNow;
+            var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == id && c.CartId == cart.Id);
+            if (item == null)
+                return Results.NotFound();
+
+            item.Deleted = true;
+            item.Updated = DateTime.UtcNow;
             await db.SaveChangesAsync();
 
             var items = await GetCartItems(cart.Id, db)!;
@@ -80,7 +83,7 @@ public static class CartApis
 
         var guid = Guid.NewGuid();
         cartSessionGuid = guid.ToString();
-        http.Response.Cookies.Append("CartSessionId", cartSessionGuid);
+        http.Response.Cookies.Append("CartSessionId", cartSessionGuid, ApiUtil.CartCookieOptions(http.Request));
 
         var newCart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
         db.Carts!.Add(newCart);

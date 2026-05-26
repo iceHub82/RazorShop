@@ -18,6 +18,7 @@ public class Order
     public int CartId { get; set; }
     public Cart? Cart { get; set; }
     public int StatusId { get; set; }
+    public int? QuickPayPaymentId { get; set; }
     public DateTime Created { get; set; }
     public DateTime? Updated { get; set; }
 }

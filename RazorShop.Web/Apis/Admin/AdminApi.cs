@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Linq.Dynamic.Core;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
@@ -11,7 +11,9 @@ using RazorShop.Data.Entities;
 using RazorShop.Web.Slices.Admin;
 using RazorShop.Web.Models.ViewModels;
 using LinqKit;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
 
 using Size = SixLabors.ImageSharp.Size;
 using Image = SixLabors.ImageSharp.Image;
@@ -32,7 +34,7 @@ public static class AdminApis
             }
 
             return Results.Extensions.RazorSlice<Pages.Admin.Home>();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/products", (HttpContext http) =>
         {
@@ -43,11 +45,11 @@ public static class AdminApis
             }
 
             return Results.Extensions.RazorSlice<Pages.Admin.Products>();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/products/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
-            var dtParams = GetDatatableParameters(request);
+            var dtParams = GetDatatableParameters(request, ProductSortColumns, "Id");
 
             var vm = await GetPaginatedAdminProducts(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -67,7 +69,7 @@ public static class AdminApis
                 recordsFiltered = vm.FilteredCount,
                 data = productTableVm
             });
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/product/modal/edit/{id}", async (HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, RazorShopDbContext db, IMemoryCache cache, int id) =>
         {
@@ -115,7 +117,7 @@ public static class AdminApis
                 vm.AdminImageVms!.Add(new AdminImageVm { Id = imgId, TicksStamp = await imgRepo.GetGalleryProductImageTickStamp(imgId) });
 
             return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost("/admin/product/modal/edit/{id}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
         {
@@ -128,9 +130,10 @@ public static class AdminApis
             product!.Name = form["name"];
             product.ShortDescription = form["shortDescription"];
             product.Description = form["description"];
-            var categoryId = int.Parse(form["categoryDd"]!);
+            if (!int.TryParse(form["categoryDd"], out var categoryId) || !int.TryParse(form["statusDd"], out var statusId))
+                return Results.BadRequest();
             product.CategoryId = categoryId == 0 ? null : categoryId;
-            product.StatusId = int.Parse(form["statusDd"]!);
+            product.StatusId = statusId;
 
             var pSizes = await db.ProductSizes!.Where(ps => ps.ProductId == product.Id).ToListAsync();
             db.ProductSizes!.RemoveRange(pSizes);
@@ -139,7 +142,11 @@ public static class AdminApis
             var sizes = form["selectedSizes"];
             if (sizes.Count > 0)
                 foreach (var sizeId in sizes)
-                    await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = int.Parse(sizeId!) });
+                {
+                    if (!int.TryParse(sizeId, out var parsedSizeId))
+                        return Results.BadRequest();
+                    await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = parsedSizeId });
+                }
 
             if (form.TryGetValue("price", out var priceValue) && decimal.TryParse(priceValue, out var price))
                 product.Price = price;
@@ -149,7 +156,7 @@ public static class AdminApis
             await db.SaveChangesAsync();
 
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/product/modal/new", (HttpContext http, IMemoryCache cache, IAntiforgery antiforgery) =>
         {
@@ -166,7 +173,7 @@ public static class AdminApis
                 vm.AdminSizes!.Add(new AdminSizeVm { Id = size.Id, Name = size.Name });
 
             return Results.Extensions.RazorSlice<ProductNew, AdminNewProductVm>(vm);
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost("/admin/product/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
         {
@@ -178,7 +185,8 @@ public static class AdminApis
             product.Name = form["name"];
             product.ShortDescription = form["shortDescription"];
             product.Description = form["description"];
-            var categoryId = int.Parse(form["categoryDd"]!);
+            if (!int.TryParse(form["categoryDd"], out var categoryId))
+                return Results.BadRequest();
             product.CategoryId = categoryId == 0 ? null : categoryId;
             product.StatusId = 1;
 
@@ -194,13 +202,17 @@ public static class AdminApis
             if (sizes.Count > 0)
             {
                 foreach (var sizeId in sizes)
-                    await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = int.Parse(sizeId!) });
+                {
+                    if (!int.TryParse(sizeId, out var parsedSizeId))
+                        return Results.BadRequest();
+                    await db.ProductSizes!.AddAsync(new ProductSize { ProductId = product.Id, SizeId = parsedSizeId });
+                }
 
                 await db.SaveChangesAsync();
             }
                 
-            return Results.Content($"TESTTEST");
-        }).RequireAuthorization();
+            return Results.Ok(new { product.Id });
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost("/admin/product/upload-main/{id}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, IFormFile img, IAntiforgery antiforgery, int id) =>
         {
@@ -256,7 +268,7 @@ public static class AdminApis
             }
 
             return Results.Content($"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'");
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost("/admin/product/upload-images/{id}", async (IWebHostEnvironment env, HttpContext http, RazorShopDbContext db, IFormFileCollection files, IAntiforgery antiforgery, int id) =>
         {
@@ -303,36 +315,38 @@ public static class AdminApis
 
                 //string test += $"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'";
             }
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
-        app.MapGet("/Login", () =>
+        app.MapGet("/Login", (HttpContext http, IAntiforgery antiforgery) =>
         {
-            return Results.Extensions.RazorSlice<Pages.Admin.Login>();
+            var token = antiforgery.GetAndStoreTokens(http);
+            var vm = new AdminLoginVm { AntiForgeryToken = token.RequestToken };
+            return Results.Extensions.RazorSlice<Pages.Admin.Login, AdminLoginVm>(vm);
         });
 
-        app.MapPost("/Login", async (HttpContext context, IConfiguration config, ILogger<object> log) =>
+        app.MapPost("/Login", async (HttpContext context, IConfiguration config, IAntiforgery antiforgery, ILogger<object> log) =>
         {
             try
             {
+                await antiforgery.ValidateRequestAsync(context);
+
                 var userName = context.Request.Form["username"];
 
                 if (userName != config["AdminUser"])
                 {
-                    log.LogWarning("Unknown username:{@username}", userName!);
+                    log.LogWarning("Login attempt with unknown username from {RemoteIp}", context.Connection.RemoteIpAddress);
 
                     return Results.Redirect("/Login");
                 }
 
-                log.LogInformation("Known username:{@username}", userName!);
-
                 var password = context.Request.Form["password"];
 
-                var pHasher = new PasswordHasher();
-                var result = pHasher.VerifyHashedPassword(config["AdminHash"], password);
+                var pHasher = new PasswordHasher<object>();
+                var result = pHasher.VerifyHashedPassword(default!, config["AdminHash"]!, password!);
 
                 if (result == PasswordVerificationResult.Failed)
                 {
-                    log.LogWarning("Wrong user password:{@password}", password!);
+                    log.LogWarning("Failed password attempt for admin from {RemoteIp}", context.Connection.RemoteIpAddress);
 
                     return Results.Redirect("/Login");
                 }
@@ -346,13 +360,17 @@ public static class AdminApis
 
                 return Results.Extensions.RazorSlice<Pages.Admin.Home>();
             }
-            catch (Exception ex)
+            catch (AntiforgeryValidationException)
             {
-                log.LogError(ex, ex.Message);
-
+                log.LogWarning("Login antiforgery validation failed");
                 return Results.Redirect("/Login");
             }
-        });
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Login handler error");
+                return Results.Redirect("/Login");
+            }
+        }).RequireRateLimiting("login");
 
         app.MapGet("/admin/orders", (HttpContext http) =>
         {
@@ -363,11 +381,11 @@ public static class AdminApis
             }
 
             return Results.Extensions.RazorSlice<Pages.Admin.Orders>();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/orders/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
-            var dtParams = GetDatatableParameters(request);
+            var dtParams = GetDatatableParameters(request, OrderSortColumns, "Created");
 
             var vm = await GetPaginatedOrders(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -388,7 +406,7 @@ public static class AdminApis
                 recordsFiltered = vm.FilteredCount,
                 data = ordersTableVm
             });
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
     }
 
     private static async Task<AdminProductsVm> GetPaginatedAdminProducts(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
@@ -433,24 +451,31 @@ public static class AdminApis
         };
     }
 
-    private static DataTablesParameters GetDatatableParameters(HttpRequest request)
+    private static readonly HashSet<string> ProductSortColumns = new(StringComparer.Ordinal) { "Id", "Name" };
+    private static readonly HashSet<string> OrderSortColumns = new(StringComparer.Ordinal) { "Id", "Reference", "Created" };
+
+    private static DataTablesParameters GetDatatableParameters(HttpRequest request, HashSet<string> allowedSortColumns, string defaultSort)
     {
         var search = request.Query["search[value]"].FirstOrDefault();
         var draw = request.Query["draw"].FirstOrDefault();
-        var skip = int.Parse(request.Query["start"].FirstOrDefault() ?? "0");
-        var take = int.Parse(request.Query["length"].FirstOrDefault() ?? "10");
+        _ = int.TryParse(request.Query["start"].FirstOrDefault(), out var skip);
+        if (!int.TryParse(request.Query["length"].FirstOrDefault(), out var take) || take <= 0 || take > 200)
+            take = 10;
 
-        var orderIndex = int.Parse(request.Query["order[0][column]"].FirstOrDefault() ?? "0");
-        var dir = request.Query["order[0][dir]"].FirstOrDefault() ?? "asc";
-        var sort = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
+        _ = int.TryParse(request.Query["order[0][column]"].FirstOrDefault(), out var orderIndex);
+        var dirRaw = request.Query["order[0][dir]"].FirstOrDefault();
+        var dir = string.Equals(dirRaw, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
+
+        var sortRaw = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
+        var sort = !string.IsNullOrEmpty(sortRaw) && allowedSortColumns.Contains(sortRaw) ? sortRaw : defaultSort;
 
         return new DataTablesParameters {
             Search = search!,
             Draw = draw!,
-            Skip = skip,
+            Skip = skip < 0 ? 0 : skip,
             Take = take,
             OrderIndex = orderIndex,
-            Sort = sort!,
+            Sort = sort,
             SortDirection = dir
         };
     }

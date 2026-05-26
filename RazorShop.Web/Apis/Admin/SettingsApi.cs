@@ -28,11 +28,11 @@ public static class SettingsApis
             }
 
             return Results.Extensions.RazorSlice<Pages.Admin.Settings.Categories>();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiCategories}/table", async (HttpRequest request, RazorShopDbContext db) =>
         {
-            var dtParams = GetDatatableParameters(request);
+            var dtParams = GetDatatableParameters(request, CategorySortColumns, "Id");
 
             var vm = await GetPaginatedAdminCategories(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -51,7 +51,7 @@ public static class SettingsApis
                 recordsFiltered = vm.FilteredCount,
                 data = categoriesTableVm
             });
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiCategories}/modal/new", (HttpContext http, IAntiforgery antiforgery) =>
         {
@@ -60,7 +60,7 @@ public static class SettingsApis
             vm!.AdminCategoryFormAntiForgeryToken = token.RequestToken!;
 
             return Results.Extensions.RazorSlice<CategoryNew, AdminCategoryVm>(vm);
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiCategories}/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
         {
@@ -72,7 +72,7 @@ public static class SettingsApis
             await db.SaveChangesAsync();
 
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, int id) =>
         {
@@ -91,7 +91,7 @@ public static class SettingsApis
             vm!.AdminCategoryFormAntiForgeryToken = token.RequestToken!;
 
             return Results.Extensions.RazorSlice<CategoryEdit, AdminCategoryVm>(vm);
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IMemoryCache cache, int id) =>
         {
@@ -99,10 +99,13 @@ public static class SettingsApis
 
             var form = await http.Request.ReadFormAsync();
 
+            if (!int.TryParse(form["statusDd"], out var statusId))
+                return Results.BadRequest();
+
             var category = await db.Categories!.FindAsync(id);
             category!.Name = form["name"];
-            category!.StatusId = int.Parse(form["statusDd"]!);
-            category!.Updated = DateTime.UtcNow;
+            category.StatusId = statusId;
+            category.Updated = DateTime.UtcNow;
 
             await db.SaveChangesAsync();
 
@@ -111,7 +114,7 @@ public static class SettingsApis
             cache.Set("categories", categories, options);
 
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiSizes}", (HttpContext http) =>
         {
@@ -122,11 +125,11 @@ public static class SettingsApis
             }
 
             return Results.Extensions.RazorSlice<Pages.Admin.Settings.Sizes>();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiSizes}/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
-            var dtParams = GetDatatableParameters(request);
+            var dtParams = GetDatatableParameters(request, SizeSortColumns, "Id");
 
             var vm = await GetPaginatedAdminSizes(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -146,7 +149,7 @@ public static class SettingsApis
                 recordsFiltered = vm.FilteredCount,
                 data = sizesTableVm
             });
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiSizes}/modal/new", (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery) =>
         {
@@ -159,7 +162,7 @@ public static class SettingsApis
                 vm.AdminSizeTypes!.Add(new AdminSizeTypeVm { Id = type.Id, Name = type.Name });
 
             return Results.Extensions.RazorSlice<SizeNew, AdminSizeVm>(vm);
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiSizes}/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
         {
@@ -167,15 +170,17 @@ public static class SettingsApis
 
             var form = await http.Request.ReadFormAsync();
 
+            if (!int.TryParse(form["sizeTypeDd"], out var sizeTypeId))
+                return Results.BadRequest();
+
             var size = new Size();
             size.Name = form["name"];
-            var sizeTypeId = int.Parse(form["sizeTypeDd"]!);
             size.SizeTypeId = sizeTypeId == 0 ? null : sizeTypeId;
             await db.Sizes!.AddAsync(size);
             await db.SaveChangesAsync();
 
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, int id) =>
         {
@@ -194,7 +199,7 @@ public static class SettingsApis
                 vm.AdminSizeTypes!.Add(new AdminSizeTypeVm { Id = type.Id, Name = type.Name });
 
             return Results.Extensions.RazorSlice<SizeEdit, AdminSizeVm>(vm);
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IMemoryCache cache, int id) =>
         {
@@ -202,9 +207,12 @@ public static class SettingsApis
 
             var form = await http.Request.ReadFormAsync();
 
+            if (!int.TryParse(form["sizeTypeDd"], out var sizeTypeId))
+                return Results.BadRequest();
+
             var size = await db.Sizes!.FindAsync(id);
             size!.Name = form["name"];
-            size!.SizeTypeId = int.Parse(form["sizeTypeDd"]!);
+            size.SizeTypeId = sizeTypeId;
             await db.SaveChangesAsync();
 
             var sizes = await db.Sizes!.ToListAsync();
@@ -212,7 +220,7 @@ public static class SettingsApis
             cache.Set("sizes", sizes, options);
 
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization("AdminOnly");
     }
 
     private static async Task<AdminCategoriesVm> GetPaginatedAdminCategories(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
@@ -255,24 +263,31 @@ public static class SettingsApis
         };
     }
 
-    private static DataTablesParameters GetDatatableParameters(HttpRequest request)
+    private static readonly HashSet<string> CategorySortColumns = new(StringComparer.Ordinal) { "Id", "Name" };
+    private static readonly HashSet<string> SizeSortColumns = new(StringComparer.Ordinal) { "Id", "Name" };
+
+    private static DataTablesParameters GetDatatableParameters(HttpRequest request, HashSet<string> allowedSortColumns, string defaultSort)
     {
         var search = request.Query["search[value]"].FirstOrDefault();
         var draw = request.Query["draw"].FirstOrDefault();
-        var skip = int.Parse(request.Query["start"].FirstOrDefault() ?? "0");
-        var take = int.Parse(request.Query["length"].FirstOrDefault() ?? "10");
+        _ = int.TryParse(request.Query["start"].FirstOrDefault(), out var skip);
+        if (!int.TryParse(request.Query["length"].FirstOrDefault(), out var take) || take <= 0 || take > 200)
+            take = 10;
 
-        var orderIndex = int.Parse(request.Query["order[0][column]"].FirstOrDefault() ?? "0");
-        var dir = request.Query["order[0][dir]"].FirstOrDefault() ?? "asc";
-        var sort = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
+        _ = int.TryParse(request.Query["order[0][column]"].FirstOrDefault(), out var orderIndex);
+        var dirRaw = request.Query["order[0][dir]"].FirstOrDefault();
+        var dir = string.Equals(dirRaw, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
+
+        var sortRaw = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
+        var sort = !string.IsNullOrEmpty(sortRaw) && allowedSortColumns.Contains(sortRaw) ? sortRaw : defaultSort;
 
         return new DataTablesParameters {
             Search = search!,
             Draw = draw!,
-            Skip = skip,
+            Skip = skip < 0 ? 0 : skip,
             Take = take,
             OrderIndex = orderIndex,
-            Sort = sort!,
+            Sort = sort,
             SortDirection = dir
         };
     }

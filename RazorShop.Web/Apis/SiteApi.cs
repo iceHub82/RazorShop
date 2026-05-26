@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
@@ -50,7 +51,9 @@ public static class SiteApis
 
             var form = await http.Request.ReadFormAsync();
 
-            var email = form["newsletter"];
+            var email = form["newsletter"].ToString();
+            if (string.IsNullOrWhiteSpace(email) || email.Length > 100 || !new EmailAddressAttribute().IsValid(email))
+                return Results.BadRequest();
 
             await db.Contacts!.AddAsync(new Contact { Email = email, Newsletter = true });
             await db.SaveChangesAsync();

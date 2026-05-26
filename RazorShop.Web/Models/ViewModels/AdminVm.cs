@@ -5,6 +5,11 @@ public class AdminVm
 
 }
 
+public class AdminLoginVm
+{
+    public string? AntiForgeryToken { get; set; }
+}
+
 public class AdminProductsVm
 {
     public List<AdminProductVm> AdminProducts { get; set; } = new();

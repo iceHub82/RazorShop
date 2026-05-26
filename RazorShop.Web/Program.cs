@@ -1,3 +1,6 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
@@ -29,6 +32,11 @@ builder.Services.AddDbContext<RazorShopDbContext>(options => {
 
 builder.Services.AddTransient<ImagesRepo>();
 
+builder.Services.Configure<FormOptions>(options => {
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB total per multipart request
+    options.ValueLengthLimit = 1 * 1024 * 1024;
+});
+
 builder.Services.AddAntiforgery();
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -42,12 +50,30 @@ builder.Services.AddSession(options => {
 builder.Services.AddAuthentication("App_Auth")
     .AddCookie("App_Auth", options => {
         options.Cookie.Name = "App_Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.IsEssential = true;
         options.LoginPath = "/Login";
         options.ExpireTimeSpan = TimeSpan.FromDays(90);
         options.SlidingExpiration = false;
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options => {
+    options.AddPolicy("AdminOnly", p => p.RequireAuthenticatedUser().RequireRole("Admin"));
+});
+
+builder.Services.AddRateLimiter(options => {
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("login", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+});
 
 var app = builder.Build();
 
@@ -74,30 +100,26 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseExceptionHandler("/Error");
-app.UseStatusCodePagesWithRedirects("/Redirects?statusCode={0}");
+app.UseHttpsRedirection();
 
 app.Use(async (context, next) => {
-    if (!context.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
-    {
-        var guid = Guid.NewGuid();
-        cartSessionGuid = guid.ToString();
-        context.Response.Cookies.Append("CartSessionId", cartSessionGuid);
-
-        var scopeFactory = context.RequestServices.GetRequiredService<IServiceScopeFactory>();
-        using var scope = scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<RazorShopDbContext>();
-        dbContext.Carts!.Add(new Cart { CartGuid = guid, Created = DateTime.UtcNow });
-        await dbContext.SaveChangesAsync();
-    }
-
-    context.Items["CartSessionId"] = cartSessionGuid;
-
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    // style-src still permits 'unsafe-inline' because Bootstrap utilities and inline style="..."
+    // attributes are used across views. Move to CSP nonces in a follow-up to drop it.
+    headers["Content-Security-Policy"] =
+        "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://payment.quickpay.net";
     await next();
 });
 
+app.UseExceptionHandler("/Error");
+app.UseStatusCodePagesWithRedirects("/Redirects?statusCode={0}");
+
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseAntiforgery();
 app.UseSession();
 app.UseStatusCodePages();

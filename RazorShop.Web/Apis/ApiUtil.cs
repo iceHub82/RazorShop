@@ -7,6 +7,15 @@ public static class ApiUtil
         return request.Headers["hx-request"] == "true";
     }
 
+    public static CookieOptions CartCookieOptions(HttpRequest request) => new()
+    {
+        HttpOnly = true,
+        Secure = request.IsHttps,
+        SameSite = SameSiteMode.Lax,
+        IsEssential = true,
+        Expires = DateTimeOffset.UtcNow.AddDays(30),
+    };
+
     public static RouteHandlerBuilder NoCache(this RouteHandlerBuilder builder)
     {
         return builder.AddEndpointFilter(async (http, next) => {
