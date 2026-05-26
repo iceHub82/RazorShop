@@ -22,19 +22,47 @@ public static class CartApis
                 var items = await GetCartItems(cart.Id, db)!;
                 var vm = await GetCartViewModel(items!, cache, imgRepo);
 
-                return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
+                return Results.RazorSlice<Slices.Cart, CartVm>(vm!);
             }
 
-            return Results.Extensions.RazorSlice<Pages.CheckoutEmpty>();
+            return Results.RazorSlice<Pages.CheckoutEmpty>();
 
         }).NoCache();
 
-        app.MapPost("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IAntiforgery antiforgery, int id, int size, int quantity) =>
+        app.MapPost("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IAntiforgery antiforgery, ILogger<object> log, int id) =>
         {
-            await antiforgery.ValidateRequestAsync(http);
+            var afCookieName = http.Request.Cookies.Keys.FirstOrDefault(k => k.StartsWith(".AspNetCore.Antiforgery"));
+            log.LogInformation("Cart add hit: id={Id} afCookiePresent={HasCookie} contentType={ContentType}", id, afCookieName != null, http.Request.ContentType);
 
-            if (quantity <= 0 || quantity > 100)
-                return Results.BadRequest();
+            IFormCollection form;
+            try
+            {
+                form = await http.Request.ReadFormAsync();
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Cart add: failed to read form body");
+                return Results.BadRequest("Could not read form");
+            }
+
+            log.LogInformation("Cart add form fields: {Fields}", string.Join(",", form.Keys));
+
+            try
+            {
+                await antiforgery.ValidateRequestAsync(http);
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Cart add: antiforgery rejected ({ExceptionType})", ex.GetType().Name);
+                return Results.BadRequest("Antiforgery token invalid");
+            }
+
+            if (!int.TryParse(form["size"], out var size)) size = 0;
+            if (!int.TryParse(form["quantity"], out var quantity) || quantity <= 0 || quantity > 100)
+            {
+                log.LogWarning("Cart add rejected: invalid quantity={Quantity} for product {Id}", form["quantity"].ToString(), id);
+                return Results.BadRequest("Invalid quantity");
+            }
 
             var cart = await GetCart(http, db);
 
@@ -55,7 +83,7 @@ public static class CartApis
             var items = await GetCartItems(cart.Id, db)!;
             var vm = await GetCartViewModel(items, cache, imgRepo);
 
-            return Results.Extensions.RazorSlice<Slices.Cart, CartVm>(vm!);
+            return Results.RazorSlice<Slices.Cart, CartVm>(vm!);
         });
 
         app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id) =>
@@ -73,7 +101,7 @@ public static class CartApis
             var items = await GetCartItems(cart.Id, db)!;
             var vm = await GetCartViewModel(items, cache, imgRepo);
 
-            return Results.Extensions.RazorSlice<Slices.CartDelete, CartVm>(vm!);
+            return Results.RazorSlice<Slices.CartDelete, CartVm>(vm!);
         });
     }
 

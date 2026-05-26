@@ -24,10 +24,10 @@ public static class SettingsApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Categories>();
+                return Results.RazorSlice<Categories>();
             }
 
-            return Results.Extensions.RazorSlice<Pages.Admin.Settings.Categories>();
+            return Results.RazorSlice<Pages.Admin.Settings.Categories>();
         }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiCategories}/table", async (HttpRequest request, RazorShopDbContext db) =>
@@ -59,7 +59,7 @@ public static class SettingsApis
             var token = antiforgery.GetAndStoreTokens(http);
             vm!.AdminCategoryFormAntiForgeryToken = token.RequestToken!;
 
-            return Results.Extensions.RazorSlice<CategoryNew, AdminCategoryVm>(vm);
+            return Results.RazorSlice<CategoryNew, AdminCategoryVm>(vm);
         }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiCategories}/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
@@ -90,7 +90,7 @@ public static class SettingsApis
             var token = antiforgery.GetAndStoreTokens(http);
             vm!.AdminCategoryFormAntiForgeryToken = token.RequestToken!;
 
-            return Results.Extensions.RazorSlice<CategoryEdit, AdminCategoryVm>(vm);
+            return Results.RazorSlice<CategoryEdit, AdminCategoryVm>(vm);
         }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiCategories}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IMemoryCache cache, int id) =>
@@ -121,10 +121,10 @@ public static class SettingsApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Sizes>();
+                return Results.RazorSlice<Sizes>();
             }
 
-            return Results.Extensions.RazorSlice<Pages.Admin.Settings.Sizes>();
+            return Results.RazorSlice<Pages.Admin.Settings.Sizes>();
         }).RequireAuthorization("AdminOnly");
 
         app.MapGet($"{_apiSizes}/table", async (RazorShopDbContext db, HttpRequest request) =>
@@ -161,7 +161,7 @@ public static class SettingsApis
             foreach (var type in sizeTypes)
                 vm.AdminSizeTypes!.Add(new AdminSizeTypeVm { Id = type.Id, Name = type.Name });
 
-            return Results.Extensions.RazorSlice<SizeNew, AdminSizeVm>(vm);
+            return Results.RazorSlice<SizeNew, AdminSizeVm>(vm);
         }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiSizes}/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
@@ -198,7 +198,7 @@ public static class SettingsApis
             foreach (var type in sizeTypes)
                 vm.AdminSizeTypes!.Add(new AdminSizeTypeVm { Id = type.Id, Name = type.Name });
 
-            return Results.Extensions.RazorSlice<SizeEdit, AdminSizeVm>(vm);
+            return Results.RazorSlice<SizeEdit, AdminSizeVm>(vm);
         }).RequireAuthorization("AdminOnly");
 
         app.MapPost($"{_apiSizes}/modal/edit/{{id}}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IMemoryCache cache, int id) =>

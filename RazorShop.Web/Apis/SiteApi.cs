@@ -27,7 +27,7 @@ public static class SiteApis
             foreach (var product in vm.Products)
                 product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
 
-            return Results.Extensions.RazorSlice<Home, ProductsVm>(vm);
+            return Results.RazorSlice<Home, ProductsVm>(vm);
         });
 
         app.MapGet("/categories", (HttpContext http, IMemoryCache cache) =>
@@ -37,12 +37,12 @@ public static class SiteApis
 
             var categories = ((IEnumerable<Category>)cache.Get("categories")!).Where(c => c.StatusId == 2);
 
-            return Results.Extensions.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
+            return Results.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
         });
 
         app.MapGet("/About", (HttpContext http, IConfiguration config) =>
         {
-            return Results.Extensions.RazorSlice<About>();
+            return Results.RazorSlice<About>();
         });
 
         app.MapPost("/newsletter", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
@@ -96,7 +96,7 @@ public static class SiteApis
             var token = antiforgery.GetAndStoreTokens(http);
             vm.AntiForgeryToken = token.RequestToken;
 
-            return Results.Extensions.RazorSlice<Slices.Footer, FooterVm>(vm);
+            return Results.RazorSlice<Slices.Footer, FooterVm>(vm);
         });
 
         app.MapGet("/terms", (IConfiguration config) =>
@@ -109,7 +109,7 @@ public static class SiteApis
             vm.Cvr = config["Shop:Cvr"];
             vm.Email = config["Shop:Email:Contact"];
 
-            return Results.Extensions.RazorSlice<Pages.Terms, TermsVm>(vm);
+            return Results.RazorSlice<Pages.Terms, TermsVm>(vm);
         });
 
         app.MapGet("/datapolicy", (IConfiguration config) =>
@@ -121,7 +121,7 @@ public static class SiteApis
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Email = config["Shop:Email:Contact"];
 
-            return Results.Extensions.RazorSlice<DataPolicy, DataPolicyVm>(vm);
+            return Results.RazorSlice<DataPolicy, DataPolicyVm>(vm);
         });
 
         app.MapGet("/customerservice", (IConfiguration config) =>
@@ -133,7 +133,7 @@ public static class SiteApis
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Email = config["Shop:Email:Contact"];
 
-            return Results.Extensions.RazorSlice<CustomerService, CustomerServiceVm>(vm);
+            return Results.RazorSlice<CustomerService, CustomerServiceVm>(vm);
         });
 
         app.MapGet("/PayAndDelivery", (IConfiguration config) =>
@@ -141,7 +141,7 @@ public static class SiteApis
             var vm = new PayAndDeliveryVm();
             vm.ShopName = config["Shop:Name"];
 
-            return Results.Extensions.RazorSlice<PayAndDelivery, PayAndDeliveryVm>(vm);
+            return Results.RazorSlice<PayAndDelivery, PayAndDeliveryVm>(vm);
         });
 
         app.MapGet("/Redirects", (int statusCode) =>
@@ -152,7 +152,7 @@ public static class SiteApis
 
             }
 
-            return Results.Extensions.RazorSlice<Pages.NotFound>();
+            return Results.RazorSlice<Pages.NotFound>();
         });
 
         app.MapGet("/Error", (HttpContext context) =>
@@ -161,7 +161,7 @@ public static class SiteApis
             {
                 context.Response.Headers["HX-Target"] = "body";
 
-                return Results.Extensions.RazorSlice<Pages.Error>();
+                return Results.RazorSlice<Pages.Error>();
             }
 
             // Access exception details, if needed
@@ -176,7 +176,7 @@ public static class SiteApis
             //    statusCode: 500
             //);
 
-            return Results.Extensions.RazorSlice<Pages.Error>();
+            return Results.RazorSlice<Pages.Error>();
         });
     }
 }

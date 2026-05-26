@@ -1,4 +1,4 @@
-﻿@inherits RazorSliceHttpResult<ProductsVm>
+﻿@inherits RazorSlice<ProductsVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 @(await RenderPartialAsync<Products, ProductsVm>(Model))

@@ -26,14 +26,14 @@ public static class CheckoutApis
 
             var items = await GetCartItems(cart.Id, db)!;
             if (items.Count == 0)
-                return Results.Extensions.RazorSlice<Pages.CheckoutEmpty>();
+                return Results.RazorSlice<Pages.CheckoutEmpty>();
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
             var tokens = antiforgery.GetAndStoreTokens(http);
             vm!.CheckoutFormAntiForgeryToken = tokens.RequestToken;
 
-            return Results.Extensions.RazorSlice<Pages.Checkout, CheckoutVm>(vm!);
+            return Results.RazorSlice<Pages.Checkout, CheckoutVm>(vm!);
         });
 
         app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo, IConfiguration config) =>
@@ -46,7 +46,7 @@ public static class CheckoutApis
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
-            return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
+            return Results.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
         app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config, int id) =>
@@ -63,17 +63,17 @@ public static class CheckoutApis
 
             var items = await GetCartItems(cart.Id, db)!;
             if (items.Count == 0)
-                return Results.Extensions.RazorSlice<Slices.CheckoutEmpty>();
+                return Results.RazorSlice<Slices.CheckoutEmpty>();
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
-            return Results.Extensions.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
+            return Results.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
         app.MapGet("/checkout/address-bill", (string? addressbillCb) =>
         {
             if (addressbillCb == "on")
-                return Results.Extensions.RazorSlice<Slices.AddressBilling>();
+                return Results.RazorSlice<Slices.AddressBilling>();
 
             return Results.Content(string.Empty);
         });
@@ -213,26 +213,26 @@ public static class CheckoutApis
 
                 if (order == null) {
                     log.LogWarning("Order success page called with unknown reference");
-                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
                 }
 
                 if (order.StatusId == 2)
                 {
                     // Already processed; show the success view without re-sending email.
-                    return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                    return Results.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
                 }
 
                 if (order.QuickPayPaymentId is null)
                 {
                     log.LogWarning("Order {Reference} has no QuickPayPaymentId; cannot verify payment", reference);
-                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
                 }
 
                 var paymentKey = config["PaymentApiKey"];
                 if (string.IsNullOrEmpty(paymentKey))
                 {
                     log.LogError("PaymentApiKey is not configured; cannot verify payment for {Reference}", reference);
-                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
                 }
 
                 var ps = new PaymentsService(paymentKey);
@@ -248,7 +248,7 @@ public static class CheckoutApis
                 if (!paymentOk)
                 {
                     log.LogWarning("Payment verification failed for {Reference}: accepted={Accepted} state={State}", reference, payment?.accepted, payment?.state);
-                    return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
                 }
 
                 order.StatusId = 2; // Paid
@@ -287,13 +287,13 @@ public static class CheckoutApis
                 http.Session.Clear();
                 http.Response.Cookies.Delete("CartSessionId");
 
-                return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                return Results.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
             }
             catch (Exception ex)
             {
                 log.LogError(ex, $"Order success page error with reference Id: {reference}");
 
-                return Results.Extensions.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                return Results.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
             }
         });
 
@@ -304,7 +304,7 @@ public static class CheckoutApis
                 log.LogWarning($"Unsuccessful order page called with unknown reference Id: {referenceId}");
             }
 
-            return Results.Extensions.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+            return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
         });
     }
 

@@ -113,8 +113,14 @@ app.Use(async (context, next) => {
     // style-src still permits 'unsafe-inline' because Bootstrap utilities and inline style="..."
     // attributes are used across views. Move to CSP nonces in a follow-up to drop it.
     // cdn.datatables.net is admin-only (DataTables JS+CSS); cdn.jsdelivr.net serves Bootstrap Icons.
+    // When served to localhost (dev), allow loopback connect-src so Visual Studio Browser Link works.
+    var isLocalhost = context.Request.Host.Host is "localhost" or "127.0.0.1" or "::1";
+    var connectSrc = isLocalhost
+        ? "connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*; "
+        : "connect-src 'self'; ";
     headers["Content-Security-Policy"] =
         "default-src 'self'; img-src 'self' data:; " +
+        connectSrc +
         "script-src 'self' https://cdn.datatables.net; " +
         "style-src 'self' 'unsafe-inline' https://cdn.datatables.net https://cdn.jsdelivr.net; " +
         "font-src 'self' https://cdn.jsdelivr.net data:; " +

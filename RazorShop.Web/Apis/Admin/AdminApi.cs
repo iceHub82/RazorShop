@@ -30,10 +30,10 @@ public static class AdminApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Home>();
+                return Results.RazorSlice<Home>();
             }
 
-            return Results.Extensions.RazorSlice<Pages.Admin.Home>();
+            return Results.RazorSlice<Pages.Admin.Home>();
         }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/products", (HttpContext http) =>
@@ -41,10 +41,10 @@ public static class AdminApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Products>();
+                return Results.RazorSlice<Products>();
             }
 
-            return Results.Extensions.RazorSlice<Pages.Admin.Products>();
+            return Results.RazorSlice<Pages.Admin.Products>();
         }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/products/table", async (RazorShopDbContext db, HttpRequest request) =>
@@ -116,7 +116,7 @@ public static class AdminApis
             foreach (var imgId in imgIds)
                 vm.AdminImageVms!.Add(new AdminImageVm { Id = imgId, TicksStamp = await imgRepo.GetGalleryProductImageTickStamp(imgId) });
 
-            return Results.Extensions.RazorSlice<ProductEdit, AdminProductVm>(vm);
+            return Results.RazorSlice<ProductEdit, AdminProductVm>(vm);
         }).RequireAuthorization("AdminOnly");
 
         app.MapPost("/admin/product/modal/edit/{id}", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, int id) =>
@@ -172,7 +172,7 @@ public static class AdminApis
             foreach (var size in sizes)
                 vm.AdminSizes!.Add(new AdminSizeVm { Id = size.Id, Name = size.Name });
 
-            return Results.Extensions.RazorSlice<ProductNew, AdminNewProductVm>(vm);
+            return Results.RazorSlice<ProductNew, AdminNewProductVm>(vm);
         }).RequireAuthorization("AdminOnly");
 
         app.MapPost("/admin/product/modal/new", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
@@ -329,7 +329,7 @@ public static class AdminApis
         {
             var token = antiforgery.GetAndStoreTokens(http);
             var vm = new AdminLoginVm { AntiForgeryToken = token.RequestToken };
-            return Results.Extensions.RazorSlice<Pages.Admin.Login, AdminLoginVm>(vm);
+            return Results.RazorSlice<Pages.Admin.Login, AdminLoginVm>(vm);
         });
 
         app.MapPost("/Login", async (HttpContext context, IConfiguration config, IAntiforgery antiforgery, ILogger<object> log) =>
@@ -366,7 +366,7 @@ public static class AdminApis
 
                 await context.SignInAsync("App_Auth", claimsPrincipal);
 
-                return Results.Extensions.RazorSlice<Pages.Admin.Home>();
+                return Results.RazorSlice<Pages.Admin.Home>();
             }
             catch (AntiforgeryValidationException)
             {
@@ -392,10 +392,10 @@ public static class AdminApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 //http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Orders>();
+                return Results.RazorSlice<Orders>();
             }
 
-            return Results.Extensions.RazorSlice<Pages.Admin.Orders>();
+            return Results.RazorSlice<Pages.Admin.Orders>();
         }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/orders/table", async (RazorShopDbContext db, HttpRequest request) =>

@@ -1,4 +1,4 @@
-﻿@inherits RazorSliceHttpResult<CheckoutVm>
+﻿@inherits RazorSlice<CheckoutVm>
 @implements IUsesLayout<_CheckoutLayout, LayoutModel>
 
 @(await RenderPartialAsync<Checkout, CheckoutVm>(Model))

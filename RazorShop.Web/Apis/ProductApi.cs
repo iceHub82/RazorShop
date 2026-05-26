@@ -18,10 +18,10 @@ public static class ProductApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Slices.Products, ProductsVm>(vm);
+                return Results.RazorSlice<Slices.Products, ProductsVm>(vm);
             }
 
-            return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
+            return Results.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
         app.MapGet("/Products/{category}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, string category) =>
@@ -33,10 +33,10 @@ public static class ProductApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Slices.Products, ProductsVm>(vm);
+                return Results.RazorSlice<Slices.Products, ProductsVm>(vm);
             }
 
-            return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
+            return Results.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
         app.MapGet("/Product/{id}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, int id) =>
@@ -71,10 +71,10 @@ public static class ProductApis
             if (ApiUtil.IsHtmx(http.Request))
             {
                 http.Response.Headers.Append("Vary", "HX-Request");
-                return Results.Extensions.RazorSlice<Slices.Product, ProductVm>(vm);
+                return Results.RazorSlice<Slices.Product, ProductVm>(vm);
             }
 
-            return Results.Extensions.RazorSlice<Pages.Product, ProductVm>(vm);
+            return Results.RazorSlice<Pages.Product, ProductVm>(vm);
         });
     }
 

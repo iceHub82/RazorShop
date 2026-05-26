@@ -1,4 +1,4 @@
-﻿@inherits RazorSliceHttpResult<ProductVm>
+﻿@inherits RazorSlice<ProductVm>
 
 <section id="section" class="py-5">
     <div class="container px-4 px-lg-5 my-5">
@@ -61,9 +61,9 @@
                         <input name="quantity" type="number" class="form-control" value="1" min="1" max="10">
                     </div>
                     <div class="col-8">
-                        <input type="hidden" name="__RequestVerificationToken" value="@Model.AntiForgeryToken" />
                         <button hx-post="/cart/add/@Model.Id"
-                                hx-include="[name='size'], [name='quantity'], [name='__RequestVerificationToken']"
+                                hx-include="[name='size'], [name='quantity']"
+                                hx-headers='@($"{{\"RequestVerificationToken\": \"{Model.AntiForgeryToken}\"}}")'
                                 hx-target="#cart-div"
                                 hx-swap="outerHTML"
                                 hx-indicator="#spinner"
