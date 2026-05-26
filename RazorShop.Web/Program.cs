@@ -107,10 +107,18 @@ app.Use(async (context, next) => {
     headers["X-Content-Type-Options"] = "nosniff";
     headers["X-Frame-Options"] = "DENY";
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["Cross-Origin-Opener-Policy"] = "same-origin";
+    headers["Cross-Origin-Resource-Policy"] = "same-origin";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()";
     // style-src still permits 'unsafe-inline' because Bootstrap utilities and inline style="..."
     // attributes are used across views. Move to CSP nonces in a follow-up to drop it.
+    // cdn.datatables.net is admin-only (DataTables JS+CSS); cdn.jsdelivr.net serves Bootstrap Icons.
     headers["Content-Security-Policy"] =
-        "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://payment.quickpay.net";
+        "default-src 'self'; img-src 'self' data:; " +
+        "script-src 'self' https://cdn.datatables.net; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.datatables.net https://cdn.jsdelivr.net; " +
+        "font-src 'self' https://cdn.jsdelivr.net data:; " +
+        "frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://payment.quickpay.net";
     await next();
 });
 

@@ -14,6 +14,7 @@ public class ProductVm
     public string? Price { get; set; }
     public string? TicksStamp { get; set; }
     public int CheckedSizeId { get; set; }
+    public string? AntiForgeryToken { get; set; }
     public List<ProductImageVm>? ProductImages { get; set; } = new();
     public List<ProductSizeVm>? ProductSizes { get; set; } = new();
 }

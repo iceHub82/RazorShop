@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
@@ -28,8 +29,13 @@ public static class CartApis
 
         }).NoCache();
 
-        app.MapGet("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id, int size, int quantity) =>
+        app.MapPost("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IAntiforgery antiforgery, int id, int size, int quantity) =>
         {
+            await antiforgery.ValidateRequestAsync(http);
+
+            if (quantity <= 0 || quantity > 100)
+                return Results.BadRequest();
+
             var cart = await GetCart(http, db);
 
             int? sizeId = size == 0 ? null : size;

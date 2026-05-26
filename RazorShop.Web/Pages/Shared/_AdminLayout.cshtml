@@ -1,4 +1,9 @@
 ﻿@inherits RazorLayoutSlice<LayoutModel>
+@using Microsoft.AspNetCore.Antiforgery
+@{
+    var antiforgery = HttpContext!.RequestServices.GetRequiredService<IAntiforgery>();
+    var logoutToken = antiforgery.GetAndStoreTokens(HttpContext);
+}
 
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -184,6 +189,13 @@
                             </li>
                         </ul>
                         <hr class="my-3">
+                        <form method="post" action="/Logout" class="px-3">
+                            <input type="hidden" name="__RequestVerificationToken" value="@logoutToken.RequestToken" />
+                            <button type="submit" class="btn btn-link nav-link d-flex align-items-center gap-2">
+                                <svg class="bi"><use xlink:href="#door-closed" /></svg>
+                                Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

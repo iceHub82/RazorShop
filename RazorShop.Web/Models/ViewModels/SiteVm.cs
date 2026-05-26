@@ -13,6 +13,7 @@ public class SiteVm
 
 public class FooterVm : SiteVm
 {
+    public string? AntiForgeryToken { get; set; }
 }
 
 public class TermsVm : SiteVm

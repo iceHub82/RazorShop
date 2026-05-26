@@ -37,22 +37,4 @@
         </div>
     </div>
 </div>
-<script>
-    $(function() {
-        $('#categories-datatable').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            ajax: { url: '/admin/settings/categories/table' },
-            columns: [{
-                data: null, name: 'Name',
-                render: function(data) {
-                    return `<a hx-get="/admin/settings/categories/modal/edit/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#category-modal">${data.name}</a>`;
-                }
-            }],
-            drawCallback: function() {
-                htmx.process(document.getElementById('categories-datatable'));
-            }
-        });
-    });
-</script>
+<script src="/js/admin-tables.js"></script>

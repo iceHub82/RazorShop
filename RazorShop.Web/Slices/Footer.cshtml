@@ -51,9 +51,10 @@
                 <form id="newsletter-form" hx-post="/newsletter" novalidate>
                     <h5>Tilmeld dig vores nyhedsbrev</h5>
                     <div class="d-flex flex-column flex-sm-row w-100 gap-2">
-                        <input id="newsletter" type="email" class="form-control" placeholder="Email" maxlength="100" pattern="^[a-zA-Z0-9.!#$%&’*+\/=?^_`\{\|\}~\-]+@@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$" required>
+                        <input id="newsletter" name="newsletter" type="email" class="form-control" placeholder="Email" maxlength="100" pattern="^[a-zA-Z0-9.!#$%&’*+\/=?^_`\{\|\}~\-]+@@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$" required>
                         <button type="submit" class="btn btn-primary">Tilmeld</button>
                     </div>
+                    <input type="hidden" name="__RequestVerificationToken" value="@Model.AntiForgeryToken" />
                 </form>
             </div>
         </div>

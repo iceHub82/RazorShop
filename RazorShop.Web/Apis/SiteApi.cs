@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
@@ -44,10 +45,19 @@ public static class SiteApis
             return Results.Extensions.RazorSlice<About>();
         });
 
-        app.MapPost("/newsletter", async (HttpContext http, RazorShopDbContext db) =>
+        app.MapPost("/newsletter", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery) =>
         {
             if (!ApiUtil.IsHtmx(http.Request))
                 return Results.BadRequest();
+
+            try
+            {
+                await antiforgery.ValidateRequestAsync(http);
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return Results.BadRequest();
+            }
 
             var form = await http.Request.ReadFormAsync();
 
@@ -70,11 +80,11 @@ public static class SiteApis
             return Results.Content(result);
         });
 
-        app.MapGet("/footer", (HttpContext http, IConfiguration config) =>
+        app.MapGet("/footer", (HttpContext http, IConfiguration config, IAntiforgery antiforgery) =>
         {
             if (!ApiUtil.IsHtmx(http.Request))
                 return Results.BadRequest();
-        
+
             var vm = new FooterVm();
             vm.ShopName = config["Shop:Name"];
             vm.Year = DateTime.Now.Year.ToString();
@@ -82,6 +92,9 @@ public static class SiteApis
             vm.City = config["Shop:City"];
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Email = config["Shop:Email:Contact"];
+
+            var token = antiforgery.GetAndStoreTokens(http);
+            vm.AntiForgeryToken = token.RequestToken;
 
             return Results.Extensions.RazorSlice<Slices.Footer, FooterVm>(vm);
         });

@@ -22,42 +22,7 @@
     @await RenderBodyAsync()
 
     <script src="/lib/jquery/dist/jquery.min.js"></script>
-
-    <script>
-        (() => {
-            'use strict'
-
-            const consentCb = document.getElementById('consentCb')
-            const submitCard = document.getElementById('submit-card')
-            const consentLbl = document.getElementById('consent-lbl')
-            const form = document.getElementById('submit-form')
-
-            if(form){
-                form.addEventListener('submit', (e) => {
-                    if (!form.checkValidity()) {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        submitCard.classList.toggle('bg-danger', !consentCb.checked)
-                        consentLbl.classList.toggle('consent', !consentCb.checked)
-                    }
-                    else {
-                        $('#checkout-submit-btn').attr('disabled', true)
-                    }
-                    form.classList.add('was-validated')
-                }, false)
-            }
-
-            document.addEventListener('htmx:configRequest', (e) => {
-                let form = e.target;
-                if (form && !form.checkValidity()) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    form.classList.add('was-validated')
-                }
-            })
-        })()
-
-    </script>
+    <script src="/js/checkout.js"></script>
 
 </body>
 </html>

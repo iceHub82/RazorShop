@@ -11,10 +11,10 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <img src="/products/@Model.Id/main/@($"{Model.Id}_thumbnail.webp?v={Model.TicksStamp}")" class="img-fluid" role="button" onclick="changeImg(this)" />
+                        <img src="/products/@Model.Id/main/@($"{Model.Id}_thumbnail.webp?v={Model.TicksStamp}")" class="img-fluid js-product-thumb" role="button" />
                         @foreach (var img in Model.ProductImages!)
                         {
-                            <img width="80" height="100" src="/products/@Model.Id/gallery/@($"{img.Id}_thumbnail.webp?v={img.TicksStamp}")" class="img-fluid" role="button" onclick="changeImg(this)" />
+                            <img width="80" height="100" src="/products/@Model.Id/gallery/@($"{img.Id}_thumbnail.webp?v={img.TicksStamp}")" class="img-fluid js-product-thumb" role="button" />
                         }
                     </div>
                 </div>
@@ -61,8 +61,9 @@
                         <input name="quantity" type="number" class="form-control" value="1" min="1" max="10">
                     </div>
                     <div class="col-8">
-                        <button hx-get="/cart/add/@Model.Id"
-                                hx-include="[name='size'], [name='quantity']"
+                        <input type="hidden" name="__RequestVerificationToken" value="@Model.AntiForgeryToken" />
+                        <button hx-post="/cart/add/@Model.Id"
+                                hx-include="[name='size'], [name='quantity'], [name='__RequestVerificationToken']"
                                 hx-target="#cart-div"
                                 hx-swap="outerHTML"
                                 hx-indicator="#spinner"
@@ -82,9 +83,4 @@
     </div>
 </section>
 
-<script>
-    var mainImg = document.getElementById('main-img');
-    changeImg = (target) => {
-        mainImg.src = target.src.replace('thumbnail', 'product');
-    }
-</script>
+<script src="/js/product.js"></script>

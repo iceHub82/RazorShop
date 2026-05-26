@@ -37,22 +37,4 @@
         </div>
     </div>
 </div>
-<script>
-    $(function() {
-        $('#sizes-datatable').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            ajax: { url: '/admin/settings/sizes/table' },
-            columns: [{
-                data: null, name: 'Name',
-                render: function(data) {
-                    return `<a hx-get="/admin/settings/sizes/modal/edit/${data.id}" hx-target="#content" data-bs-toggle="modal" data-bs-target="#sizes-modal">${data.name}</a>`;
-                }
-            }],
-            drawCallback: function() {
-                htmx.process(document.getElementById('sizes-datatable'));
-            }
-        });
-    });
-</script>
+<script src="/js/admin-tables.js"></script>

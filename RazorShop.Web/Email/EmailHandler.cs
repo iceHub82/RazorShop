@@ -8,9 +8,23 @@ public class EmailHandler(IConfiguration config, ILogger logger) : IEmailHandler
 {
     public void SendEmail(Message message)
     {
-        var emailMessage = CreateEmailMessage(message);
+        var host = config["EmailProvider:Host"];
+        var portRaw = config["EmailProvider:Port"];
+        var user = config["EmailProvider:User"];
+        var password = config["EmailProvider:Password"];
 
-        Send(emailMessage);
+        if (string.IsNullOrEmpty(host)
+            || !int.TryParse(portRaw, out var port)
+            || string.IsNullOrEmpty(user)
+            || string.IsNullOrEmpty(password))
+        {
+            logger.LogError("EmailProvider settings missing; skipping send to {Recipients}", string.Join(",", message.To));
+            return;
+        }
+
+        var emailMessage = CreateEmailMessage(message, user);
+
+        Send(emailMessage, host, port, user, password);
     }
 
     public string CreateMessageBody(string templatePath, params string[] args)
@@ -30,13 +44,12 @@ public class EmailHandler(IConfiguration config, ILogger logger) : IEmailHandler
         return body;
     }
 
-    private MimeMessage CreateEmailMessage(Message message)
+    private MimeMessage CreateEmailMessage(Message message, string fromAddress)
     {
-        var fromName = config["Shop:Name"];
-        var from = config["EmailProvider:User"];
+        var fromName = config["Shop:Name"] ?? string.Empty;
 
         var emailMessage = new MimeMessage();
-        emailMessage.From.Add(new MailboxAddress(fromName, from));
+        emailMessage.From.Add(new MailboxAddress(fromName, fromAddress));
         emailMessage.To.AddRange(message.To);
         emailMessage.Subject = message.Subject;
         emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = message.Content };
@@ -44,24 +57,13 @@ public class EmailHandler(IConfiguration config, ILogger logger) : IEmailHandler
         return emailMessage;
     }
 
-    private void Send(MimeMessage mailMessage)
+    private void Send(MimeMessage mailMessage, string host, int port, string user, string password)
     {
         using (var client = new SmtpClient())
         {
             try
             {
-                var host = config["EmailProvider:Host"];
-                var port = config["EmailProvider:Port"];
-                var user = config["EmailProvider:User"];
-                var password = config["EmailProvider:Password"];
-
-                if (string.IsNullOrEmpty(host) || !int.TryParse(port, out var portNum))
-                {
-                    logger.LogError("EmailProvider host or port is not configured; skipping send");
-                    return;
-                }
-
-                client.Connect(host, portNum, SecureSocketOptions.StartTls);
+                client.Connect(host, port, SecureSocketOptions.StartTls);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
                 client.Authenticate(user, password);
 

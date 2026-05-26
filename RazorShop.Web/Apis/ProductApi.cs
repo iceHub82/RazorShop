@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
 using RazorShop.Data.Repos;
 using RazorShop.Web.Models.ViewModels;
@@ -38,7 +39,7 @@ public static class ProductApis
             return Results.Extensions.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
-        app.MapGet("/Product/{id}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, int id) =>
+        app.MapGet("/Product/{id}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, int id) =>
         {
             var product = await db.Products!
                 .Include(x => x.ProductSizes!)
@@ -48,6 +49,9 @@ public static class ProductApis
                 .AsNoTracking().FirstAsync(p => p.Id == id);
 
             var vm = new ProductVm { Id = product.Id, Name = product.Name, Price = $"{product.Price:#.00} kr", Description = product.Description };
+
+            var token = antiforgery.GetAndStoreTokens(http);
+            vm.AntiForgeryToken = token.RequestToken;
 
             vm.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
 

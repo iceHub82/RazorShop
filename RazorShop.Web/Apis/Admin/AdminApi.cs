@@ -218,6 +218,9 @@ public static class AdminApis
         {
             await antiforgery.ValidateRequestAsync(http);
 
+            if (!IsAllowedImageContentType(img.ContentType))
+                return Results.BadRequest("Unsupported image type");
+
             var imgTimeStamp = DateTime.UtcNow;
 
             var uploadPath = $"{env.WebRootPath}\\products\\{id}\\main";
@@ -274,6 +277,10 @@ public static class AdminApis
         {
             await antiforgery.ValidateRequestAsync(http);
 
+            foreach (var f in files)
+                if (!IsAllowedImageContentType(f.ContentType))
+                    return Results.BadRequest("Unsupported image type");
+
             var uploadPath = $"{env.WebRootPath}\\products\\{id}\\gallery";
 
             var sizes = new List<(string type, int width, int height, int quality)> {
@@ -313,8 +320,9 @@ public static class AdminApis
                     stream.Position = 0;
                 }
 
-                //string test += $"<img src='/products/{id}/main/{id}_thumbnail.webp?v={imgTimeStamp.Ticks}'";
             }
+
+            return Results.Ok();
         }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/Login", (HttpContext http, IAntiforgery antiforgery) =>
@@ -371,6 +379,13 @@ public static class AdminApis
                 return Results.Redirect("/Login");
             }
         }).RequireRateLimiting("login");
+
+        app.MapPost("/Logout", async (HttpContext context, IAntiforgery antiforgery) =>
+        {
+            await antiforgery.ValidateRequestAsync(context);
+            await context.SignOutAsync("App_Auth");
+            return Results.Redirect("/Login");
+        }).RequireAuthorization("AdminOnly");
 
         app.MapGet("/admin/orders", (HttpContext http) =>
         {
@@ -453,6 +468,17 @@ public static class AdminApis
 
     private static readonly HashSet<string> ProductSortColumns = new(StringComparer.Ordinal) { "Id", "Name" };
     private static readonly HashSet<string> OrderSortColumns = new(StringComparer.Ordinal) { "Id", "Reference", "Created" };
+
+    private static readonly HashSet<string> AllowedImageContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+    };
+
+    private static bool IsAllowedImageContentType(string? contentType) =>
+        !string.IsNullOrEmpty(contentType) && AllowedImageContentTypes.Contains(contentType);
 
     private static DataTablesParameters GetDatatableParameters(HttpRequest request, HashSet<string> allowedSortColumns, string defaultSort)
     {
