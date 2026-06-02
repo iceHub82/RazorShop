@@ -65,8 +65,13 @@ public static class SiteApis
             if (string.IsNullOrWhiteSpace(email) || email.Length > 100 || !new EmailAddressAttribute().IsValid(email))
                 return Results.BadRequest();
 
-            await db.Contacts!.AddAsync(new Contact { Email = email, Newsletter = true });
-            await db.SaveChangesAsync();
+            // Skip duplicate signups; still return the success UI so we don't leak who is subscribed.
+            var alreadySubscribed = await db.Contacts!.AnyAsync(c => c.Email == email && c.Newsletter);
+            if (!alreadySubscribed)
+            {
+                await db.Contacts!.AddAsync(new Contact { Email = email, Newsletter = true });
+                await db.SaveChangesAsync();
+            }
 
             var result = """
                 <h5>Tilmeld dig vores nyhedsbrev</h5>
@@ -78,7 +83,7 @@ public static class SiteApis
             """;
 
             return Results.Content(result);
-        });
+        }).RequireRateLimiting("newsletter");
 
         app.MapGet("/footer", (HttpContext http, IConfiguration config, IAntiforgery antiforgery) =>
         {

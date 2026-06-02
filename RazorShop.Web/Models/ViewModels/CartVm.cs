@@ -28,6 +28,7 @@ public class CartVm
     public string? CartTotal { get; set; }
     public int CartQuantity { get; set; }
     public string? Delivery { get; set; }
+    public string? AntiForgeryToken { get; set; }
 }
 
 public class CheckoutVm

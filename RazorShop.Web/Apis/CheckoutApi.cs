@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
@@ -36,8 +37,21 @@ public static class CheckoutApis
             return Results.RazorSlice<Pages.Checkout, CheckoutVm>(vm!);
         });
 
-        app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo, IConfiguration config) =>
+        app.MapPost("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, int itemId, ImagesRepo imgRepo, IConfiguration config) =>
         {
+            try
+            {
+                await antiforgery.ValidateRequestAsync(http);
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return Results.BadRequest("Antiforgery token invalid");
+            }
+
+            var form = await http.Request.ReadFormAsync();
+            if (!int.TryParse(form["quantity"], out var quantity) || quantity <= 0 || quantity > 100)
+                return Results.BadRequest("Invalid quantity");
+
             var cart = await GetCart(http, db);
 
             await UpdateCartItemQuantity(db, cart.Id, itemId, quantity);
@@ -45,12 +59,22 @@ public static class CheckoutApis
             var items = await GetCartItems(cart.Id, db)!;
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
+            vm!.CheckoutFormAntiForgeryToken = antiforgery.GetAndStoreTokens(http).RequestToken;
 
             return Results.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
 
-        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config, int id) =>
+        app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config, IAntiforgery antiforgery, int id) =>
         {
+            try
+            {
+                await antiforgery.ValidateRequestAsync(http);
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return Results.BadRequest("Antiforgery token invalid");
+            }
+
             var cart = await GetCart(http, db);
 
             var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == id && c.CartId == cart.Id);
@@ -66,6 +90,7 @@ public static class CheckoutApis
                 return Results.RazorSlice<Slices.CheckoutEmpty>();
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
+            vm!.CheckoutFormAntiForgeryToken = antiforgery.GetAndStoreTokens(http).RequestToken;
 
             return Results.RazorSlice<Slices.CheckoutUpdate, CheckoutVm>(vm!);
         });
@@ -86,6 +111,35 @@ public static class CheckoutApis
 
                 var form = await http.Request.ReadFormAsync();
 
+                // Validate customer input before any payment/persistence work.
+                var email = form["email"].ToString();
+                var phone = form["phone"].ToString();
+                if (string.IsNullOrWhiteSpace(email) || email.Length > 100 || !new EmailAddressAttribute().IsValid(email))
+                {
+                    log.LogWarning("Checkout submit with invalid email");
+                    return Results.Content(string.Empty);
+                }
+                if (string.IsNullOrWhiteSpace(phone) || phone.Length > 30)
+                {
+                    log.LogWarning("Checkout submit with invalid phone");
+                    return Results.Content(string.Empty);
+                }
+                if (!IsValidField(form["first-name"], 100) || !IsValidField(form["last-name"], 100)
+                    || !IsValidField(form["address"], 200) || !IsValidField(form["zip-code"], 20)
+                    || !IsValidField(form["city"], 100))
+                {
+                    log.LogWarning("Checkout submit with invalid delivery address");
+                    return Results.Content(string.Empty);
+                }
+                if (form["addressbillCb"] == "on"
+                    && (!IsValidField(form["bill-first-name"], 100) || !IsValidField(form["bill-last-name"], 100)
+                        || !IsValidField(form["bill-address"], 200) || !IsValidField(form["bill-zip-code"], 20)
+                        || !IsValidField(form["bill-city"], 100)))
+                {
+                    log.LogWarning("Checkout submit with invalid billing address");
+                    return Results.Content(string.Empty);
+                }
+
                 var paymentKey = config["PaymentApiKey"];
                 if (string.IsNullOrEmpty(paymentKey))
                 {
@@ -94,8 +148,8 @@ public static class CheckoutApis
                 }
 
                 var contact = new Contact();
-                contact.Email = form["email"];
-                contact.PhoneNumber = form["phone"];
+                contact.Email = email;
+                contact.PhoneNumber = phone;
                 contact.Newsletter = form["newsletter"] == "on";
 
                 var address = new Address();
@@ -259,7 +313,12 @@ public static class CheckoutApis
 
                 var addressHtml = GenerateAddressHtml(address!);
 
-                var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}";
+                // Prefer the configured shop URL for email links; fall back to request host only if unset.
+                // Avoids baking an attacker-controlled Host header into links sent to customers.
+                var configuredLink = config["Shop:Link"];
+                var baseUrl = !string.IsNullOrWhiteSpace(configuredLink)
+                    ? configuredLink.TrimEnd('/')
+                    : $"{http.Request.Scheme}://{http.Request.Host}";
 
                 var items = await GetCartItems(order.Cart!.Id, db)!;
 
@@ -312,6 +371,9 @@ public static class CheckoutApis
     {
         return Guid.NewGuid().ToString().Replace("-", "")[..20];
     }
+
+    private static bool IsValidField(string? value, int maxLength) =>
+        !string.IsNullOrWhiteSpace(value) && value.Length <= maxLength;
 
     private static async Task<Cart> GetCart(HttpContext http, RazorShopDbContext db)
     {
