@@ -1,4 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Json;
+using System.Xml;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Diagnostics;
@@ -15,17 +18,19 @@ public static class SiteApis
 {
     public static void SiteApi(this WebApplication app)
     {
-        app.MapGet("/", async (RazorShopDbContext db, ImagesRepo imgRepo) =>
+        app.MapGet("/", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, IConfiguration config) =>
         {
             ProductsVm vm = new();
             vm.Products = await db.Products!
                 .AsNoTracking()
-                .Where(p => p.StatusId == 2)
+                .Where(p => p.StatusId == (int)EntityStatus.Active)
                 .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
                 .ToListAsync();
 
             foreach (var product in vm.Products)
                 product.TicksStamp = await imgRepo.GetMainProductImageTickStamp(product.Id);
+
+            vm.JsonLd = BuildSiteJsonLd(http, config);
 
             return Results.RazorSlice<Home, ProductsVm>(vm);
         });
@@ -35,7 +40,7 @@ public static class SiteApis
             if (!ApiUtil.IsHtmx(http.Request))
                 return Results.BadRequest();
 
-            var categories = ((IEnumerable<Category>)cache.Get("categories")!).Where(c => c.StatusId == 2);
+            var categories = ((IEnumerable<Category>)cache.Get("categories")!).Where(c => c.StatusId == (int)EntityStatus.Active);
 
             return Results.RazorSlice<Slices.Menu, IEnumerable<Category>>(categories);
         });
@@ -101,7 +106,7 @@ public static class SiteApis
 
         app.MapGet("/terms", (IConfiguration config) =>
         {
-            var vm = new TermsVm();
+            var vm = new SiteVm();
             vm.ShopName = config["Shop:Name"];
             vm.Address = config["Shop:Address"];
             vm.City = config["Shop:City"];
@@ -109,50 +114,90 @@ public static class SiteApis
             vm.Cvr = config["Shop:Cvr"];
             vm.Email = config["Shop:Email:Contact"];
 
-            return Results.RazorSlice<Pages.Terms, TermsVm>(vm);
+            return Results.RazorSlice<Pages.Terms, SiteVm>(vm);
         });
 
         app.MapGet("/datapolicy", (IConfiguration config) =>
         {
-            var vm = new DataPolicyVm();
+            var vm = new SiteVm();
             vm.ShopName = config["Shop:Name"];
             vm.Address = config["Shop:Address"];
             vm.City = config["Shop:City"];
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Email = config["Shop:Email:Contact"];
 
-            return Results.RazorSlice<DataPolicy, DataPolicyVm>(vm);
+            return Results.RazorSlice<DataPolicy, SiteVm>(vm);
         });
 
         app.MapGet("/customerservice", (IConfiguration config) =>
         {
-            var vm = new CustomerServiceVm();
+            var vm = new SiteVm();
             vm.ShopName = config["Shop:Name"];
             vm.Address = config["Shop:Address"];
             vm.City = config["Shop:City"];
             vm.ZipCode = config["Shop:ZipCode"];
             vm.Email = config["Shop:Email:Contact"];
 
-            return Results.RazorSlice<CustomerService, CustomerServiceVm>(vm);
+            return Results.RazorSlice<CustomerService, SiteVm>(vm);
         });
 
         app.MapGet("/PayAndDelivery", (IConfiguration config) =>
         {
-            var vm = new PayAndDeliveryVm();
+            var vm = new SiteVm();
             vm.ShopName = config["Shop:Name"];
 
-            return Results.RazorSlice<PayAndDelivery, PayAndDeliveryVm>(vm);
+            return Results.RazorSlice<PayAndDelivery, SiteVm>(vm);
         });
 
         app.MapGet("/Redirects", (int statusCode) =>
         {
+            return Results.RazorSlice<Pages.NotFound>();
+        });
 
-            if (statusCode == 404)
+        app.MapGet("/sitemap.xml", async (RazorShopDbContext db, HttpContext http, IConfiguration config) =>
+        {
+            var baseUrl = (config["Shop:Link"]?.TrimEnd('/'))
+                ?? $"{http.Request.Scheme}://{http.Request.Host}";
+
+            var products = await db.Products!
+                .AsNoTracking()
+                .Where(p => p.StatusId == (int)EntityStatus.Active)
+                .Select(p => new { p.Id, p.Updated, p.Created })
+                .ToListAsync();
+
+            var sb = new StringBuilder();
+            using (var xml = XmlWriter.Create(sb, new XmlWriterSettings { Indent = true }))
             {
+                xml.WriteStartDocument();
+                xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
 
+                void WriteUrl(string loc, DateTime? lastmod, string changefreq, string priority)
+                {
+                    xml.WriteStartElement("url");
+                    xml.WriteElementString("loc", loc);
+                    if (lastmod.HasValue)
+                        xml.WriteElementString("lastmod", lastmod.Value.ToString("yyyy-MM-dd"));
+                    xml.WriteElementString("changefreq", changefreq);
+                    xml.WriteElementString("priority", priority);
+                    xml.WriteEndElement();
+                }
+
+                WriteUrl($"{baseUrl}/", null, "daily", "1.0");
+                WriteUrl($"{baseUrl}/Products", null, "daily", "0.9");
+                WriteUrl($"{baseUrl}/About", null, "monthly", "0.4");
+                WriteUrl($"{baseUrl}/Terms", null, "yearly", "0.3");
+                WriteUrl($"{baseUrl}/DataPolicy", null, "yearly", "0.3");
+                WriteUrl($"{baseUrl}/CustomerService", null, "monthly", "0.4");
+                WriteUrl($"{baseUrl}/PayAndDelivery", null, "monthly", "0.4");
+
+                foreach (var p in products)
+                    WriteUrl($"{baseUrl}/Product/{p.Id}", p.Updated ?? p.Created, "weekly", "0.8");
+
+                xml.WriteEndElement();
+                xml.WriteEndDocument();
             }
 
-            return Results.RazorSlice<Pages.NotFound>();
+            return Results.Content(sb.ToString(), "application/xml", Encoding.UTF8);
         });
 
         app.MapGet("/Error", (HttpContext context) =>
@@ -170,13 +215,36 @@ public static class SiteApis
             // Log the exception or handle it as needed
             Console.WriteLine($"Unhandled exception: {exception?.Message}");
 
-            // Return a custom response or redirect
-            //return Results.Problem(
-            //    detail: "An unexpected error occurred.",
-            //    statusCode: 500
-            //);
-
             return Results.RazorSlice<Pages.Error>();
         });
+    }
+
+    internal static string BuildSiteJsonLd(HttpContext http, IConfiguration config)
+    {
+        var baseUrl = (config["Shop:Link"]?.TrimEnd('/'))
+            ?? $"{http.Request.Scheme}://{http.Request.Host}";
+        var shopName = config["Shop:Name"] ?? "Artform.dk";
+
+        var organization = new Dictionary<string, object?> {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Organization",
+            ["name"] = shopName,
+            ["url"] = baseUrl,
+            ["logo"] = $"{baseUrl}/img/logo/logo2.svg",
+            ["sameAs"] = new[] {
+                "https://www.instagram.com/artform.dk",
+                "https://www.facebook.com/artform.dk",
+            },
+        };
+
+        var website = new Dictionary<string, object?> {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "WebSite",
+            ["name"] = shopName,
+            ["url"] = baseUrl,
+            ["inLanguage"] = "da-DK",
+        };
+
+        return JsonSerializer.Serialize(new object[] { organization, website });
     }
 }

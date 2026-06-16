@@ -5,7 +5,12 @@
 
 @functions {
     public LayoutModel LayoutModel => new() {
-            Title = Model.Category == null ? "All Products" : $"Products | {Model.Category}",
-            HasHeader = true
-        };
+        Title = Model.Category == null
+            ? "Alle produkter | Artform.dk"
+            : $"{Model.Category} | Artform.dk",
+        Description = Model.Category == null
+            ? "Se hele udvalget af plottede tegninger og kunst-T-shirts hos Artform.dk."
+            : $"Udvalg af {Model.Category} hos Artform.dk – generativ kunst og håndlavede motiver.",
+        HasHeader = true
+    };
 }

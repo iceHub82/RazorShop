@@ -2,11 +2,12 @@
 @inherits RazorSlice<IEnumerable<Category>>
 
 <li>
-    <a hx-get="/Products"
+    <a href="/Products"
+       hx-get="/Products"
        hx-target="#section"
        hx-push-url="true"
        hx-swap="outerHTML"
-       class="dropdown-item" role="button">All Products</a>
+       class="dropdown-item">Alle produkter</a>
 </li>
 <li>
     <hr class="dropdown-divider" />
@@ -15,10 +16,11 @@
 @foreach (var item in Model)
 {
     <li>
-        <a hx-get="/Products/@item.Name"
+        <a href="/Products/@item.Name"
+           hx-get="/Products/@item.Name"
            hx-target="#section"
            hx-push-url="true"
            hx-swap="outerHTML"
-           class="dropdown-item" role="button">@item.Name</a>
+           class="dropdown-item">@item.Name</a>
     </li>
 }

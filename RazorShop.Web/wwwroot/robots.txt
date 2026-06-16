@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /Login
+Disallow: /Logout
+Disallow: /cart
+Disallow: /cart/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /Success
+Disallow: /Success/
+Disallow: /Unsuccessful
+Disallow: /Unsuccessful/
+Disallow: /Redirects
+Disallow: /Error
+Disallow: /newsletter
+Disallow: /footer
+Disallow: /categories
+
+Sitemap: https://artform.dk/sitemap.xml

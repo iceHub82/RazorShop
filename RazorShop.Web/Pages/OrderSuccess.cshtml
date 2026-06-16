@@ -1,7 +1,7 @@
-﻿@inherits RazorSlice<OrderSuccessVm>
+﻿@inherits RazorSlice
 @implements IUsesLayout<_CheckoutLayout, LayoutModel>
 
-@(await RenderPartialAsync<OrderSuccess, OrderSuccessVm>(Model))
+@(await RenderPartialAsync<OrderSuccess>())
 
 @functions {
     public LayoutModel LayoutModel => new() {

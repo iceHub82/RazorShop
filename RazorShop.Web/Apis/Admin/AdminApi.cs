@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
@@ -10,7 +9,6 @@ using RazorShop.Data.Repos;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Slices.Admin;
 using RazorShop.Web.Models.ViewModels;
-using LinqKit;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
@@ -49,7 +47,7 @@ public static class AdminApis
 
         app.MapGet("/admin/products/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
-            var dtParams = GetDatatableParameters(request, ProductSortColumns, "Id");
+            var dtParams = ApiUtil.GetDatatableParameters(request, ProductSortColumns, "Id");
 
             var vm = await GetPaginatedAdminProducts(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -188,7 +186,7 @@ public static class AdminApis
             if (!int.TryParse(form["categoryDd"], out var categoryId))
                 return Results.BadRequest();
             product.CategoryId = categoryId == 0 ? null : categoryId;
-            product.StatusId = 1;
+            product.StatusId = (int)EntityStatus.New;
 
             if (form.TryGetValue("price", out var priceValue) && decimal.TryParse(priceValue, out var price))
                 product.Price = price;
@@ -400,7 +398,7 @@ public static class AdminApis
 
         app.MapGet("/admin/orders/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
-            var dtParams = GetDatatableParameters(request, OrderSortColumns, "Created");
+            var dtParams = ApiUtil.GetDatatableParameters(request, OrderSortColumns, "Created");
 
             var vm = await GetPaginatedOrders(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -424,45 +422,59 @@ public static class AdminApis
         }).RequireAuthorization("AdminOnly");
     }
 
-    private static async Task<AdminProductsVm> GetPaginatedAdminProducts(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
+    internal static async Task<AdminProductsVm> GetPaginatedAdminProducts(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
     {
-        var predicate = PredicateBuilder.New<Product>(true);
+        var query = db.Products!.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
-            predicate = predicate.And(i => i.Name!.ToLower().Contains(search.ToLower()));
+            query = query.Where(i => i.Name!.ToLower().Contains(search.ToLower()));
+
+        var projected = query.Select(o => new AdminProductVm { Id = o.Id, Name = o.Name/*, StatusId = o.StatusId */});
+
+        projected = (sort, dir) switch
+        {
+            ("Name", "desc") => projected.OrderByDescending(x => x.Name),
+            ("Name", _) => projected.OrderBy(x => x.Name),
+            (_, "desc") => projected.OrderByDescending(x => x.Id),
+            _ => projected.OrderBy(x => x.Id),
+        };
+
+        var count = await query.CountAsync();
 
         return new()
         {
-            AdminProducts = await db.Products!.AsNoTracking()
-            .Where(predicate)
-            .Select(o => new AdminProductVm { Id = o.Id, Name = o.Name/*, StatusId = o.StatusId */})
-            .OrderBy($"{sort} {dir}")
-            .Skip(skip)
-            .Take(take).ToListAsync(),
-
-            FilteredCount = db.Products!.Where(predicate).Count(),
-            TotalCount = db.Products!.Where(predicate).Count()
+            AdminProducts = await projected.Skip(skip).Take(take).ToListAsync(),
+            FilteredCount = count,
+            TotalCount = count
         };
     }
 
-    private static async Task<AdminOrdersVm> GetPaginatedOrders(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
+    internal static async Task<AdminOrdersVm> GetPaginatedOrders(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
     {
-        var predicate = PredicateBuilder.New<Order>(true);
+        var query = db.Orders!.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
-            predicate = predicate.And(i => i.Reference!.ToLower().Contains(search.ToLower()));
+            query = query.Where(i => i.Reference!.ToLower().Contains(search.ToLower()));
+
+        var projected = query.Select(o => new AdminOrderVm { Id = o.Id, Reference = o.Reference, Created = o.Created.ToString("dd'-'MM'-'yyyy' 'HH':'mm':'ss")/*, StatusId = o.StatusId */});
+
+        projected = (sort, dir) switch
+        {
+            ("Reference", "desc") => projected.OrderByDescending(x => x.Reference),
+            ("Reference", _) => projected.OrderBy(x => x.Reference),
+            ("Created", "desc") => projected.OrderByDescending(x => x.Created),
+            ("Created", _) => projected.OrderBy(x => x.Created),
+            (_, "desc") => projected.OrderByDescending(x => x.Id),
+            _ => projected.OrderBy(x => x.Id),
+        };
+
+        var count = await query.CountAsync();
 
         return new()
         {
-            AdminOrders = await db.Orders!.AsNoTracking()
-            .Where(predicate)
-            .Select(o => new AdminOrderVm { Id = o.Id, Reference = o.Reference, Created = o.Created.ToString("dd'-'MM'-'yyyy' 'HH':'mm':'ss")/*, StatusId = o.StatusId */})
-            .OrderBy($"{sort} {dir}")
-            .Skip(skip)
-            .Take(take).ToListAsync(),
-
-            FilteredCount = db.Orders!.Where(predicate).Count(),
-            TotalCount = db.Orders!.Where(predicate).Count()
+            AdminOrders = await projected.Skip(skip).Take(take).ToListAsync(),
+            FilteredCount = count,
+            TotalCount = count
         };
     }
 
@@ -480,40 +492,4 @@ public static class AdminApis
     private static bool IsAllowedImageContentType(string? contentType) =>
         !string.IsNullOrEmpty(contentType) && AllowedImageContentTypes.Contains(contentType);
 
-    private static DataTablesParameters GetDatatableParameters(HttpRequest request, HashSet<string> allowedSortColumns, string defaultSort)
-    {
-        var search = request.Query["search[value]"].FirstOrDefault();
-        var draw = request.Query["draw"].FirstOrDefault();
-        _ = int.TryParse(request.Query["start"].FirstOrDefault(), out var skip);
-        if (!int.TryParse(request.Query["length"].FirstOrDefault(), out var take) || take <= 0 || take > 200)
-            take = 10;
-
-        _ = int.TryParse(request.Query["order[0][column]"].FirstOrDefault(), out var orderIndex);
-        var dirRaw = request.Query["order[0][dir]"].FirstOrDefault();
-        var dir = string.Equals(dirRaw, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
-
-        var sortRaw = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
-        var sort = !string.IsNullOrEmpty(sortRaw) && allowedSortColumns.Contains(sortRaw) ? sortRaw : defaultSort;
-
-        return new DataTablesParameters {
-            Search = search!,
-            Draw = draw!,
-            Skip = skip < 0 ? 0 : skip,
-            Take = take,
-            OrderIndex = orderIndex,
-            Sort = sort,
-            SortDirection = dir
-        };
-    }
-}
-
-class DataTablesParameters
-{
-    public string? Search { get; set; }
-    public string? Draw { get; set; }
-    public int Skip { get; set; }
-    public int Take { get; set; }
-    public int OrderIndex { get; set; }
-    public string? Sort { get; set; }
-    public string? SortDirection { get; set; }
 }

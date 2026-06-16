@@ -1,12 +1,10 @@
-﻿using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.Caching.Memory;
 using RazorShop.Data;
 using RazorShop.Data.Entities;
 using RazorShop.Web.Models.ViewModels;
 using RazorShop.Web.Slices.Admin.Settings;
-using LinqKit;
 
 using Size = RazorShop.Data.Entities.Size;
 
@@ -32,7 +30,7 @@ public static class SettingsApis
 
         app.MapGet($"{_apiCategories}/table", async (HttpRequest request, RazorShopDbContext db) =>
         {
-            var dtParams = GetDatatableParameters(request, CategorySortColumns, "Id");
+            var dtParams = ApiUtil.GetDatatableParameters(request, CategorySortColumns, "Id");
 
             var vm = await GetPaginatedAdminCategories(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -68,7 +66,7 @@ public static class SettingsApis
 
             var form = await http.Request.ReadFormAsync();
 
-            await db.Categories!.AddAsync(new Category { Name = form["name"], StatusId = 1, Created = DateTime.Now });
+            await db.Categories!.AddAsync(new Category { Name = form["name"], StatusId = (int)EntityStatus.New, Created = DateTime.UtcNow });
             await db.SaveChangesAsync();
 
             return Results.Ok();
@@ -129,7 +127,7 @@ public static class SettingsApis
 
         app.MapGet($"{_apiSizes}/table", async (RazorShopDbContext db, HttpRequest request) =>
         {
-            var dtParams = GetDatatableParameters(request, SizeSortColumns, "Id");
+            var dtParams = ApiUtil.GetDatatableParameters(request, SizeSortColumns, "Id");
 
             var vm = await GetPaginatedAdminSizes(db, dtParams.Search!, dtParams.Take, dtParams.Skip, dtParams.Sort!, dtParams.SortDirection!);
 
@@ -225,81 +223,57 @@ public static class SettingsApis
 
     private static async Task<AdminCategoriesVm> GetPaginatedAdminCategories(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
     {
-        var predicate = PredicateBuilder.New<Category>(true);
+        var query = db.Categories!.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
-            predicate = predicate.And(i => i.Name!.ToLower().Contains(search.ToLower()));
+            query = query.Where(i => i.Name!.ToLower().Contains(search.ToLower()));
+
+        var projected = query.Select(c => new AdminCategoryVm { Id = c.Id, Name = c.Name/*, StatusId = o.StatusId */});
+
+        projected = (sort, dir) switch
+        {
+            ("Name", "desc") => projected.OrderByDescending(x => x.Name),
+            ("Name", _) => projected.OrderBy(x => x.Name),
+            (_, "desc") => projected.OrderByDescending(x => x.Id),
+            _ => projected.OrderBy(x => x.Id),
+        };
+
+        var count = await query.CountAsync();
 
         return new() {
-            AdminCategories = await db.Categories!.AsNoTracking()
-            .Where(predicate)
-            .Select(c => new AdminCategoryVm { Id = c.Id, Name = c.Name/*, StatusId = o.StatusId */})
-            .OrderBy($"{sort} {dir}")
-            .Skip(skip)
-            .Take(take).ToListAsync(),
-
-            FilteredCount = db.Categories!.Where(predicate).Count(),
-            TotalCount = db.Categories!.Where(predicate).Count()
+            AdminCategories = await projected.Skip(skip).Take(take).ToListAsync(),
+            FilteredCount = count,
+            TotalCount = count
         };
     }
 
     private static async Task<AdminSizesVm> GetPaginatedAdminSizes(RazorShopDbContext db, string search, int take, int skip, string sort, string dir)
     {
-        var predicate = PredicateBuilder.New<Size>(true);
+        var query = db.Sizes!.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
-            predicate = predicate.And(i => i.Name!.ToLower().Contains(search.ToLower()));
+            query = query.Where(i => i.Name!.ToLower().Contains(search.ToLower()));
+
+        var projected = query.Select(s => new AdminSizeVm { Id = s.Id, Name = s.Name/*, StatusId = o.StatusId */});
+
+        projected = (sort, dir) switch
+        {
+            ("Name", "desc") => projected.OrderByDescending(x => x.Name),
+            ("Name", _) => projected.OrderBy(x => x.Name),
+            (_, "desc") => projected.OrderByDescending(x => x.Id),
+            _ => projected.OrderBy(x => x.Id),
+        };
+
+        var count = await query.CountAsync();
 
         return new() {
-            AdminSizes = await db.Sizes!.AsNoTracking()
-            .Where(predicate)
-            .Select(s => new AdminSizeVm { Id = s.Id, Name = s.Name/*, StatusId = o.StatusId */})
-            .OrderBy($"{sort} {dir}")
-            .Skip(skip)
-            .Take(take).ToListAsync(),
-
-            FilteredCount = db.Sizes!.Where(predicate).Count(),
-            TotalCount = db.Sizes!.Where(predicate).Count()
+            AdminSizes = await projected.Skip(skip).Take(take).ToListAsync(),
+            FilteredCount = count,
+            TotalCount = count
         };
     }
 
     private static readonly HashSet<string> CategorySortColumns = new(StringComparer.Ordinal) { "Id", "Name" };
     private static readonly HashSet<string> SizeSortColumns = new(StringComparer.Ordinal) { "Id", "Name" };
 
-    private static DataTablesParameters GetDatatableParameters(HttpRequest request, HashSet<string> allowedSortColumns, string defaultSort)
-    {
-        var search = request.Query["search[value]"].FirstOrDefault();
-        var draw = request.Query["draw"].FirstOrDefault();
-        _ = int.TryParse(request.Query["start"].FirstOrDefault(), out var skip);
-        if (!int.TryParse(request.Query["length"].FirstOrDefault(), out var take) || take <= 0 || take > 200)
-            take = 10;
-
-        _ = int.TryParse(request.Query["order[0][column]"].FirstOrDefault(), out var orderIndex);
-        var dirRaw = request.Query["order[0][dir]"].FirstOrDefault();
-        var dir = string.Equals(dirRaw, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
-
-        var sortRaw = request.Query[$"columns[{orderIndex}][name]"].FirstOrDefault();
-        var sort = !string.IsNullOrEmpty(sortRaw) && allowedSortColumns.Contains(sortRaw) ? sortRaw : defaultSort;
-
-        return new DataTablesParameters {
-            Search = search!,
-            Draw = draw!,
-            Skip = skip < 0 ? 0 : skip,
-            Take = take,
-            OrderIndex = orderIndex,
-            Sort = sort,
-            SortDirection = dir
-        };
-    }
-}
-
-class DataTablesParameters
-{
-    public string? Search { get; set; }
-    public string? Draw { get; set; }
-    public int Skip { get; set; }
-    public int Take { get; set; }
-    public int OrderIndex { get; set; }
-    public string? Sort { get; set; }
-    public string? SortDirection { get; set; }
 }

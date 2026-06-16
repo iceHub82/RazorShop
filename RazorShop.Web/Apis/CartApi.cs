@@ -18,8 +18,8 @@ public static class CartApis
         {
             if (ApiUtil.IsHtmx(http.Request))
             {
-                var cart = await GetCart(http, db);
-                var items = await GetCartItems(cart.Id, db)!;
+                var cart = await ApiUtil.GetCart(http, db);
+                var items = await ApiUtil.GetCartItems(cart.Id, db)!;
                 var vm = await GetCartViewModel(items!, cache, imgRepo);
 
                 return Results.RazorSlice<Slices.Cart, CartVm>(vm!);
@@ -31,40 +31,22 @@ public static class CartApis
 
         app.MapPost("/cart/add/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IAntiforgery antiforgery, ILogger<object> log, int id) =>
         {
-            var afCookieName = http.Request.Cookies.Keys.FirstOrDefault(k => k.StartsWith(".AspNetCore.Antiforgery"));
-            log.LogInformation("Cart add hit: id={Id} afCookiePresent={HasCookie} contentType={ContentType}", id, afCookieName != null, http.Request.ContentType);
-
-            IFormCollection form;
-            try
-            {
-                form = await http.Request.ReadFormAsync();
-            }
-            catch (Exception ex)
-            {
-                log.LogWarning(ex, "Cart add: failed to read form body");
-                return Results.BadRequest("Could not read form");
-            }
-
-            log.LogInformation("Cart add form fields: {Fields}", string.Join(",", form.Keys));
-
             try
             {
                 await antiforgery.ValidateRequestAsync(http);
             }
-            catch (Exception ex)
+            catch (AntiforgeryValidationException)
             {
-                log.LogWarning(ex, "Cart add: antiforgery rejected ({ExceptionType})", ex.GetType().Name);
-                return Results.BadRequest("Antiforgery token invalid");
+                return Results.BadRequest();
             }
+
+            var form = await http.Request.ReadFormAsync();
 
             if (!int.TryParse(form["size"], out var size)) size = 0;
             if (!int.TryParse(form["quantity"], out var quantity) || quantity <= 0 || quantity > 100)
-            {
-                log.LogWarning("Cart add rejected: invalid quantity={Quantity} for product {Id}", form["quantity"].ToString(), id);
-                return Results.BadRequest("Invalid quantity");
-            }
+                return Results.BadRequest();
 
-            var cart = await GetCart(http, db);
+            var cart = await ApiUtil.GetCart(http, db);
 
             int? sizeId = size == 0 ? null : size;
 
@@ -80,7 +62,7 @@ public static class CartApis
 
             await db.SaveChangesAsync();
 
-            var items = await GetCartItems(cart.Id, db)!;
+            var items = await ApiUtil.GetCartItems(cart.Id, db)!;
             var vm = await GetCartViewModel(items, cache, imgRepo);
 
             return Results.RazorSlice<Slices.Cart, CartVm>(vm!);
@@ -88,7 +70,7 @@ public static class CartApis
 
         app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id) =>
         {
-            var cart = await GetCart(http, db);
+            var cart = await ApiUtil.GetCart(http, db);
 
             var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == id && c.CartId == cart.Id);
             if (item == null)
@@ -98,37 +80,11 @@ public static class CartApis
             item.Updated = DateTime.UtcNow;
             await db.SaveChangesAsync();
 
-            var items = await GetCartItems(cart.Id, db)!;
+            var items = await ApiUtil.GetCartItems(cart.Id, db)!;
             var vm = await GetCartViewModel(items, cache, imgRepo);
 
             return Results.RazorSlice<Slices.CartDelete, CartVm>(vm!);
         });
-    }
-
-    private static async Task<Cart> GetCart(HttpContext http, RazorShopDbContext db)
-    {
-        if (http.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
-        {
-            var existingCart = await db.Carts!.FirstOrDefaultAsync(c => c.CartGuid == Guid.Parse(cartSessionGuid!));
-
-            if (existingCart != null)
-                return existingCart;
-        }
-
-        var guid = Guid.NewGuid();
-        cartSessionGuid = guid.ToString();
-        http.Response.Cookies.Append("CartSessionId", cartSessionGuid, ApiUtil.CartCookieOptions(http.Request));
-
-        var newCart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
-        db.Carts!.Add(newCart);
-        await db.SaveChangesAsync();
-
-        return newCart;
-    }
-
-    private static async Task<List<CartItem>>? GetCartItems(int cartId, RazorShopDbContext db)
-    {
-        return await db.CartItems!.Where(c => c.CartId == cartId && !c.Deleted).Include(c => c.Product).ToListAsync();
     }
 
     private static async Task<CartVm?> GetCartViewModel(List<CartItem> items, IMemoryCache cache, ImagesRepo imgRepo)

@@ -5,7 +5,12 @@
 
 @functions {
     public LayoutModel LayoutModel => new() {
-            Title = "Product",
-            HasHeader = true
-        };
+        Title = $"{Model.Name} | Artform.dk",
+        Description = Truncate(Model.Description ?? $"{Model.Name} – kunstvare fra Artform.dk.", 155),
+        JsonLd = Model.JsonLd,
+        HasHeader = true
+    };
+
+    private static string Truncate(string text, int max)
+        => text.Length <= max ? text : text.Substring(0, max - 1).TrimEnd() + "…";
 }

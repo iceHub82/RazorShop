@@ -1,4 +1,4 @@
-﻿@inherits RazorSlice<DataPolicyVm>
+﻿@inherits RazorSlice<SiteVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
@@ -99,7 +99,8 @@
 
 @functions {
     public LayoutModel LayoutModel => new() {
-            Title = "Persondatapolitik",
-            HasHeader = false
-        };
+        Title = "Persondatapolitik | Artform.dk",
+        Description = "Sådan behandler Artform.dk dine personoplysninger – datapolitik, formål, dine rettigheder og kontaktoplysninger.",
+        HasHeader = false
+    };
 }

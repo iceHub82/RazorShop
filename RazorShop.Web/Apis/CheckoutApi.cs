@@ -22,9 +22,9 @@ public static class CheckoutApis
     {
         app.MapGet("/checkout", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery, IConfiguration config, ImagesRepo imgRepo) =>
         {
-            var cart = await GetCart(http, db);
+            var cart = await ApiUtil.GetCart(http, db);
 
-            var items = await GetCartItems(cart.Id, db)!;
+            var items = await ApiUtil.GetCartItems(cart.Id, db)!;
             if (items.Count == 0)
                 return Results.RazorSlice<Pages.CheckoutEmpty>();
 
@@ -38,11 +38,11 @@ public static class CheckoutApis
 
         app.MapGet("/checkout/update/{itemId}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, int itemId, int quantity, ImagesRepo imgRepo, IConfiguration config) =>
         {
-            var cart = await GetCart(http, db);
+            var cart = await ApiUtil.GetCart(http, db);
 
             await UpdateCartItemQuantity(db, cart.Id, itemId, quantity);
 
-            var items = await GetCartItems(cart.Id, db)!;
+            var items = await ApiUtil.GetCartItems(cart.Id, db)!;
 
             var vm = await GetCheckoutViewModel(items, cache, imgRepo, config);
 
@@ -51,7 +51,7 @@ public static class CheckoutApis
 
         app.MapDelete("/checkout/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config, int id) =>
         {
-            var cart = await GetCart(http, db);
+            var cart = await ApiUtil.GetCart(http, db);
 
             var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == id && c.CartId == cart.Id);
             if (item == null)
@@ -61,7 +61,7 @@ public static class CheckoutApis
             item.Updated = DateTime.UtcNow;
             await db.SaveChangesAsync();
 
-            var items = await GetCartItems(cart.Id, db)!;
+            var items = await ApiUtil.GetCartItems(cart.Id, db)!;
             if (items.Count == 0)
                 return Results.RazorSlice<Slices.CheckoutEmpty>();
 
@@ -78,7 +78,7 @@ public static class CheckoutApis
             return Results.Content(string.Empty);
         });
 
-        app.MapPost("/checkout/submit", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IConfiguration config, ILogger<object> log) =>
+        app.MapPost("/checkout/submit", async (HttpContext http, RazorShopDbContext db, IAntiforgery antiforgery, IConfiguration config, IPaymentGateway gateway, ILogger<object> log) =>
         {
             try
             {
@@ -122,14 +122,12 @@ public static class CheckoutApis
                     addressBill.City = form["bill-city"];
                 }
 
-                var cart = await GetCart(http, db) ?? throw new Exception("Cart not found");
-                var items = await GetCartItems(cart.Id, db)!;
+                var cart = await ApiUtil.GetCart(http, db) ?? throw new Exception("Cart not found");
+                var items = await ApiUtil.GetCartItems(cart.Id, db)!;
                 if (items.Count == 0)
                     return Results.Content(string.Empty);
 
                 var reference = GenerateReference();
-
-                var ps = new PaymentsService(paymentKey);
 
                 // Create the QuickPay payment first; if it fails we don't persist any order rows.
                 var createPaymentParams = new CreatePaymentRequestParams("DKK", reference);
@@ -143,7 +141,7 @@ public static class CheckoutApis
                 }
 
                 createPaymentParams.basket = basket;
-                var payment = await ps.CreatePayment(createPaymentParams);
+                var payment = await gateway.CreatePayment(createPaymentParams);
 
                 var paymentLinkAmount = (int)(items.Sum(c => c.Product!.Price * c.Quantity)) + 49;
 
@@ -155,7 +153,7 @@ public static class CheckoutApis
                 createPaymentLinkParams.cancel_url = $"{domain}/Unsuccessful/{reference}";
                 createPaymentLinkParams.auto_capture = true;
 
-                var paymentLink = await ps.CreateOrUpdatePaymentLink(payment.id, createPaymentLinkParams);
+                var paymentLinkUrl = await gateway.CreatePaymentLinkUrl(payment.Id, createPaymentLinkParams);
 
                 // Persist order rows in a single transaction only after we have a payment id to bind to.
                 using var transaction = await db.Database.BeginTransactionAsync();
@@ -175,8 +173,8 @@ public static class CheckoutApis
                 order.AddressId = address.Id;
                 order.AddressBillId = addressBill?.Id;
                 order.ContactId = contact.Id;
-                order.StatusId = 1;
-                order.QuickPayPaymentId = payment.id;
+                order.StatusId = (int)EntityStatus.New;
+                order.QuickPayPaymentId = payment.Id;
 
                 await db.Orders!.AddAsync(order);
                 await db.SaveChangesAsync();
@@ -185,11 +183,11 @@ public static class CheckoutApis
 
                 if (ApiUtil.IsHtmx(http.Request))
                 {
-                    http.Response.Headers["HX-Redirect"] = paymentLink.url;
+                    http.Response.Headers["HX-Redirect"] = paymentLinkUrl;
                     return Results.Ok();
                 }
 
-                return Results.Redirect(paymentLink.url);
+                return Results.Redirect(paymentLinkUrl);
             }
             catch (AntiforgeryValidationException)
             {
@@ -203,55 +201,47 @@ public static class CheckoutApis
             return Results.Content(string.Empty);
         });
 
-        app.MapGet("/Success/{reference}", async (IWebHostEnvironment env, HttpContext http, IMemoryCache cache, RazorShopDbContext db, string? reference, IConfiguration config, ILogger<object> log) =>
+        app.MapGet("/Success/{reference}", async (IWebHostEnvironment env, HttpContext http, IMemoryCache cache, RazorShopDbContext db, string? reference, IConfiguration config, IPaymentGateway gateway, ILogger<object> log) =>
         {
-            var vm = new OrderSuccessVm();
-
             try
             {
                 var order = await db.Orders!.Include(o => o.Cart)!.Include(o => o.Address).ThenInclude(o => o!.Country!).Include(o => o.AddressBill).FirstOrDefaultAsync(o => o.Reference == reference);
 
                 if (order == null) {
                     log.LogWarning("Order success page called with unknown reference");
-                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure>();
                 }
 
-                if (order.StatusId == 2)
+                if (order.StatusId == (int)EntityStatus.Active)
                 {
                     // Already processed; show the success view without re-sending email.
-                    return Results.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                    return Results.RazorSlice<Pages.OrderSuccess>();
                 }
 
                 if (order.QuickPayPaymentId is null)
                 {
                     log.LogWarning("Order {Reference} has no QuickPayPaymentId; cannot verify payment", reference);
-                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure>();
                 }
 
                 var paymentKey = config["PaymentApiKey"];
                 if (string.IsNullOrEmpty(paymentKey))
                 {
                     log.LogError("PaymentApiKey is not configured; cannot verify payment for {Reference}", reference);
-                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    return Results.RazorSlice<Pages.OrderFailure>();
                 }
 
-                var ps = new PaymentsService(paymentKey);
-                var payment = await ps.GetPayment(order.QuickPayPaymentId.Value, null);
+                var payment = await gateway.GetPayment(order.QuickPayPaymentId.Value);
 
-                var paymentOk =
-                    payment != null
-                    && payment.accepted
-                    && string.Equals(payment.order_id, reference, StringComparison.Ordinal)
-                    && (string.Equals(payment.state, "processed", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(payment.state, "captured", StringComparison.OrdinalIgnoreCase));
+                var paymentOk = IsPaymentSettled(payment?.Accepted ?? false, payment?.OrderId, payment?.State, reference);
 
                 if (!paymentOk)
                 {
-                    log.LogWarning("Payment verification failed for {Reference}: accepted={Accepted} state={State}", reference, payment?.accepted, payment?.state);
-                    return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+                    log.LogWarning("Payment verification failed for {Reference}: accepted={Accepted} state={State}", reference, payment?.Accepted, payment?.State);
+                    return Results.RazorSlice<Pages.OrderFailure>();
                 }
 
-                order.StatusId = 2; // Paid
+                order.StatusId = (int)EntityStatus.Active; // Active = paid
                 order.Updated = DateTime.UtcNow;
                 await db.SaveChangesAsync();
 
@@ -261,7 +251,7 @@ public static class CheckoutApis
 
                 var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}";
 
-                var items = await GetCartItems(order.Cart!.Id, db)!;
+                var items = await ApiUtil.GetCartItems(order.Cart!.Id, db)!;
 
                 var sizes = (IEnumerable<Data.Entities.Size>)cache.Get("sizes")!;
 
@@ -287,13 +277,13 @@ public static class CheckoutApis
                 http.Session.Clear();
                 http.Response.Cookies.Delete("CartSessionId");
 
-                return Results.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                return Results.RazorSlice<Pages.OrderSuccess>();
             }
             catch (Exception ex)
             {
                 log.LogError(ex, $"Order success page error with reference Id: {reference}");
 
-                return Results.RazorSlice<Pages.OrderSuccess, OrderSuccessVm>(vm);
+                return Results.RazorSlice<Pages.OrderSuccess>();
             }
         });
 
@@ -304,34 +294,22 @@ public static class CheckoutApis
                 log.LogWarning($"Unsuccessful order page called with unknown reference Id: {referenceId}");
             }
 
-            return Results.RazorSlice<Pages.OrderFailure, OrderFailureVm>(new OrderFailureVm());
+            return Results.RazorSlice<Pages.OrderFailure>();
         });
     }
 
-    private static string GenerateReference()
+    // A QuickPay payment counts as paid only when it is accepted, bound to OUR order
+    // reference (so a payment for a different order can't be replayed here), and in a
+    // settled state. Anything else is treated as unpaid.
+    internal static bool IsPaymentSettled(bool accepted, string? orderId, string? state, string? reference) =>
+        accepted
+        && string.Equals(orderId, reference, StringComparison.Ordinal)
+        && (string.Equals(state, "processed", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(state, "captured", StringComparison.OrdinalIgnoreCase));
+
+    internal static string GenerateReference()
     {
         return Guid.NewGuid().ToString().Replace("-", "")[..20];
-    }
-
-    private static async Task<Cart> GetCart(HttpContext http, RazorShopDbContext db)
-    {
-        if (http.Request.Cookies.TryGetValue("CartSessionId", out var cartSessionGuid))
-        {
-            var existingCart = await db.Carts!.FirstOrDefaultAsync(c => c.CartGuid == Guid.Parse(cartSessionGuid!));
-
-            if (existingCart != null)
-                return existingCart;
-        }
-
-        var guid = Guid.NewGuid();
-        cartSessionGuid = guid.ToString();
-        http.Response.Cookies.Append("CartSessionId", cartSessionGuid, ApiUtil.CartCookieOptions(http.Request));
-
-        var newCart = new Cart { CartGuid = guid, Created = DateTime.UtcNow };
-        db.Carts!.Add(newCart);
-        await db.SaveChangesAsync();
-
-        return newCart;
     }
 
     private static async Task<bool> UpdateCartItemQuantity(RazorShopDbContext db, int cartId, int itemId, int quantity)
@@ -344,11 +322,6 @@ public static class CheckoutApis
         item.Updated = DateTime.UtcNow;
 
         return await db.SaveChangesAsync() > 0;
-    }
-
-    private static async Task<List<CartItem>>? GetCartItems(int cartId, RazorShopDbContext db)
-    {
-        return await db.CartItems!.Where(c => c.CartId == cartId && !c.Deleted).Include(c => c.Product).ToListAsync();
     }
 
     private static async Task<CheckoutVm?> GetCheckoutViewModel(List<CartItem> items, IMemoryCache cache, ImagesRepo imgRepo, IConfiguration config)

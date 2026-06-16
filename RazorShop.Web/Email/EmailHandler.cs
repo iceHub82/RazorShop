@@ -4,7 +4,7 @@ using MailKit.Security;
 
 namespace RazorShop.Web.Email;
 
-public class EmailHandler(IConfiguration config, ILogger logger) : IEmailHandler
+public class EmailHandler(IConfiguration config, ILogger logger)
 {
     public void SendEmail(Message message)
     {

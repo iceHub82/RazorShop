@@ -7,15 +7,16 @@
             {
                 <div class="col mb-5">
                     <div class="card h-100">
-                        <a hx-get="/Product/@product.Id"
+                        <a href="/Product/@product.Id"
+                           hx-get="/Product/@product.Id"
                            hx-trigger="click"
                            hx-target="#section"
                            hx-push-url="true"
-                           hx-swap="outerHTML" role="button">
-                           <img width="260" height="330" class="card-img-top img-fluid" src="/products/@product.Id/main/@($"{product.Id}_listing.webp?v={product.TicksStamp}")" alt="..." />
+                           hx-swap="outerHTML">
+                           <img width="260" height="330" loading="lazy" class="card-img-top img-fluid" src="/products/@product.Id/main/@($"{product.Id}_listing.webp?v={product.TicksStamp}")" alt="@product.Name" />
                            <div class="card-body p-4">
                                <div class="text-start">
-                                   <h5 class="fw-bolder">@product.Name</h5>
+                                   <h2 class="h5 fw-bolder">@product.Name</h2>
                                    @product.Price
                                </div>
                            </div>

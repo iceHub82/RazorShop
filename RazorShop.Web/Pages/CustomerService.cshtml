@@ -1,4 +1,4 @@
-﻿@inherits RazorSlice<CustomerServiceVm>
+﻿@inherits RazorSlice<SiteVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
@@ -85,7 +85,8 @@
 
 @functions {
     public LayoutModel LayoutModel => new() {
-            Title = "Om os",
-            HasHeader = false
-        };
+        Title = "Kundeservice | Artform.dk",
+        Description = "Kundeservice hos Artform.dk – kontakt, forsendelse, returnering og betaling. Hjælp og svar på de hyppigste spørgsmål.",
+        HasHeader = false
+    };
 }

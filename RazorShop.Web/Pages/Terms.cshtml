@@ -1,4 +1,4 @@
-﻿@inherits RazorSlice<TermsVm>
+﻿@inherits RazorSlice<SiteVm>
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
@@ -228,7 +228,8 @@
 
 @functions {
     public LayoutModel LayoutModel => new() {
-            Title = "Betingelser og vilkår",
-            HasHeader = false
-        };
+        Title = "Betingelser og vilkår | Artform.dk",
+        Description = "Læs handelsbetingelser og vilkår for køb hos Artform.dk – levering, fortrydelsesret, reklamation og persondata.",
+        HasHeader = false
+    };
 }

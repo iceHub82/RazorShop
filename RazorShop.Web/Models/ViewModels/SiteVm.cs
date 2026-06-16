@@ -15,19 +15,3 @@ public class FooterVm : SiteVm
 {
     public string? AntiForgeryToken { get; set; }
 }
-
-public class TermsVm : SiteVm
-{
-}
-
-public class DataPolicyVm : SiteVm
-{
-}
-
-public class CustomerServiceVm : SiteVm
-{
-}
-
-public class PayAndDeliveryVm : SiteVm
-{
-}

@@ -54,8 +54,6 @@
 
     if (focus) {
         themeSwitcher.focus()
-        $("[name='theme']").val(getPreferredTheme())
-        htmx.trigger('#stock-chart', 'click')
     }
   }
 

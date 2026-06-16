@@ -4,8 +4,10 @@
 @(await RenderPartialAsync<Products, ProductsVm>(Model))
 
 @functions {
-    public LayoutModel LayoutModel => new() { 
-        Title = "Home",
-        HasHeader = true 
+    public LayoutModel LayoutModel => new() {
+        Title = "Artform.dk – Generativ kunst og T-shirts",
+        Description = "Køb originale plottede tegninger og kunst-T-shirts. Generativ kunst og unikke motiver fra Artform.dk – håndlavet i Danmark.",
+        JsonLd = Model.JsonLd,
+        HasHeader = true
     };
 }

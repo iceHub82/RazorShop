@@ -1,11 +1,12 @@
 ﻿@inherits RazorLayoutSlice<LayoutModel>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@Model.Title</title>
+    <meta name="robots" content="noindex,follow" />
+    <title>@(Model.Title ?? "Checkout – Artform.dk")</title>
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <script defer src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

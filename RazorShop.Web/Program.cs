@@ -1,5 +1,6 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,6 +13,9 @@ using RazorShop.Web.Apis.Settings;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Drop the "Server: Kestrel" response header so we don't leak the host stack.
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
 builder.Host.UseSerilog((context, config) => {
     config.ReadFrom.Configuration(context.Configuration);
@@ -31,15 +35,29 @@ builder.Services.AddDbContext<RazorShopDbContext>(options => {
 });
 
 builder.Services.AddTransient<ImagesRepo>();
+builder.Services.AddSingleton<IPaymentGateway, QuickPayGateway>();
 
 builder.Services.Configure<FormOptions>(options => {
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB total per multipart request
     options.ValueLengthLimit = 1 * 1024 * 1024;
 });
 
-builder.Services.AddAntiforgery();
+builder.Services.AddAntiforgery(options => {
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+// Honour X-Forwarded-Proto/For so redirect URLs use https when behind a TLS-terminating
+// proxy (App Runner, Cloudflare, nginx, Azure App Gateway, etc.). Clearing KnownNetworks
+// and KnownProxies lets any upstream forward headers — tighten KnownProxies to the proxy
+// CIDR if you can identify it in your deployment.
+builder.Services.Configure<ForwardedHeadersOptions>(options => {
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddMemoryCache();
-builder.Services.AddDistributedMemoryCache();
+builder.Services.AddDistributedMemoryCache(); // backs AddSession's IDistributedCache
 
 builder.Services.AddSession(options => {
     //options.IdleTimeout = TimeSpan.FromSeconds(10);
@@ -94,6 +112,10 @@ using (var scope = app.Services.CreateScope()) {
     cache.Set("categories", categories, options);
 }
 
+// Must run before HttpsRedirection / HSTS / auth so downstream middleware sees the
+// original Request.Scheme (https) and client IP from the forwarded headers.
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -112,7 +134,6 @@ app.Use(async (context, next) => {
     headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()";
     // style-src still permits 'unsafe-inline' because Bootstrap utilities and inline style="..."
     // attributes are used across views. Move to CSP nonces in a follow-up to drop it.
-    // cdn.datatables.net is admin-only (DataTables JS+CSS); cdn.jsdelivr.net serves Bootstrap Icons.
     // When served to localhost (dev), allow loopback connect-src so Visual Studio Browser Link works.
     var isLocalhost = context.Request.Host.Host is "localhost" or "127.0.0.1" or "::1";
     var connectSrc = isLocalhost
@@ -121,9 +142,9 @@ app.Use(async (context, next) => {
     headers["Content-Security-Policy"] =
         "default-src 'self'; img-src 'self' data:; " +
         connectSrc +
-        "script-src 'self' https://cdn.datatables.net; " +
-        "style-src 'self' 'unsafe-inline' https://cdn.datatables.net https://cdn.jsdelivr.net; " +
-        "font-src 'self' https://cdn.jsdelivr.net data:; " +
+        "script-src 'self'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "font-src 'self' data:; " +
         "frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://payment.quickpay.net";
     await next();
 });
@@ -157,3 +178,6 @@ app.SettingsApi();
 app.Logger.LogInformation($"RazorShop App Start - Environment:{env}");
 
 app.Run();
+
+// Exposed so WebApplicationFactory<Program> can boot the app in integration tests.
+public partial class Program { }

@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Antiforgery;
+﻿using System.Globalization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.EntityFrameworkCore;
 using RazorShop.Data;
+using RazorShop.Data.Entities;
 using RazorShop.Data.Repos;
 using RazorShop.Web.Models.ViewModels;
 
@@ -39,9 +42,10 @@ public static class ProductApis
             return Results.RazorSlice<Pages.Products, ProductsVm>(vm);
         });
 
-        app.MapGet("/Product/{id}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, int id) =>
+        app.MapGet("/Product/{id}", async (RazorShopDbContext db, HttpContext http, ImagesRepo imgRepo, IAntiforgery antiforgery, IConfiguration config, int id) =>
         {
             var product = await db.Products!
+                .Include(x => x.Category)
                 .Include(x => x.ProductSizes!)
                 .ThenInclude(x => x.Size)
                 .Include(x => x.ProductImages!)
@@ -68,6 +72,8 @@ public static class ProductApis
                     vm.ProductSizes!.Add(new ProductSizeVm { Id = size.SizeId, Name = size.Size!.Name });
             }
 
+            vm.JsonLd = BuildProductJsonLd(product, http, config);
+
             if (ApiUtil.IsHtmx(http.Request))
             {
                 http.Response.Headers.Append("Vary", "HX-Request");
@@ -78,11 +84,77 @@ public static class ProductApis
         });
     }
 
+    internal static string BuildProductJsonLd(Data.Entities.Product product, HttpContext http, IConfiguration config)
+    {
+        var baseUrl = (config["Shop:Link"]?.TrimEnd('/'))
+            ?? $"{http.Request.Scheme}://{http.Request.Host}";
+        var shopName = config["Shop:Name"] ?? "Artform.dk";
+
+        var productUrl = $"{baseUrl}/Product/{product.Id}";
+        var imageUrl = $"{baseUrl}/products/{product.Id}/main/{product.Id}_product.webp";
+        var availability = product.StatusId == (int)EntityStatus.Active
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock";
+
+        var productSchema = new Dictionary<string, object?> {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Product",
+            ["name"] = product.Name,
+            ["description"] = product.Description,
+            ["sku"] = product.Id.ToString(CultureInfo.InvariantCulture),
+            ["image"] = new[] { imageUrl },
+            ["brand"] = new Dictionary<string, object?> {
+                ["@type"] = "Brand",
+                ["name"] = shopName,
+            },
+            ["offers"] = new Dictionary<string, object?> {
+                ["@type"] = "Offer",
+                ["url"] = productUrl,
+                ["priceCurrency"] = "DKK",
+                ["price"] = product.Price.ToString("0.00", CultureInfo.InvariantCulture),
+                ["availability"] = availability,
+                ["seller"] = new Dictionary<string, object?> {
+                    ["@type"] = "Organization",
+                    ["name"] = shopName,
+                },
+            },
+        };
+
+        var breadcrumb = new Dictionary<string, object?> {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "BreadcrumbList",
+            ["itemListElement"] = new object[] {
+                new Dictionary<string, object?> {
+                    ["@type"] = "ListItem",
+                    ["position"] = 1,
+                    ["name"] = "Forside",
+                    ["item"] = $"{baseUrl}/",
+                },
+                new Dictionary<string, object?> {
+                    ["@type"] = "ListItem",
+                    ["position"] = 2,
+                    ["name"] = product.Category?.Name ?? "Produkter",
+                    ["item"] = product.Category != null
+                        ? $"{baseUrl}/Products/{Uri.EscapeDataString(product.Category.Name ?? string.Empty)}"
+                        : $"{baseUrl}/Products",
+                },
+                new Dictionary<string, object?> {
+                    ["@type"] = "ListItem",
+                    ["position"] = 3,
+                    ["name"] = product.Name,
+                    ["item"] = productUrl,
+                },
+            },
+        };
+
+        return JsonSerializer.Serialize(new object[] { productSchema, breadcrumb });
+    }
+
     private static async Task<List<ProductVm>> GetProducts(RazorShopDbContext db, ImagesRepo imgRepo)
     {
         var products =  await db.Products!
             .AsNoTracking()
-            .Where(p => p.StatusId == 2)
+            .Where(p => p.StatusId == (int)EntityStatus.Active)
             .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
             .ToListAsync();
 
@@ -96,7 +168,7 @@ public static class ProductApis
     {
         var products = await db.Products!
             .AsNoTracking()
-            .Where(p => p.StatusId == 2 && p.Category!.Name == name)
+            .Where(p => p.StatusId == (int)EntityStatus.Active && p.Category!.Name == name)
             .Select(p => new ProductVm { Id = p.Id, Name = p.Name, Price = $"{p.Price:#.00} kr" })
             .ToListAsync();
 

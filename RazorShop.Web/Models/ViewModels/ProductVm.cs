@@ -3,6 +3,7 @@
 public class ProductsVm
 {
     public string? Category { get; set; }
+    public string? JsonLd { get; set; }
     public List<ProductVm>? Products { get; set; } = new();
 }
 
@@ -15,6 +16,7 @@ public class ProductVm
     public string? TicksStamp { get; set; }
     public int CheckedSizeId { get; set; }
     public string? AntiForgeryToken { get; set; }
+    public string? JsonLd { get; set; }
     public List<ProductImageVm>? ProductImages { get; set; } = new();
     public List<ProductSizeVm>? ProductSizes { get; set; } = new();
 }
