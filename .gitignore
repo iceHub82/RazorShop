@@ -364,3 +364,6 @@ FodyWeavers.xsd
 /RazorShop.Web/appsettings.Production.json
 /RazorShop.Web/appsettings.Development.json
 /RazorShop.Web/appsettings.Local.json
+
+# Visual brainstorming companion (local only)
+.superpowers/
