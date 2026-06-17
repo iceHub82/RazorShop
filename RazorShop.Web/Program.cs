@@ -14,6 +14,13 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Local dev secrets (AdminHash, PaymentApiKey, SMTP password) live in user-secrets, not
+// committed appsettings. The framework only auto-loads user-secrets for the "Development"
+// environment; this app's dev environment is "Local", so register it explicitly. In
+// Production these keys come from environment variables / a secret store instead.
+if (!builder.Environment.IsProduction())
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 // Drop the "Server: Kestrel" response header so we don't leak the host stack.
 builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
