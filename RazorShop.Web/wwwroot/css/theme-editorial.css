@@ -1,0 +1,20 @@
+/* Editorial Bold theme.
+   Every rule is scoped under [data-theme="editorial"] so the classic Bootstrap
+   look is untouched when the attribute is absent. Public storefront only. */
+
+[data-theme="editorial"] {
+    --ink: #111111;
+    --paper: #ffffff;
+    --accent: #ff4d2e;
+    --accent-text: #d6381c; /* darker accent for link text — AA contrast on white */
+
+    /* Scoped Bootstrap overrides */
+    --bs-body-bg: var(--paper);
+    --bs-body-color: var(--ink);
+    --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --bs-border-radius: 2px;
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: 255, 77, 46;
+    --bs-link-color-rgb: 214, 56, 28;       /* #d6381c */
+    --bs-link-hover-color-rgb: 17, 17, 17;  /* #111 */
+}

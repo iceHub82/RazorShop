@@ -31,6 +31,17 @@ public class SmokeTests : IClassFixture<ShopAppFactory>
 
         Assert.True(response.IsSuccessStatusCode, $"{url} returned {(int)response.StatusCode}");
     }
+
+    [Fact]
+    public async Task Home_is_wired_to_the_editorial_theme()
+    {
+        var client = _factory.CreateClient();
+
+        var html = await client.GetStringAsync("/");
+
+        Assert.Contains("data-theme=\"editorial\"", html);
+        Assert.Contains("theme-editorial.css", html);
+    }
 }
 
 public class ShopAppFactory : WebApplicationFactory<Program>
