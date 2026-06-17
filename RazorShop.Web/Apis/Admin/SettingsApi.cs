@@ -14,9 +14,48 @@ public static class SettingsApis
 {
     private const string _apiCategories = "/admin/settings/categories";
     private const string _apiSizes = "/admin/settings/sizes";
+    private const string _apiAppearance = "/admin/settings/appearance";
+
+    private static readonly HashSet<string> AllowedThemes = new(StringComparer.Ordinal) { "classic", "editorial", "atelier" };
 
     public static void SettingsApi(this WebApplication app)
     {
+        app.MapGet(_apiAppearance, (HttpContext http, IMemoryCache cache, IAntiforgery antiforgery) =>
+        {
+            var vm = BuildAppearanceVm(http, cache, antiforgery, false);
+            if (ApiUtil.IsHtmx(http.Request))
+                return Results.RazorSlice<Appearance, AppearanceVm>(vm);
+
+            return Results.RazorSlice<Pages.Admin.Settings.Appearance, AppearanceVm>(vm);
+        }).RequireAuthorization("AdminOnly");
+
+        app.MapPost(_apiAppearance, async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, IAntiforgery antiforgery) =>
+        {
+            await antiforgery.ValidateRequestAsync(http);
+
+            var form = await http.Request.ReadFormAsync();
+            var theme = form["theme"].ToString();
+            if (!AllowedThemes.Contains(theme))
+                return Results.BadRequest();
+
+            var setting = await db.SiteSettings!.FirstOrDefaultAsync(s => s.Key == "ActiveTheme");
+            if (setting is null)
+            {
+                setting = new SiteSetting { Key = "ActiveTheme", Value = theme };
+                db.SiteSettings!.Add(setting);
+            }
+            else
+            {
+                setting.Value = theme;
+            }
+            await db.SaveChangesAsync();
+
+            var options = new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove);
+            cache.Set("ActiveTheme", theme, options);
+
+            return Results.RazorSlice<Appearance, AppearanceVm>(BuildAppearanceVm(http, cache, antiforgery, true));
+        }).RequireAuthorization("AdminOnly");
+
         app.MapGet($"{_apiCategories}", (HttpContext http) =>
         {
             if (ApiUtil.IsHtmx(http.Request))
@@ -270,6 +309,17 @@ public static class SettingsApis
             AdminSizes = await projected.Skip(skip).Take(take).ToListAsync(),
             FilteredCount = count,
             TotalCount = count
+        };
+    }
+
+    private static AppearanceVm BuildAppearanceVm(HttpContext http, IMemoryCache cache, IAntiforgery antiforgery, bool saved)
+    {
+        var token = antiforgery.GetAndStoreTokens(http);
+        return new AppearanceVm
+        {
+            Current = cache.Get<string>("ActiveTheme") ?? "editorial",
+            AntiForgeryToken = token.RequestToken,
+            Saved = saved
         };
     }
 

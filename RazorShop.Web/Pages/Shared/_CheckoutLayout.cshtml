@@ -1,7 +1,9 @@
 ﻿@inherits RazorLayoutSlice<LayoutModel>
+@using Microsoft.Extensions.Caching.Memory
+@inject Microsoft.Extensions.Caching.Memory.IMemoryCache Cache
 
 <!DOCTYPE html>
-<html lang="da" data-theme="editorial">
+<html lang="da" data-theme="@(Cache.Get<string>("ActiveTheme") ?? "editorial")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,6 +12,7 @@
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="/css/theme-editorial.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/css/theme-atelier.css" asp-append-version="true" />
     <script defer src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/lib/htmx/htmx.min.js"></script>
 </head>

@@ -1,0 +1,10 @@
+@inherits RazorSlice<AppearanceVm>
+@implements IUsesLayout<_AdminLayout, LayoutModel>
+
+@(await RenderPartialAsync<RazorShop.Web.Slices.Admin.Settings.Appearance, AppearanceVm>(Model))
+
+@functions {
+    public LayoutModel LayoutModel => new() {
+            Title = "Admin - Appearance",
+        };
+}

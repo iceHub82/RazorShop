@@ -1,0 +1,28 @@
+@inherits RazorSlice<AppearanceVm>
+
+<div id="appearance-panel">
+    <div class="row">
+        <div class="col"><h3>Appearance</h3></div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <p class="text-body-secondary">Choose the storefront design. The change applies to all visitors immediately.</p>
+            <form hx-post="/admin/settings/appearance" hx-target="#appearance-panel" hx-swap="outerHTML">
+                <input type="hidden" name="__RequestVerificationToken" value="@Model.AntiForgeryToken" />
+                <div class="mb-3">
+                    <label class="form-label" for="theme">Design</label>
+                    <select id="theme" name="theme" class="form-select">
+                        <option value="classic" @(Model.Current == "classic" ? "selected" : "")>Classic (Bootstrap)</option>
+                        <option value="editorial" @(Model.Current == "editorial" ? "selected" : "")>Editorial Bold</option>
+                        <option value="atelier" @(Model.Current == "atelier" ? "selected" : "")>Atelier / Riso</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+                @if (Model.Saved)
+                {
+                    <span class="ms-2 text-success">Saved ✓</span>
+                }
+            </form>
+        </div>
+    </div>
+</div>
