@@ -18,3 +18,134 @@
     --bs-link-color-rgb: 214, 56, 28;       /* #d6381c */
     --bs-link-hover-color-rgb: 17, 17, 17;  /* #111 */
 }
+
+/* --- Navigation: black bar, white uppercase links --- */
+[data-theme="editorial"] .navbar {
+    --bs-navbar-color: rgba(255, 255, 255, .85);
+    --bs-navbar-hover-color: var(--accent);
+    --bs-navbar-active-color: #fff;
+    background-color: var(--ink) !important; /* overrides bg-light */
+    border-bottom: none !important;
+}
+
+[data-theme="editorial"] .navbar .nav-link {
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 600;
+    font-size: .85rem;
+}
+
+[data-theme="editorial"] .navbar-brand {
+    color: #fff !important;
+}
+
+[data-theme="editorial"] .navbar-toggler {
+    border-color: rgba(255, 255, 255, .3);
+}
+
+[data-theme="editorial"] .navbar-toggler-icon {
+    filter: invert(1); /* dark Bootstrap icon -> white */
+}
+
+[data-theme="editorial"] .navbar .dropdown-menu {
+    --bs-dropdown-link-active-bg: var(--accent);
+    border-radius: 2px;
+}
+
+/* --- Footer: bookends the black nav --- */
+[data-theme="editorial"] #footer {
+    background-color: var(--ink);
+}
+
+[data-theme="editorial"] #footer,
+[data-theme="editorial"] #footer .text-body-secondary,
+[data-theme="editorial"] #footer .nav-link {
+    color: rgba(255, 255, 255, .8) !important;
+}
+
+[data-theme="editorial"] #footer h5 {
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+}
+
+[data-theme="editorial"] #footer a:hover {
+    color: var(--accent) !important;
+}
+
+[data-theme="editorial"] #footer .link-body-emphasis {
+    color: #fff !important;
+}
+
+[data-theme="editorial"] #footer .border-top {
+    border-color: rgba(255, 255, 255, .2) !important;
+}
+
+/* --- Headings: heavy, uppercase, tight --- */
+[data-theme="editorial"] h1,
+[data-theme="editorial"] h2,
+[data-theme="editorial"] h3,
+[data-theme="editorial"] .display-5 {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -.01em;
+    line-height: 1.05;
+}
+
+[data-theme="editorial"] h1,
+[data-theme="editorial"] .display-5 {
+    letter-spacing: -.02em;
+}
+
+/* --- Buttons: squared, bold, uppercase, accent primary --- */
+[data-theme="editorial"] .btn {
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 700;
+}
+
+[data-theme="editorial"] .btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: #e23d20;
+    --bs-btn-hover-border-color: #e23d20;
+    --bs-btn-active-bg: #c9341a;
+    --bs-btn-active-border-color: #c9341a;
+    --bs-btn-color: #fff;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-color: #fff;
+}
+
+/* --- Inputs: squared, accent focus ring --- */
+[data-theme="editorial"] .form-control,
+[data-theme="editorial"] .form-select {
+    border-radius: 2px;
+}
+
+[data-theme="editorial"] .form-control:focus,
+[data-theme="editorial"] .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 .2rem rgba(255, 77, 46, .25);
+}
+
+/* --- Product grid cards --- */
+[data-theme="editorial"] #section .card {
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    transition: transform .15s ease;
+}
+
+[data-theme="editorial"] #section .card:hover {
+    transform: translateY(-3px);
+}
+
+[data-theme="editorial"] #section .card a {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+[data-theme="editorial"] #section .card:hover h2 {
+    color: var(--accent-text);
+}
