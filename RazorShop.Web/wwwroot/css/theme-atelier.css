@@ -76,7 +76,7 @@
 [data-theme="atelier"] #header h1,
 [data-theme="atelier"] #header .display-3 {
     color: var(--blue);
-    text-shadow: 3px 4px 0 var(--pink);
+    text-shadow: 2px 2px 0 var(--pink);
 }
 [data-theme="atelier"] #header { border-bottom: 2px solid var(--ink); }
 

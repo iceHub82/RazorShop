@@ -9,7 +9,7 @@
         Description = Truncate(Model.Description ?? $"{Model.Name} – kunstvare fra Artform.dk.", 155),
         JsonLd = Model.JsonLd,
         Image = $"/products/{Model.Id}/main/{Model.Id}_product.webp",
-        HasHeader = true
+        HasHeader = false
     };
 
     private static string Truncate(string text, int max)
