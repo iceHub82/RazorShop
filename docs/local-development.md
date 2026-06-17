@@ -87,6 +87,26 @@ Restart the app after changing `AdminHash` (config is read at startup).
 dotnet test RazorShop.Tests/RazorShop.Tests.csproj
 ```
 
+## "DLL is being used by another process" on build
+
+A running app locks its own DLLs, so you can't build while an instance is running:
+
+```
+Unable to copy "...\RazorShop.Data.dll" ... being used by another process: RazorShop.Web (PID …)
+```
+
+Only one instance can own port 7153 at a time, too. Fixes:
+
+- In Visual Studio: **Stop Debugging (Shift+F5)** before Build/Rebuild.
+- From a terminal, stop any stray instance and free the port:
+  ```powershell
+  ./scripts/stop-app.ps1
+  ```
+- Or always start clean (stops any existing instance, then runs):
+  ```powershell
+  ./scripts/run.ps1
+  ```
+
 ## Production
 
 The same keys are blank in `appsettings.Production.json`. Provide them via
