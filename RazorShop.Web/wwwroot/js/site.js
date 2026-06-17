@@ -1,13 +1,15 @@
 ﻿document.addEventListener('DOMContentLoaded', function() {
-    const productSize = document.getElementById('productSize');
-    if (productSize) {
-        productSize.addEventListener('change', function () {
-            const checkedSize = document.getElementById('checkedSize');
+    // Sync the selected size radio into the hidden 'size' field that htmx posts.
+    // All radios share name="productSize", so bind every one — not just the first
+    // (getElementById only ever returned one element, so non-default sizes were ignored).
+    const checkedSize = document.getElementById('checkedSize');
+    document.querySelectorAll('input[name="productSize"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
             if (checkedSize) {
-                checkedSize.value = productSize.value;
+                checkedSize.value = radio.value;
             }
         });
-    }
+    });
 
     // Use strict mode
     'use strict';
