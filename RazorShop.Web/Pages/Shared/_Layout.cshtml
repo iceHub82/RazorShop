@@ -1,5 +1,6 @@
 ﻿@inherits RazorLayoutSlice<LayoutModel>
 @using Microsoft.AspNetCore.Html
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
 
 <!DOCTYPE html>
 <html lang="da" data-theme="editorial">
@@ -9,6 +10,23 @@
     <meta name="description" content="@(Model.Description ?? "Originale plottede tegninger og kunst-T-shirts. Generativ kunst fra Artform.dk – håndlavet i Danmark.")" />
     <link rel="icon" href="/favicon.ico" />
     <title>@(Model.Title ?? "Artform.dk – Generativ kunst")</title>
+    @{
+        var ogBase = Config["Shop:Link"]?.TrimEnd('/') ?? string.Empty;
+        var ogTitle = Model.Title ?? "Artform.dk – Generativ kunst";
+        var ogDesc = Model.Description ?? "Originale plottede tegninger og kunst-T-shirts. Generativ kunst fra Artform.dk – håndlavet i Danmark.";
+        var ogImage = $"{ogBase}{Model.Image ?? "/img/logo/logo.png"}";
+        var ogSite = Config["Shop:Name"] ?? "Artform.dk";
+    }
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="@ogSite" />
+    <meta property="og:locale" content="da_DK" />
+    <meta property="og:title" content="@ogTitle" />
+    <meta property="og:description" content="@ogDesc" />
+    <meta property="og:image" content="@ogImage" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@ogTitle" />
+    <meta name="twitter:description" content="@ogDesc" />
+    <meta name="twitter:image" content="@ogImage" />
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="@($"/css/site.css?v={File.GetLastWriteTime(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/css/site.css")).Ticks}")" />
     <link rel="stylesheet" href="@($"/css/theme-editorial.css?v={File.GetLastWriteTime(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/css/theme-editorial.css")).Ticks}")" />
