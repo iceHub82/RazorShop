@@ -1,11 +1,50 @@
-﻿@inherits RazorSlice
+@inherits RazorSlice
 @implements IUsesLayout<_Layout, LayoutModel>
 
 <section id="section" class="py-5">
     <div class="container px-4 px-lg-5 my-5">
-        <div class="row">
-            <div class="col">
-                Vi er en nyopstartet webshop. Mere info kommer snart...
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <p class="text-uppercase fw-semibold mb-2" style="letter-spacing: .2em; color: var(--accent-text, #d6381c);">
+                    Om os
+                </p>
+                <h1 class="display-5 fw-bolder mb-4">Kunst skabt af kode — tegnet på papir</h1>
+
+                <p class="lead mb-4">
+                    Artform er et lille dansk kunstværksted, hvor algoritmer møder pen og papir. Vi skaber
+                    generativ kunst: motiver, der opstår når kode og tilfældighed får frit spil — og som
+                    derefter tegnes fysisk på en pen-plotter.
+                </p>
+
+                <h2 class="h4 mt-5 mb-3">Hvert værk er unikt</h2>
+                <p>
+                    Vi masseproducerer ikke. Hvert motiv genereres for sig, og plotteren tegner det streg for
+                    streg med ægte pen. Små variationer betyder, at to værker aldrig bliver helt ens — du får
+                    et originalt stykke, ikke et tryk i tusindvis.
+                </p>
+
+                <h2 class="h4 mt-5 mb-3">Til væggen og til kroppen</h2>
+                <p>
+                    Motiverne findes som plottede tegninger i flere størrelser og som trykte kunst-T-shirts.
+                    Samme generative æstetik — to måder at tage den med hjem på.
+                </p>
+
+                <h2 class="h4 mt-5 mb-3">Håndlavet i Danmark</h2>
+                <p>
+                    Alt skabes, plottes og pakkes i Danmark. Vi går op i materialer, der holder, og i at
+                    pakke hvert værk, så det når frem i samme stand, som det forlod værkstedet.
+                </p>
+
+                <div class="mt-5 d-flex flex-column flex-sm-row gap-2">
+                    <a href="/Products"
+                       hx-get="/Products"
+                       hx-target="#section"
+                       hx-push-url="true"
+                       hx-swap="outerHTML"
+                       class="btn btn-primary btn-lg px-4">Se kollektionen</a>
+                    <a href="https://www.instagram.com/artform.dk" target="_blank" rel="noopener"
+                       class="btn btn-outline-dark btn-lg px-4">Følg på Instagram</a>
+                </div>
             </div>
         </div>
     </div>
@@ -14,7 +53,7 @@
 @functions {
     public LayoutModel LayoutModel => new() {
         Title = "Om os | Artform.dk",
-        Description = "Artform.dk er en dansk webshop for generativ kunst – plottede tegninger og kunst-T-shirts.",
+        Description = "Artform.dk er et dansk kunstværksted for generativ kunst – plottede tegninger og kunst-T-shirts, håndlavet i Danmark.",
         HasHeader = false
     };
 }

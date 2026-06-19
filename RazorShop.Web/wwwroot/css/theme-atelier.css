@@ -1,0 +1,133 @@
+/* Atelier / Riso theme — direction C.
+   Riso two-colour (blue + pink) on warm paper, halftone texture, Archivo + Courier Prime.
+   All rules scoped under [data-theme="atelier"]; self-hosted fonts, no CDN. */
+
+@font-face {
+    font-family: 'Archivo';
+    font-style: normal;
+    font-weight: 100 900; /* variable */
+    font-display: swap;
+    src: url('/fonts/archivo.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Courier Prime';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('/fonts/courierprime-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Courier Prime';
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url('/fonts/courierprime-700.woff2') format('woff2');
+}
+
+[data-theme="atelier"] {
+    --paper: #FCFBF7;
+    --ink: #15130F;
+    --blue: #355CED;
+    --pink: #FF4FA3;
+    --mut: #6F6A60;
+    --accent-text: var(--blue); /* reused by the shared hero/About eyebrow inline style */
+
+    --bs-body-bg: var(--paper);
+    --bs-body-color: var(--ink);
+    --bs-body-font-family: Archivo, system-ui, sans-serif;
+    --bs-border-radius: 0;
+    --bs-primary: #15130F;
+    --bs-primary-rgb: 21, 19, 15;
+    --bs-link-color-rgb: 53, 92, 237;   /* blue — AA on white */
+    --bs-link-hover-color-rgb: 21, 19, 15;
+}
+
+/* halftone paper texture */
+[data-theme="atelier"] body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: .04;
+    background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+    background-size: 5px 5px;
+}
+
+/* --- Navigation --- */
+[data-theme="atelier"] .navbar {
+    --bs-navbar-color: var(--ink);
+    --bs-navbar-hover-color: var(--pink);
+    --bs-navbar-active-color: var(--ink);
+    background: var(--paper) !important;
+    border-bottom: 2px solid var(--ink) !important;
+}
+[data-theme="atelier"] .navbar-brand { color: var(--ink) !important; font-weight: 800; letter-spacing: -.02em; }
+[data-theme="atelier"] .navbar .nav-link { font-family: 'Courier Prime', monospace; text-transform: uppercase; letter-spacing: .04em; font-size: .9rem; }
+[data-theme="atelier"] .navbar-toggler { border-color: var(--ink); }
+[data-theme="atelier"] .navbar .dropdown-menu { border: 2px solid var(--ink); border-radius: 0; --bs-dropdown-link-active-bg: var(--blue); }
+
+/* --- Headings --- */
+[data-theme="atelier"] h1,
+[data-theme="atelier"] h2,
+[data-theme="atelier"] h3,
+[data-theme="atelier"] .display-3,
+[data-theme="atelier"] .display-4,
+[data-theme="atelier"] .display-5 {
+    font-family: Archivo, sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -.02em;
+    line-height: .98;
+}
+/* signature: riso overprint on the hero headline (blue ink + offset pink ink) */
+[data-theme="atelier"] #header h1,
+[data-theme="atelier"] #header .display-3 {
+    color: var(--blue);
+    text-shadow: 2px 2px 0 var(--pink);
+}
+[data-theme="atelier"] #header { border-bottom: 2px solid var(--ink); }
+
+/* --- Buttons --- */
+[data-theme="atelier"] .btn {
+    border-radius: 0;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+[data-theme="atelier"] .btn-primary {
+    --bs-btn-bg: var(--ink); --bs-btn-border-color: var(--ink);
+    --bs-btn-hover-bg: var(--pink); --bs-btn-hover-border-color: var(--pink);
+    --bs-btn-active-bg: var(--pink); --bs-btn-active-border-color: var(--pink);
+    --bs-btn-color: var(--paper); --bs-btn-hover-color: var(--paper); --bs-btn-active-color: var(--paper);
+}
+[data-theme="atelier"] .btn-outline-dark {
+    --bs-btn-border-color: var(--ink); --bs-btn-color: var(--ink);
+    --bs-btn-hover-bg: var(--ink); --bs-btn-hover-color: var(--paper);
+}
+
+/* --- Inputs --- */
+[data-theme="atelier"] .form-control,
+[data-theme="atelier"] .form-select {
+    border-radius: 0;
+    border: 2px solid var(--ink);
+}
+[data-theme="atelier"] .form-control:focus,
+[data-theme="atelier"] .form-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 .2rem rgba(53, 92, 237, .2);
+}
+
+/* --- Footer --- */
+[data-theme="atelier"] #footer { background: var(--paper); border-top: 2px solid var(--ink); }
+[data-theme="atelier"] #footer h5 { font-family: Archivo; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; color: var(--ink); }
+[data-theme="atelier"] #footer .text-body-secondary,
+[data-theme="atelier"] #footer .nav-link { color: var(--mut) !important; }
+[data-theme="atelier"] #footer a:hover { color: var(--pink) !important; }
+[data-theme="atelier"] #footer .link-body-emphasis { color: var(--ink) !important; }
+[data-theme="atelier"] #footer .border-top { border-color: var(--ink) !important; }
+
+/* --- Product cards: print specimens --- */
+[data-theme="atelier"] #section .card {
+    border: 2px solid var(--ink);
+    border-radius: 0;
+    background: var(--paper);
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+[data-theme="atelier"] #section .card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--blue); }
+[data-theme="atelier"] #section .card a { color: var(--ink); text-decoration: none; }
+[data-theme="atelier"] #section .card .card-body { border-top: 2px solid var(--ink); }
+[data-theme="atelier"] #section .card h2 { font-family: Archivo; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; font-size: 1.05rem; }

@@ -23,6 +23,7 @@ public class RazorShopDbContext : DbContext
     public DbSet<Country>? Countries { get; set; }
     public DbSet<Contact>? Contacts { get; set; }
     public DbSet<User>? Users { get; set; }
+    public DbSet<SiteSetting>? SiteSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

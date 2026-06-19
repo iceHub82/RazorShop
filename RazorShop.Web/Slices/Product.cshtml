@@ -41,14 +41,14 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-2">
-                        <span>Sizes:</span>
+                        <span>Størrelser:</span>
                     </div>
                     <div class="col-10">
                         @for (int i = 0; i < Model.ProductSizes!.Count; i++)
                         {
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" id="productSize" name="productSize" value="@Model.ProductSizes[i].Id" @(i == 0 ? "checked" : string.Empty)>
-                                <label class="form-check-label">
+                                <input class="form-check-input" type="radio" id="productSize-@Model.ProductSizes[i].Id" name="productSize" value="@Model.ProductSizes[i].Id" @(i == 0 ? "checked" : string.Empty)>
+                                <label class="form-check-label" for="productSize-@Model.ProductSizes[i].Id">
                                     @Model.ProductSizes[i].Name
                                 </label>
                             </div>
@@ -67,14 +67,14 @@
                                 hx-target="#cart-div"
                                 hx-swap="outerHTML"
                                 hx-indicator="#spinner"
-                                class="btn btn-outline-dark flex-shrink-0 w-100">
+                                class="btn btn-primary flex-shrink-0 w-100">
                             <i class="bi-cart-fill me-1"></i>
-                            <span class="button-text">Add to cart</span>
+                            <span class="button-text">Læg i kurv</span>
                         </button>
                     </div>
                     <div class="col-2 px-0 pt-1">
                         <div id="spinner" class="spinner-border spinner-border-sm htmx-indicator" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">Indlæser…</span>
                         </div>
                     </div>
                 </div> 

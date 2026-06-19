@@ -14,6 +14,13 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Local dev secrets (AdminHash, PaymentApiKey, SMTP password) live in user-secrets, not
+// committed appsettings. The framework only auto-loads user-secrets for the "Development"
+// environment; this app's dev environment is "Local", so register it explicitly. In
+// Production these keys come from environment variables / a secret store instead.
+if (!builder.Environment.IsProduction())
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 // Drop the "Server: Kestrel" response header so we don't leak the host stack.
 builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
@@ -119,6 +126,20 @@ using (var scope = app.Services.CreateScope()) {
     cache.Set("sizes", sizes, options);
     cache.Set("sizeTypes", sizeTypes, options);
     cache.Set("categories", categories, options);
+
+    // SiteSettings may be missing on DBs created before this feature (EnsureCreated does not
+    // add tables to an existing DB), so ensure it, seed the default theme, and cache it.
+    await db.Database.ExecuteSqlRawAsync(
+        "CREATE TABLE IF NOT EXISTS \"SiteSettings\" (\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_SiteSettings\" PRIMARY KEY AUTOINCREMENT, \"Key\" TEXT NOT NULL, \"Value\" TEXT NOT NULL);");
+
+    var themeSetting = await db.SiteSettings!.FirstOrDefaultAsync(s => s.Key == "ActiveTheme");
+    if (themeSetting is null)
+    {
+        themeSetting = new SiteSetting { Key = "ActiveTheme", Value = "editorial" };
+        db.SiteSettings!.Add(themeSetting);
+        await db.SaveChangesAsync();
+    }
+    cache.Set("ActiveTheme", themeSetting.Value, options);
 }
 
 // Must run before HttpsRedirection / HSTS / auth so downstream middleware sees the
