@@ -14,13 +14,14 @@ public static class CartApis
 {
     public static void CartApi(this WebApplication app)
     {
-        app.MapGet("/cart", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo) =>
+        app.MapGet("/cart", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IAntiforgery antiforgery) =>
         {
             if (ApiUtil.IsHtmx(http.Request))
             {
                 var cart = await ApiUtil.GetCart(http, db);
                 var items = await ApiUtil.GetCartItems(cart.Id, db)!;
                 var vm = await GetCartViewModel(items!, cache, imgRepo);
+                vm!.AntiForgeryToken = antiforgery.GetAndStoreTokens(http).RequestToken;
 
                 return Results.RazorSlice<Slices.Cart, CartVm>(vm!);
             }
@@ -40,7 +41,16 @@ public static class CartApis
                 return Results.BadRequest();
             }
 
-            var form = await http.Request.ReadFormAsync();
+            IFormCollection form;
+            try
+            {
+                form = await http.Request.ReadFormAsync();
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(ex, "Cart add: failed to read form body");
+                return Results.BadRequest("Could not read form");
+            }
 
             if (!int.TryParse(form["size"], out var size)) size = 0;
             if (!int.TryParse(form["quantity"], out var quantity) || quantity <= 0 || quantity > 100)
@@ -64,12 +74,22 @@ public static class CartApis
 
             var items = await ApiUtil.GetCartItems(cart.Id, db)!;
             var vm = await GetCartViewModel(items, cache, imgRepo);
+            vm!.AntiForgeryToken = antiforgery.GetAndStoreTokens(http).RequestToken;
 
             return Results.RazorSlice<Slices.Cart, CartVm>(vm!);
         });
 
-        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, int id) =>
+        app.MapDelete("/cart/delete/{id}", async (HttpContext http, RazorShopDbContext db, IMemoryCache cache, ImagesRepo imgRepo, IAntiforgery antiforgery, int id) =>
         {
+            try
+            {
+                await antiforgery.ValidateRequestAsync(http);
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return Results.BadRequest("Antiforgery token invalid");
+            }
+
             var cart = await ApiUtil.GetCart(http, db);
 
             var item = await db.CartItems!.FirstOrDefaultAsync(c => c.Id == id && c.CartId == cart.Id);
@@ -82,6 +102,7 @@ public static class CartApis
 
             var items = await ApiUtil.GetCartItems(cart.Id, db)!;
             var vm = await GetCartViewModel(items, cache, imgRepo);
+            vm!.AntiForgeryToken = antiforgery.GetAndStoreTokens(http).RequestToken;
 
             return Results.RazorSlice<Slices.CartDelete, CartVm>(vm!);
         });
